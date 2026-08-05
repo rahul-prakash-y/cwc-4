@@ -31,9 +31,11 @@ export default function App() {
           <Route index element={<AdminDashboard />} />
           <Route path="teams" element={<AdminDashboard />} />
           <Route path="tasks" element={<AdminDashboard />} />
+          <Route path="scores" element={<AdminDashboard />} />
           <Route path="advantages" element={<AdminDashboard />} />
           <Route path="broadcasts" element={<AdminDashboard />} />
         </Route>
+
 
         {/* Catch-all fallback */}
         <Route path="*" element={<Navigate to="/" replace />} />

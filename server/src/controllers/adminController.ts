@@ -321,3 +321,72 @@ export async function setTeamImmunity(
     team,
   });
 }
+
+/* ==========================================================================
+   SCORE SHEET BATCH CONTROLLER
+   ========================================================================== */
+
+export interface ScoreBatchItem {
+  teamId: string;
+  mainTaskScore: number;
+  specialTaskScore: number;
+  advantage?: string;
+  immunity?: boolean;
+  elimination?: boolean;
+  status?: 'Safe' | 'Danger' | 'Eliminated' | 'Approved' | 'Pending';
+  totalPoints?: number;
+}
+
+export async function updateScoresBatch(
+  request: FastifyRequest<{ Body: { scores: ScoreBatchItem[] } }>,
+  reply: FastifyReply
+) {
+  const { scores } = request.body;
+
+  if (!Array.isArray(scores)) {
+    return reply.status(400).send({
+      error: 'Bad Request',
+      message: 'Scores must be an array of team score objects',
+    });
+  }
+
+  const results = await Promise.all(
+    scores.map(async (item) => {
+      const updateData: any = {};
+      if (item.status) updateData.status = item.status;
+      if (item.immunity !== undefined) updateData.immunity = item.immunity;
+      if (item.elimination) updateData.status = 'Eliminated';
+
+      if (Object.keys(updateData).length > 0) {
+        await Team.findByIdAndUpdate(item.teamId, updateData);
+      }
+
+      let taskDoc = await Task.findOne({ type: 'Main Task' });
+      if (!taskDoc) {
+        taskDoc = await Task.findOne();
+      }
+
+      if (taskDoc && item.teamId) {
+        const totalPoints = (item.mainTaskScore || 0) + (item.specialTaskScore || 0);
+        await Score.findOneAndUpdate(
+          { team: item.teamId, task: taskDoc._id },
+          {
+            pointsEarned: totalPoints,
+            advantagesUsed: item.advantage ? [item.advantage] : [],
+            immunityStatus: item.immunity || false,
+          },
+          { upsert: true, new: true }
+        );
+      }
+
+      return { teamId: item.teamId, success: true };
+    })
+  );
+
+  return reply.send({
+    message: 'Batch score sheet updated successfully! 📊',
+    updatedCount: results.length,
+    results,
+  });
+}
+

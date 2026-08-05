@@ -12,6 +12,7 @@ import {
   deleteAnnouncement,
   grantAdvantage,
   setTeamImmunity,
+  updateScoresBatch,
 } from '../controllers/adminController.js';
 import { authenticate, isAdmin } from '../middleware/auth.js';
 
@@ -25,9 +26,10 @@ export async function adminRoutes(fastify: FastifyInstance) {
   fastify.patch('/teams/:teamId/status', updateTeamStatus);
   fastify.patch('/teams/:teamId/eliminate', eliminateTeam);
 
-  // Advantages & Immunities
+  // Advantages & Immunities & Score Batch
   fastify.post('/teams/:teamId/advantages', grantAdvantage);
   fastify.post('/teams/:teamId/immunity', setTeamImmunity);
+  fastify.post('/scores/batch', updateScoresBatch);
 
   // Daily Tasks Management
   fastify.post('/tasks', createTask);
@@ -40,3 +42,4 @@ export async function adminRoutes(fastify: FastifyInstance) {
   fastify.get('/announcements', getAllAnnouncementsAdmin);
   fastify.delete('/announcements/:announcementId', deleteAnnouncement);
 }
+

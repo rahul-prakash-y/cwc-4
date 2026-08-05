@@ -1,18 +1,18 @@
 import React, { useState } from 'react';
 import { Outlet, Link, useLocation } from 'react-router-dom';
-import { Crown, Users, CheckSquare, Zap, Megaphone, ArrowLeft, Menu, X, ShieldAlert, Sparkles } from 'lucide-react';
+import { Crown, Users, CheckSquare, Zap, Megaphone, ArrowLeft, Menu, X, ShieldAlert, Sparkles, Grid } from 'lucide-react';
 
 export const AdminLayout: React.FC = () => {
   const location = useLocation();
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   const adminNavItems = [
-    { label: 'Control Center', path: '/admin', icon: Crown },
-    { label: 'Team Approvals', path: '/admin/teams', icon: Users },
+    { label: 'Overview Dashboard', path: '/admin', icon: Crown },
+    { label: 'Team Management', path: '/admin/teams', icon: Users },
     { label: 'Task Scheduler', path: '/admin/tasks', icon: CheckSquare },
-    { label: 'Advantage Dispenser', path: '/admin/advantages', icon: Zap },
-    { label: 'Broadcast System', path: '/admin/broadcasts', icon: Megaphone },
+    { label: 'Score Sheet Grid', path: '/admin/scores', icon: Grid },
   ];
+
 
   return (
     <div className="min-h-screen bg-[#0B0A16] text-slate-100 flex font-sans selection:bg-carnival-gold selection:text-black">
