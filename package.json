@@ -1,0 +1,28 @@
+{
+  "name": "cwc-season-4",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Code With Curious (CWC) Season 4 - Carnival Themed Coding Event Portal",
+  "workspaces": [
+    "client",
+    "server"
+  ],
+  "scripts": {
+    "dev:server": "npm --prefix server run dev",
+    "dev:client": "npm --prefix client run dev",
+    "build:server": "npm --prefix server run build",
+    "build:client": "npm --prefix client run build",
+    "install:all": "npm install && npm --prefix server install && npm --prefix client install"
+  },
+  "keywords": [
+    "cwc-season-4",
+    "carnival",
+    "coding-event",
+    "fastify",
+    "react",
+    "typescript",
+    "mongoose"
+  ],
+  "author": "",
+  "license": "ISC"
+}
