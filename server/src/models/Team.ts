@@ -16,6 +16,12 @@ export interface ITeamMember {
   userId?: Types.ObjectId;
 }
 
+export interface IAdvantageItem {
+  advantage: string;
+  quantity: number;
+  grantedAt?: Date;
+}
+
 export interface ITeam {
   teamName: string;
   leader: ITeamLeader;
@@ -23,6 +29,8 @@ export interface ITeam {
   themeColor: string;
   logoUrl?: string;
   status: TeamStatus;
+  advantages: IAdvantageItem[];
+  immunity: boolean;
   createdAt?: Date;
   updatedAt?: Date;
 }
@@ -30,6 +38,15 @@ export interface ITeam {
 export interface ITeamDocument extends ITeam, Document {}
 
 export type ITeamModel = Model<ITeamDocument>;
+
+const advantageSchema = new Schema<IAdvantageItem>(
+  {
+    advantage: { type: String, required: true },
+    quantity: { type: Number, required: true, default: 1, min: 0 },
+    grantedAt: { type: Date, default: Date.now },
+  },
+  { _id: false }
+);
 
 const leaderSchema = new Schema<ITeamLeader>(
   {
@@ -81,6 +98,14 @@ const teamSchema = new Schema<ITeamDocument>(
       enum: ['Pending', 'Approved', 'Eliminated'],
       default: 'Pending',
       required: true,
+    },
+    advantages: {
+      type: [advantageSchema],
+      default: [],
+    },
+    immunity: {
+      type: Boolean,
+      default: false,
     },
   },
   {

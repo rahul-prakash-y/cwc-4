@@ -12,6 +12,9 @@ const envSchema = z.object({
   MONGODB_URI: z.string().default('mongodb://localhost:27017/cwc-season-4'),
   JWT_SECRET: z.string().min(1, 'JWT_SECRET is required'),
   CLIENT_ORIGIN: z.string().default('http://localhost:5173'),
+  CLOUDINARY_CLOUD_NAME: z.string().optional().default(''),
+  CLOUDINARY_API_KEY: z.string().optional().default(''),
+  CLOUDINARY_API_SECRET: z.string().optional().default(''),
 });
 
 const _env = envSchema.safeParse(process.env);
