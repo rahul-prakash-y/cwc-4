@@ -10,7 +10,26 @@
     background-color: #0B0A16;
     color: #F3F4F6;
     overflow-x: hidden;
+    transition: background-color 0.5s ease, color 0.5s ease;
   }
+}
+
+/* Grand Finale Gold Theme Class Overrides */
+html.grand-finale-gold body {
+  background-color: #0A0802 !important;
+  background-image: radial-gradient(circle at 50% 0%, rgba(234, 179, 8, 0.15) 0%, transparent 70%);
+}
+
+html.grand-finale-gold .glass-card {
+  background: rgba(26, 20, 5, 0.75) !important;
+  border-color: rgba(234, 179, 8, 0.3) !important;
+  box-shadow: 0 0 20px rgba(234, 179, 8, 0.1);
+}
+
+html.grand-finale-gold .glass-card-glow {
+  background: rgba(35, 27, 6, 0.85) !important;
+  border-color: rgba(250, 204, 21, 0.6) !important;
+  box-shadow: 0 0 35px rgba(234, 179, 8, 0.3) !important;
 }
 
 /* Custom Scrollbar */
@@ -82,30 +101,140 @@
   box-shadow: 0 0 10px currentColor, 0 0 20px currentColor;
 }
 
-/* Flip Clock Mechanical Card */
-.flip-card {
-  perspective: 400px;
+/* Pulsing Carnival Light Buttons */
+.btn-carnival-pulse {
+  position: relative;
+  overflow: hidden;
+  animation: carnivalPulse 2.5s infinite alternate ease-in-out;
 }
 
-.flip-card-inner {
+.btn-carnival-pulse::after {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: linear-gradient(
+    60deg,
+    transparent 30%,
+    rgba(255, 255, 255, 0.25) 50%,
+    transparent 70%
+  );
+  transform: rotate(30deg);
+  animation: shimmerSweep 3.5s infinite linear;
+}
+
+.btn-gold-pulse {
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 0 15px rgba(234, 179, 8, 0.4);
+  animation: goldPulse 2s infinite alternate ease-in-out;
+}
+
+@keyframes carnivalPulse {
+  0% {
+    box-shadow: 0 0 10px rgba(255, 0, 85, 0.4), 0 0 20px rgba(0, 240, 255, 0.2);
+  }
+  100% {
+    box-shadow: 0 0 25px rgba(255, 215, 0, 0.8), 0 0 40px rgba(255, 0, 85, 0.6);
+  }
+}
+
+@keyframes goldPulse {
+  0% {
+    box-shadow: 0 0 12px rgba(234, 179, 8, 0.4), 0 0 25px rgba(250, 204, 21, 0.2);
+  }
+  100% {
+    box-shadow: 0 0 30px rgba(234, 179, 8, 0.9), 0 0 50px rgba(245, 158, 11, 0.7);
+  }
+}
+
+@keyframes shimmerSweep {
+  0% {
+    transform: translateX(-100%) rotate(30deg);
+  }
+  100% {
+    transform: translateX(100%) rotate(30deg);
+  }
+}
+
+/* 3D Physical Admission Ticket Card Flip */
+.ticket-flip-card {
+  perspective: 1000px;
+}
+
+.ticket-flip-inner {
   position: relative;
   width: 100%;
   height: 100%;
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.6);
-  border-radius: 12px;
-  background: linear-gradient(180deg, #1C1936 0%, #0F0D24 100%);
-  border: 1px solid rgba(255, 215, 0, 0.2);
+  transition: transform 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+  transform-style: preserve-3d;
 }
 
-.flip-card-line {
+.ticket-flip-card:hover .ticket-flip-inner {
+  transform: rotateY(180deg);
+}
+
+.ticket-flip-front,
+.ticket-flip-back {
   position: absolute;
-  top: 50%;
-  left: 0;
-  right: 0;
-  height: 2px;
-  background: #0B0A16;
-  z-index: 10;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.8);
+  width: 100%;
+  height: 100%;
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
+  border-radius: 1.5rem;
+}
+
+.ticket-flip-back {
+  transform: rotateY(180deg);
+}
+
+/* Continuous Spotlights */
+@keyframes spotlightLeft {
+  0% {
+    transform: rotate(-45deg) translateY(0);
+  }
+  50% {
+    transform: rotate(-25deg) translateY(20px);
+  }
+  100% {
+    transform: rotate(-45deg) translateY(0);
+  }
+}
+
+@keyframes spotlightRight {
+  0% {
+    transform: rotate(45deg) translateY(0);
+  }
+  50% {
+    transform: rotate(25deg) translateY(20px);
+  }
+  100% {
+    transform: rotate(45deg) translateY(0);
+  }
+}
+
+.animate-spotlight-left {
+  animation: spotlightLeft 8s infinite ease-in-out;
+}
+
+.animate-spotlight-right {
+  animation: spotlightRight 8s infinite ease-in-out;
+}
+
+/* Marquee Ticker Animation */
+@keyframes marquee {
+  0% {
+    transform: translateX(0%);
+  }
+  100% {
+    transform: translateX(-50%);
+  }
+}
+
+.animate-marquee {
+  animation: marquee 20s linear infinite;
 }
 
 /* Glow Utilities */

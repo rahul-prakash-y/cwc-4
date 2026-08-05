@@ -8,6 +8,7 @@ import { DailyTaskView, TaskDetail } from '../components/dashboard/DailyTaskView
 import { TeamProgressTracker } from '../components/dashboard/TeamProgressTracker';
 import { LiveLeaderboardTable, LeaderboardTeam } from '../components/dashboard/LiveLeaderboardTable';
 import { PowerUpVaultView } from '../components/dashboard/PowerUpVaultView';
+import { ChampionBanner } from '../components/common/ChampionBanner';
 import { MOCK_TEAMS, MOCK_TIMELINE } from '../data/mockData';
 
 export const StudentDashboard: React.FC = () => {
@@ -130,8 +131,12 @@ export const StudentDashboard: React.FC = () => {
 
   return (
     <div className="space-y-8 max-w-7xl mx-auto pb-12">
+      {/* Champion Banner when isGrandFinale is active */}
+      <ChampionBanner />
+
       {/* Top Bar Header (Always visible) */}
       <section id="overview-section">
+
         <TopBarBanner
           teamName={teamName}
           rank={rank}

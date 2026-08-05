@@ -3,10 +3,48 @@ import { Team } from '../models/Team.js';
 import { Task, TaskType } from '../models/Task.js';
 import { Announcement } from '../models/Announcement.js';
 import { Score } from '../models/Score.js';
+import { Setting } from '../models/Setting.js';
+
+/* ==========================================================================
+   GRAND FINALE GLOBAL TOGGLE CONTROLLERS
+   ========================================================================== */
+
+export async function getGrandFinale(_request: FastifyRequest, reply: FastifyReply) {
+  let settingDoc = await Setting.findOne({ key: 'isGrandFinale' });
+  if (!settingDoc) {
+    settingDoc = await Setting.create({ key: 'isGrandFinale', value: false });
+  }
+  return reply.send({
+    isGrandFinale: Boolean(settingDoc.value),
+  });
+}
+
+export async function toggleGrandFinale(
+  request: FastifyRequest<{ Body: { isGrandFinale?: boolean } }>,
+  reply: FastifyReply
+) {
+  let settingDoc = await Setting.findOne({ key: 'isGrandFinale' });
+  const newValue =
+    request.body?.isGrandFinale !== undefined
+      ? Boolean(request.body.isGrandFinale)
+      : !Boolean(settingDoc?.value);
+
+  settingDoc = await Setting.findOneAndUpdate(
+    { key: 'isGrandFinale' },
+    { value: newValue },
+    { upsert: true, new: true }
+  );
+
+  return reply.send({
+    message: `Grand Finale Mode is now ${newValue ? '🏆 ACTIVE (GOLD THEME)' : '🎪 STANDARD CARNIVAL'}`,
+    isGrandFinale: Boolean(settingDoc?.value),
+  });
+}
 
 /* ==========================================================================
    TEAM MANAGEMENT CONTROLLERS
    ========================================================================== */
+
 
 export async function getAllTeams(_request: FastifyRequest, reply: FastifyReply) {
   const teams = await Team.find().lean();

@@ -1,21 +1,23 @@
 import React, { useState } from 'react';
 import { Outlet, Link, useLocation } from 'react-router-dom';
-import { Crown, Users, CheckSquare, Zap, Megaphone, ArrowLeft, Menu, X, ShieldAlert, Sparkles, Grid } from 'lucide-react';
+import { Crown, Users, CheckSquare, Grid, Download, ArrowLeft, Menu, X, ShieldAlert, Sparkles, Flame, Trophy } from 'lucide-react';
+import { useGrandFinale } from '../context/GrandFinaleContext';
 
 export const AdminLayout: React.FC = () => {
   const location = useLocation();
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const { isGrandFinale, toggleGrandFinale, loading: toggleLoading } = useGrandFinale();
 
   const adminNavItems = [
     { label: 'Overview Dashboard', path: '/admin', icon: Crown },
     { label: 'Team Management', path: '/admin/teams', icon: Users },
     { label: 'Task Scheduler', path: '/admin/tasks', icon: CheckSquare },
     { label: 'Score Sheet Grid', path: '/admin/scores', icon: Grid },
+    { label: 'Export & Reports', path: '/admin/export', icon: Download },
   ];
 
-
   return (
-    <div className="min-h-screen bg-[#0B0A16] text-slate-100 flex font-sans selection:bg-carnival-gold selection:text-black">
+    <div className={`min-h-screen bg-[#0B0A16] text-slate-100 flex font-sans selection:bg-carnival-gold selection:text-black ${isGrandFinale ? 'grand-finale-gold' : ''}`}>
       {/* Admin Sidebar */}
       <aside
         className={`fixed lg:sticky top-0 left-0 z-40 w-64 h-screen bg-[#1A1228]/95 backdrop-blur-2xl border-r border-carnival-crimson/30 flex flex-col justify-between p-4 transition-transform duration-300 ${
@@ -39,12 +41,24 @@ export const AdminLayout: React.FC = () => {
             </div>
           </div>
 
-          {/* System Status Pill */}
-          <div className="p-3 rounded-xl bg-carnival-gold/10 border border-carnival-gold/30 mb-6 font-mono text-xs">
-            <div className="text-[10px] uppercase text-carnival-gold font-bold">Carnival Engine</div>
-            <div className="font-extrabold text-white flex items-center gap-1.5 mt-0.5">
+          {/* System Status & Grand Finale Badge */}
+          <div className={`p-3 rounded-xl border mb-6 font-mono text-xs transition-all ${
+            isGrandFinale ? 'bg-amber-500/20 border-yellow-500 shadow-[0_0_20px_rgba(234,179,8,0.3)]' : 'bg-carnival-gold/10 border-carnival-gold/30'
+          }`}>
+            <div className="text-[10px] uppercase text-carnival-gold font-bold flex items-center justify-between">
+              <span>ARENA MODE</span>
               <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping" />
-              <span>Fastify API Connected</span>
+            </div>
+            <div className="font-extrabold text-white flex items-center gap-1.5 mt-1">
+              {isGrandFinale ? (
+                <span className="text-yellow-400 flex items-center gap-1">
+                  <Trophy className="w-3.5 h-3.5" /> GRAND FINALE ACTIVE
+                </span>
+              ) : (
+                <span className="text-carnival-cyan flex items-center gap-1">
+                  <Flame className="w-3.5 h-3.5" /> CARNIVAL ARENA LIVE
+                </span>
+              )}
             </div>
           </div>
 
@@ -85,7 +99,7 @@ export const AdminLayout: React.FC = () => {
 
       {/* Main Content Area */}
       <div className="flex-1 flex flex-col min-w-0">
-        {/* Top Navigation Bar */}
+        {/* Top Navigation Bar with Admin Toggle */}
         <header className="h-16 bg-[#1A1228]/80 backdrop-blur-xl border-b border-carnival-crimson/30 px-4 sm:px-6 flex items-center justify-between sticky top-0 z-30">
           <div className="flex items-center gap-3">
             <button
@@ -102,10 +116,41 @@ export const AdminLayout: React.FC = () => {
             </h1>
           </div>
 
+          {/* TASK 1: Global State Toggle (Admin controlled) called "isGrandFinale" */}
           <div className="flex items-center gap-3">
-            <div className="flex items-center gap-2 p-1.5 rounded-xl glass-card border-carnival-gold/30">
+            <div className={`flex items-center gap-3 px-3 py-1.5 rounded-2xl border transition-all ${
+              isGrandFinale ? 'bg-amber-500/20 border-yellow-400 text-yellow-300 shadow-[0_0_20px_rgba(234,179,8,0.4)]' : 'glass-card border-white/10 text-slate-300'
+            }`}>
+              <div className="flex flex-col text-right">
+                <span className="text-[10px] uppercase font-mono font-bold">
+                  {isGrandFinale ? '🏆 GRAND FINALE' : '🎪 CARNIVAL MODE'}
+                </span>
+                <span className="text-[9px] text-slate-400 font-mono">
+                  {isGrandFinale ? 'Gold Theme Active' : 'Standard Theme'}
+                </span>
+              </div>
+
+              <button
+                onClick={toggleGrandFinale}
+                disabled={toggleLoading}
+                className={`relative w-14 h-8 rounded-full transition-colors duration-300 focus:outline-none p-1 ${
+                  isGrandFinale ? 'bg-gradient-to-r from-amber-400 to-yellow-500 shadow-neon-gold' : 'bg-slate-700'
+                }`}
+                title="Toggle isGrandFinale Global Theme"
+              >
+                <div
+                  className={`w-6 h-6 rounded-full bg-slate-950 flex items-center justify-center font-bold text-xs transform transition-transform duration-300 shadow-md ${
+                    isGrandFinale ? 'translate-x-6 text-yellow-400' : 'translate-x-0 text-slate-400'
+                  }`}
+                >
+                  {isGrandFinale ? '🏆' : '🎪'}
+                </div>
+              </button>
+            </div>
+
+            <div className="hidden sm:flex items-center gap-2 p-1.5 rounded-xl glass-card border-carnival-gold/30">
               <ShieldAlert className="w-4 h-4 text-carnival-gold" />
-              <span className="text-xs font-bold text-white hidden sm:inline font-mono">Ringmaster Admin</span>
+              <span className="text-xs font-bold text-white font-mono">Ringmaster Admin</span>
             </div>
           </div>
         </header>

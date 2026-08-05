@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Users, CheckCircle2, XCircle, Edit3, Shield, AlertTriangle, Search, Filter, Plus, Save, Trash2, X } from 'lucide-react';
+import { Users, CheckCircle2, XCircle, Edit3, Shield, AlertTriangle, Search, Filter, Plus, Save, Trash2, X, Ticket, LayoutGrid, List } from 'lucide-react';
 import { MOCK_TEAMS } from '../../data/mockData';
+import { TicketTeamCard } from '../common/TicketTeamCard';
 
 export interface ExtendedTeam {
   id: string;
@@ -19,6 +20,7 @@ export interface ExtendedTeam {
 }
 
 export const TeamManagementView: React.FC = () => {
+  const [viewMode, setViewMode] = useState<'tickets' | 'table'>('tickets');
   const [teams, setTeams] = useState<ExtendedTeam[]>([
     ...MOCK_TEAMS.map((t, idx) => ({
       id: t.id,
@@ -96,12 +98,35 @@ export const TeamManagementView: React.FC = () => {
           </div>
           <h2 className="text-2xl sm:text-3xl font-black text-white">Team Management View</h2>
           <p className="text-slate-300 text-xs sm:text-sm mt-1">
-            Approve registrations, edit team profiles, reject invalid squads, or flag status as Safe, Danger, or Eliminated.
+            Approve registrations, view physical 3D admission ticket cards, edit team profiles, or flag status.
           </p>
         </div>
 
-        <div className="flex items-center gap-3">
-          <span className="text-xs font-mono text-slate-400">Total Teams: {teams.length}</span>
+        {/* View Mode Toggle Switch */}
+        <div className="flex items-center gap-2 p-1 rounded-xl glass-card border-white/10">
+          <button
+            onClick={() => setViewMode('tickets')}
+            className={`px-3 py-1.5 rounded-lg text-xs font-bold font-mono flex items-center gap-1.5 transition-all ${
+              viewMode === 'tickets'
+                ? 'bg-carnival-gold text-slate-950 shadow-neon-gold'
+                : 'text-slate-400 hover:text-white'
+            }`}
+          >
+            <Ticket className="w-3.5 h-3.5" />
+            <span>3D Ticket Cards</span>
+          </button>
+
+          <button
+            onClick={() => setViewMode('table')}
+            className={`px-3 py-1.5 rounded-lg text-xs font-bold font-mono flex items-center gap-1.5 transition-all ${
+              viewMode === 'table'
+                ? 'bg-carnival-cyan text-slate-950 shadow-neon-cyan'
+                : 'text-slate-400 hover:text-white'
+            }`}
+          >
+            <List className="w-3.5 h-3.5" />
+            <span>Table View</span>
+          </button>
         </div>
       </div>
 
@@ -139,6 +164,33 @@ export const TeamManagementView: React.FC = () => {
           ))}
         </div>
       </div>
+
+      {/* 3D Physical Admission Ticket Cards Grid */}
+      {viewMode === 'tickets' ? (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {filteredTeams.map((team) => (
+            <TicketTeamCard
+              key={team.id}
+              team={{
+                _id: team.id,
+                teamName: team.name,
+                leaderName: team.leaderName,
+                leaderEmail: team.leaderEmail,
+                members: [team.leaderName, 'Priya Patel', 'Rohan Gupta'].slice(0, team.membersCount),
+                track: 'Full-Stack Web',
+                totalPoints: team.points,
+                status: team.status,
+                immunity: team.rank <= 2,
+                advantages: team.rank === 1 ? [{ advantage: 'Double Points' }] : [],
+                repoUrl: 'https://github.com/cwc/arena',
+              }}
+              rank={team.rank}
+              onStatusChange={(id, status) => handleUpdateStatus(id, status as ExtendedTeam['status'])}
+            />
+          ))}
+        </div>
+      ) : null}
+
 
       {/* Data Table */}
       <div className="glass-card rounded-2xl border border-white/10 overflow-hidden shadow-2xl">

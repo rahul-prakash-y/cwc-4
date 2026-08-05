@@ -13,6 +13,8 @@ import {
   grantAdvantage,
   setTeamImmunity,
   updateScoresBatch,
+  getGrandFinale,
+  toggleGrandFinale,
 } from '../controllers/adminController.js';
 import { authenticate, isAdmin } from '../middleware/auth.js';
 
@@ -20,6 +22,10 @@ export async function adminRoutes(fastify: FastifyInstance) {
   // All admin routes require authentication and admin role
   fastify.addHook('preHandler', authenticate);
   fastify.addHook('preHandler', isAdmin);
+
+  // Grand Finale State Toggle
+  fastify.get('/grand-finale', getGrandFinale);
+  fastify.post('/grand-finale', toggleGrandFinale);
 
   // Teams Management
   fastify.get('/teams', getAllTeams);
@@ -42,4 +48,5 @@ export async function adminRoutes(fastify: FastifyInstance) {
   fastify.get('/announcements', getAllAnnouncementsAdmin);
   fastify.delete('/announcements/:announcementId', deleteAnnouncement);
 }
+
 

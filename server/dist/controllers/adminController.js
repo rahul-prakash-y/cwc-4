@@ -1,5 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.getGrandFinale = getGrandFinale;
+exports.toggleGrandFinale = toggleGrandFinale;
 exports.getAllTeams = getAllTeams;
 exports.updateTeamStatus = updateTeamStatus;
 exports.eliminateTeam = eliminateTeam;
@@ -17,6 +19,30 @@ const Team_js_1 = require("../models/Team.js");
 const Task_js_1 = require("../models/Task.js");
 const Announcement_js_1 = require("../models/Announcement.js");
 const Score_js_1 = require("../models/Score.js");
+const Setting_js_1 = require("../models/Setting.js");
+/* ==========================================================================
+   GRAND FINALE GLOBAL TOGGLE CONTROLLERS
+   ========================================================================== */
+async function getGrandFinale(_request, reply) {
+    let settingDoc = await Setting_js_1.Setting.findOne({ key: 'isGrandFinale' });
+    if (!settingDoc) {
+        settingDoc = await Setting_js_1.Setting.create({ key: 'isGrandFinale', value: false });
+    }
+    return reply.send({
+        isGrandFinale: Boolean(settingDoc.value),
+    });
+}
+async function toggleGrandFinale(request, reply) {
+    let settingDoc = await Setting_js_1.Setting.findOne({ key: 'isGrandFinale' });
+    const newValue = request.body?.isGrandFinale !== undefined
+        ? Boolean(request.body.isGrandFinale)
+        : !Boolean(settingDoc?.value);
+    settingDoc = await Setting_js_1.Setting.findOneAndUpdate({ key: 'isGrandFinale' }, { value: newValue }, { upsert: true, new: true });
+    return reply.send({
+        message: `Grand Finale Mode is now ${newValue ? '🏆 ACTIVE (GOLD THEME)' : '🎪 STANDARD CARNIVAL'}`,
+        isGrandFinale: Boolean(settingDoc?.value),
+    });
+}
 /* ==========================================================================
    TEAM MANAGEMENT CONTROLLERS
    ========================================================================== */

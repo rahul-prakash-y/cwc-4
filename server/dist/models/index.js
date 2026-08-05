@@ -20,3 +20,4 @@ __exportStar(require("./Task.js"), exports);
 __exportStar(require("./Score.js"), exports);
 __exportStar(require("./Announcement.js"), exports);
 __exportStar(require("./Submission.js"), exports);
+__exportStar(require("./Setting.js"), exports);

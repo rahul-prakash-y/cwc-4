@@ -7,6 +7,9 @@ async function adminRoutes(fastify) {
     // All admin routes require authentication and admin role
     fastify.addHook('preHandler', auth_js_1.authenticate);
     fastify.addHook('preHandler', auth_js_1.isAdmin);
+    // Grand Finale State Toggle
+    fastify.get('/grand-finale', adminController_js_1.getGrandFinale);
+    fastify.post('/grand-finale', adminController_js_1.toggleGrandFinale);
     // Teams Management
     fastify.get('/teams', adminController_js_1.getAllTeams);
     fastify.patch('/teams/:teamId/status', adminController_js_1.updateTeamStatus);
