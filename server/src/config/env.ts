@@ -51,8 +51,14 @@ const envSchema = z.object({
 const _env = envSchema.safeParse(rawEnv);
 
 if (!_env.success) {
-  console.error('❌ FATAL: Environment Variable Validation Failed!');
-  console.error(JSON.stringify(_env.error.format(), null, 2));
+  process.stderr.write(
+    JSON.stringify({
+      level: 'error',
+      time: new Date().toISOString(),
+      msg: '❌ FATAL: Environment Variable Validation Failed!',
+      errors: _env.error.format(),
+    }) + '\n'
+  );
   // Crash server process immediately on startup if missing required env vars
   process.exit(1);
 }

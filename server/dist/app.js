@@ -4,22 +4,26 @@ import multipart from '@fastify/multipart';
 import helmet from '@fastify/helmet';
 import rateLimit from '@fastify/rate-limit';
 import fastifyEnv from '@fastify/env';
+import fastifyStatic from '@fastify/static';
+import mongoose from 'mongoose';
+import crypto from 'crypto';
+import path from 'path';
+import { fileURLToPath } from 'url';
+import fs from 'fs';
 import { env } from './config/env.js';
 import { setupErrorHandler } from './plugins/errorHandler.js';
 import { sanitizeNoSQLInject } from './middleware/nosqlSanitize.js';
 import { authRoutes } from './routes/authRoutes.js';
 import { adminRoutes } from './routes/adminRoutes.js';
 import { studentRoutes } from './routes/studentRoutes.js';
-import fastifyStatic from '@fastify/static';
-import path from 'path';
-import { fileURLToPath } from 'url';
-import fs from 'fs';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 export function buildApp() {
+    // Task 1 & 4: Configure Pino logger and Correlation ID generator
     const fastify = Fastify({
         logger: env.NODE_ENV === 'development'
             ? {
+                level: process.env.LOG_LEVEL || 'info',
                 transport: {
                     target: 'pino-pretty',
                     options: {
@@ -28,9 +32,22 @@ export function buildApp() {
                     },
                 },
             }
-            : true,
+            : {
+                level: process.env.LOG_LEVEL || 'info',
+            },
+        genReqId: (req) => {
+            const existingId = req.headers['x-correlation-id'] ||
+                req.headers['x-request-id'];
+            return existingId || crypto.randomUUID();
+        },
+        requestIdHeader: 'x-correlation-id',
+        requestIdLogLabel: 'correlationId',
     });
-    // Task 3: Fastify Env validation plugin
+    // Task 4: Add correlation ID header to every HTTP response
+    fastify.addHook('onRequest', async (request, reply) => {
+        reply.header('x-correlation-id', request.id);
+    });
+    // Fastify Env validation plugin
     fastify.register(fastifyEnv, {
         confKey: 'config',
         schema: {
@@ -48,22 +65,23 @@ export function buildApp() {
         },
         data: env,
     });
-    // Task 1: Register Helmet for Secure HTTP Headers
+    // Register Helmet for Secure HTTP Headers
     fastify.register(helmet, {
         contentSecurityPolicy: env.NODE_ENV === 'production' ? undefined : false,
     });
-    // Task 2: Global Rate Limit (100 requests / minute)
+    // Global Rate Limit (100 requests / minute)
     fastify.register(rateLimit, {
         max: 100,
         timeWindow: '1 minute',
-        errorResponseBuilder: (_request, context) => ({
-            statusCode: 429,
+        errorResponseBuilder: (request, context) => ({
+            status: 429,
             error: 'Too Many Requests',
             message: `Rate limit exceeded. Maximum ${context.max} requests per ${context.after} allowed.`,
+            correlationId: request.id,
             date: new Date().toISOString(),
         }),
     });
-    // Task 4: Global NoSQL Injection Sanitization preHandler hook
+    // Global NoSQL Injection Sanitization preHandler hook
     fastify.addHook('preHandler', sanitizeNoSQLInject);
     // Register CORS
     fastify.register(cors, {
@@ -77,23 +95,54 @@ export function buildApp() {
             fileSize: 10 * 1024 * 1024, // 10 MB file size limit
         },
     });
-    // Setup Error Handler
+    // Task 2: Setup Centralized Error Handler
     setupErrorHandler(fastify);
-    // Health check route
-    fastify.get('/health', async () => {
-        return {
-            status: 'ok',
+    // Task 3: Health check endpoint (/healthz) for load balancers & uptime monitors
+    fastify.get('/healthz', async (request, reply) => {
+        const mongoState = mongoose.connection.readyState;
+        // 0 = disconnected, 1 = connected, 2 = connecting, 3 = disconnecting
+        const isDbConnected = mongoState === 1;
+        const mongoStateMap = {
+            0: 'disconnected',
+            1: 'connected',
+            2: 'connecting',
+            3: 'disconnecting',
+        };
+        const healthStatus = {
+            status: isDbConnected ? 'ok' : 'degraded',
+            timestamp: new Date().toISOString(),
+            uptime: process.uptime(),
+            correlationId: request.id,
+            services: {
+                api: 'healthy',
+                database: mongoStateMap[mongoState] || 'unknown',
+            },
+        };
+        if (!isDbConnected) {
+            return reply.status(503).send(healthStatus);
+        }
+        return reply.status(200).send(healthStatus);
+    });
+    // Legacy /health endpoint
+    fastify.get('/health', async (request, reply) => {
+        const mongoState = mongoose.connection.readyState;
+        const isDbConnected = mongoState === 1;
+        return reply.status(isDbConnected ? 200 : 503).send({
+            status: isDbConnected ? 'ok' : 'degraded',
             service: 'Code With Curious (CWC) Season 4 Backend',
             theme: '🎪 Carnival Coding Extravaganza',
             timestamp: new Date().toISOString(),
-        };
+            correlationId: request.id,
+            database: isDbConnected ? 'connected' : 'disconnected',
+        });
     });
     // Base API route greeting
-    fastify.get('/api/v1', async () => {
+    fastify.get('/api/v1', async (request) => {
         return {
             message: 'Welcome to CWC Season 4 Carnival API 🎪🏆',
-            docs: '/api/v1/health',
+            healthz: '/healthz',
             version: '1.0.0',
+            correlationId: request.id,
         };
     });
     // Public Grand Finale status route
@@ -117,7 +166,12 @@ export function buildApp() {
         // SPA Routing Fallback: send index.html for non-API requests
         fastify.setNotFoundHandler((request, reply) => {
             if (request.raw.url?.startsWith('/api')) {
-                reply.status(404).send({ error: 'API route not found' });
+                reply.status(404).send({
+                    status: 404,
+                    error: 'Not Found',
+                    message: 'API route not found',
+                    correlationId: request.id,
+                });
             }
             else {
                 reply.sendFile('index.html');
