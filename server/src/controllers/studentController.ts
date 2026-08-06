@@ -539,9 +539,12 @@ interface SubmitInteractiveBody {
 }
 
 /**
- * Task 3: Auto-grading route /api/tasks/:id/submit-interactive
+ * Task 3: Auto-grading route /api/student/tasks/:id/submit-interactive
  * Validates MCQs, Rapid Fire, Code Completion, and Puzzles instantly,
  * automatically updates the Score schema, and emits the updated score via WebSockets.
+ *
+ * Security: Uses .select('+correctAnswer') since correctAnswer is hidden by default.
+ * Advantage: Auto-detects active 'Double Points' advantage in team inventory.
  */
 export async function submitInteractiveTask(
   request: FastifyRequest<{
@@ -579,9 +582,56 @@ export async function submitInteractiveTask(
     });
   }
 
-  const task = await Task.findById(taskId);
+  // Block eliminated teams from interactive submissions
+  if (team.status === 'Eliminated') {
+    return reply.status(403).send({
+      error: 'Forbidden',
+      message:
+        `🎪 Team '${team.teamName}', your carnival journey has come to a close. ` +
+        `Interactive submissions are no longer accepted for eliminated teams.`,
+    });
+  }
+
+  // Fetch task WITH correctAnswer (hidden by default via select: false)
+  const task = await Task.findById(taskId).select('+correctAnswer');
   if (!task) {
     return reply.status(404).send({ error: 'Not Found', message: 'Task not found' });
+  }
+
+  // Validate task is active and visible
+  const now = new Date();
+  if (!task.visibility || now < task.startTime || now > task.endTime) {
+    return reply.status(400).send({
+      error: 'Bad Request',
+      message: 'This task is not currently open for submission.',
+    });
+  }
+
+  // Task 4: Rapid Fire time limit validation
+  if (task.type === 'Rapid Fire' && task.interactiveTimeLimit && task.interactiveTimeLimit > 0) {
+    const taskStartMs = task.startTime.getTime();
+    const elapsedSeconds = Math.floor((now.getTime() - taskStartMs) / 1000);
+    if (elapsedSeconds > task.interactiveTimeLimit) {
+      return reply.status(400).send({
+        error: 'Time Expired',
+        message: `⏰ Rapid Fire time limit of ${task.interactiveTimeLimit}s has expired. Auto-submission enforced.`,
+        expired: true,
+      });
+    }
+  }
+
+  // Prevent duplicate evaluated submissions
+  const existingSubmission = await Submission.findOne({
+    team: team._id,
+    task: task._id,
+    status: 'Evaluated',
+  });
+  if (existingSubmission) {
+    return reply.status(409).send({
+      error: 'Conflict',
+      message: 'Your team has already submitted and been graded for this interactive task.',
+      previousScore: existingSubmission.scoreAwarded || 0,
+    });
   }
 
   const body = request.body || {};
@@ -652,7 +702,8 @@ export async function submitInteractiveTask(
     pointsEarned = isCorrect ? task.points : 0;
   }
 
-  // Handle Advantage Multiplier if advantageUsed is active
+  // Auto-detect and apply Double Points advantage from team inventory
+  let doublePointsApplied = false;
   if (body.advantageUsed) {
     const advIndex = team.advantages.findIndex(
       (a) => a.advantage.toLowerCase().includes(body.advantageUsed!.toLowerCase())
@@ -662,6 +713,7 @@ export async function submitInteractiveTask(
       await team.save();
       if (body.advantageUsed.toLowerCase().includes('double') || body.advantageUsed.toLowerCase().includes('2x')) {
         pointsEarned *= 2;
+        doublePointsApplied = true;
       }
     }
   }
@@ -674,9 +726,13 @@ export async function submitInteractiveTask(
         team: team._id,
         task: task._id,
         pointsEarned,
+        advantagesUsed: doublePointsApplied ? ['Double Points'] : [],
       });
     } else {
       scoreDoc.pointsEarned = Math.max(scoreDoc.pointsEarned, pointsEarned);
+      if (doublePointsApplied && !scoreDoc.advantagesUsed.includes('Double Points')) {
+        scoreDoc.advantagesUsed.push('Double Points');
+      }
     }
     await scoreDoc.save();
 
@@ -686,7 +742,7 @@ export async function submitInteractiveTask(
         team: team._id,
         task: task._id,
         submittedBy: user._id,
-        notes: `Interactive Submission [${task.type}]: ${submittedAnswer || submittedCode}`,
+        notes: `Interactive Submission [${task.type}]: ${submittedAnswer || submittedCode}${doublePointsApplied ? ' [2x Double Points Applied]' : ''}`,
         status: 'Evaluated',
         scoreAwarded: pointsEarned,
         submittedAt: new Date(),
@@ -701,13 +757,15 @@ export async function submitInteractiveTask(
     const allTeamScores = await Score.find({ team: team._id });
     const currentTeamTotal = allTeamScores.reduce((sum, item) => sum + (item.pointsEarned || 0), 0);
 
-    // Emit WebSocket broadcast for score update
+    // Emit SCORE_UPDATED WebSocket broadcast
     broadcastScoreUpdated({
       teamId: team._id.toString(),
       teamName: team.teamName,
       taskId: task._id.toString(),
       taskTitle: task.title,
+      taskType: task.type,
       pointsEarned,
+      doublePointsApplied,
       newTotalScore: currentTeamTotal,
     });
 
@@ -715,8 +773,9 @@ export async function submitInteractiveTask(
       success: true,
       isCorrect: true,
       pointsEarned,
+      doublePointsApplied,
       totalTeamScore: currentTeamTotal,
-      message: `🎉 Correct answer! You earned +${pointsEarned} PTS for your team!`,
+      message: `🎉 Correct answer! You earned +${pointsEarned} PTS${doublePointsApplied ? ' (2x Double Points! ⚡)' : ''} for your team!`,
       testResults: testCaseResults,
     });
   }

@@ -33,6 +33,35 @@ export const saveDraftSchema: FastifySchema = {
   },
 };
 
+export const submitInteractiveTaskSchema: FastifySchema = {
+  params: {
+    type: 'object',
+    properties: {
+      id: { type: 'string' },
+    },
+  },
+  body: {
+    type: 'object',
+    additionalProperties: false,
+    properties: {
+      answer: { type: 'string', maxLength: 5000 },
+      selectedOption: { type: 'string', maxLength: 500 },
+      code: { type: 'string', maxLength: 50000 },
+      testResults: {
+        type: 'array',
+        items: {
+          type: 'object',
+          properties: {
+            input: { type: 'string' },
+            actualOutput: { type: 'string' },
+          },
+        },
+      },
+      advantageUsed: { type: 'string', maxLength: 100 },
+    },
+  },
+};
+
 export const useAdvantageSchema: FastifySchema = {
   body: {
     type: 'object',
