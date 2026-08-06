@@ -7,8 +7,15 @@
 @layer base {
   body {
     font-family: 'Outfit', 'Inter', sans-serif;
-    background-color: #0B0A16;
-    color: #F3F4F6;
+    background-color: #0c0a1a;
+    background-image: 
+      radial-gradient(circle at 12% 15%, rgba(255, 0, 119, 0.22) 0%, transparent 40%),
+      radial-gradient(circle at 88% 22%, rgba(0, 240, 255, 0.20) 0%, transparent 45%),
+      radial-gradient(circle at 50% 65%, rgba(138, 43, 226, 0.22) 0%, transparent 50%),
+      radial-gradient(circle at 82% 88%, rgba(255, 215, 0, 0.18) 0%, transparent 40%),
+      radial-gradient(circle at 20% 80%, rgba(59, 130, 246, 0.15) 0%, transparent 45%);
+    background-attachment: fixed;
+    color: #F8FAFC;
     overflow-x: hidden;
     transition: background-color 0.5s ease, color 0.5s ease;
   }
@@ -16,20 +23,23 @@
 
 /* Grand Finale Gold Theme Class Overrides */
 html.grand-finale-gold body {
-  background-color: #0A0802 !important;
-  background-image: radial-gradient(circle at 50% 0%, rgba(234, 179, 8, 0.15) 0%, transparent 70%);
+  background-color: #0d0a03 !important;
+  background-image: 
+    radial-gradient(circle at 50% 0%, rgba(255, 215, 0, 0.28) 0%, transparent 70%),
+    radial-gradient(circle at 20% 40%, rgba(245, 158, 11, 0.2) 0%, transparent 50%),
+    radial-gradient(circle at 80% 60%, rgba(234, 179, 8, 0.2) 0%, transparent 50%) !important;
 }
 
 html.grand-finale-gold .glass-card {
-  background: rgba(26, 20, 5, 0.75) !important;
-  border-color: rgba(234, 179, 8, 0.3) !important;
-  box-shadow: 0 0 20px rgba(234, 179, 8, 0.1);
+  background: rgba(32, 25, 8, 0.85) !important;
+  border-color: rgba(255, 215, 0, 0.45) !important;
+  box-shadow: 0 0 25px rgba(255, 215, 0, 0.2);
 }
 
 html.grand-finale-gold .glass-card-glow {
-  background: rgba(35, 27, 6, 0.85) !important;
-  border-color: rgba(250, 204, 21, 0.6) !important;
-  box-shadow: 0 0 35px rgba(234, 179, 8, 0.3) !important;
+  background: rgba(45, 34, 9, 0.92) !important;
+  border-color: rgba(250, 204, 21, 0.75) !important;
+  box-shadow: 0 0 45px rgba(255, 215, 0, 0.45) !important;
 }
 
 /* Custom Scrollbar */
@@ -38,57 +48,68 @@ html.grand-finale-gold .glass-card-glow {
   height: 8px;
 }
 ::-webkit-scrollbar-track {
-  background: #0B0A16;
+  background: #0c0a1a;
 }
 ::-webkit-scrollbar-thumb {
-  background: #2A264D;
+  background: linear-gradient(180deg, #FF007F, #8A2BE2);
   border-radius: 4px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #FF0055;
+  background: #00F0FF;
 }
 
-/* Glassmorphism utility classes */
+/* Glassmorphism utility classes - Vivid & High Contrast */
 .glass-card {
-  background: rgba(21, 19, 41, 0.7);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(24, 20, 52, 0.78);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.15);
 }
 
 .glass-card-glow {
-  background: rgba(21, 19, 41, 0.75);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border: 1px solid rgba(255, 0, 85, 0.25);
-  box-shadow: 0 0 25px rgba(255, 0, 85, 0.15);
+  background: rgba(28, 23, 62, 0.85);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 0, 127, 0.5);
+  box-shadow: 0 0 35px rgba(255, 0, 127, 0.25), 0 0 15px rgba(0, 240, 255, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.25);
 }
 
 .glass-card-hover {
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .glass-card-hover:hover {
-  background: rgba(27, 24, 54, 0.85);
-  border-color: rgba(255, 0, 85, 0.4);
-  box-shadow: 0 12px 30px -10px rgba(255, 0, 85, 0.3);
-  transform: translateY(-4px);
+  background: rgba(34, 28, 76, 0.92);
+  border-color: rgba(0, 240, 255, 0.65);
+  box-shadow: 0 18px 40px -10px rgba(0, 240, 255, 0.4), 0 0 25px rgba(255, 0, 127, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.3);
+  transform: translateY(-5px);
 }
 
+/* Bright Vivid Text Gradients */
 .text-gradient-carnival {
-  background: linear-gradient(135deg, #FF0055 0%, #FFD700 45%, #00F0FF 100%);
+  background: linear-gradient(135deg, #FF007F 0%, #FFD700 35%, #00F0FF 75%, #39FF14 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
+  filter: drop-shadow(0 2px 10px rgba(255, 0, 127, 0.3));
 }
 
 .text-gradient-gold {
-  background: linear-gradient(135deg, #FFF099 0%, #FFD700 50%, #FF7700 100%);
+  background: linear-gradient(135deg, #FFF176 0%, #FFD700 45%, #FF6D00 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
+  filter: drop-shadow(0 2px 10px rgba(255, 215, 0, 0.3));
 }
 
 .text-gradient-cyan {
-  background: linear-gradient(135deg, #A5F3FC 0%, #00F0FF 50%, #8A2BE2 100%);
+  background: linear-gradient(135deg, #E0F7FA 0%, #00F0FF 45%, #B388FF 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  filter: drop-shadow(0 2px 10px rgba(0, 240, 255, 0.3));
+}
+
+.text-gradient-neon {
+  background: linear-gradient(135deg, #39FF14 0%, #00F0FF 50%, #FF007F 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
 }
@@ -98,14 +119,14 @@ html.grand-finale-gold .glass-card-glow {
   width: 12px;
   height: 12px;
   border-radius: 50%;
-  box-shadow: 0 0 10px currentColor, 0 0 20px currentColor;
+  box-shadow: 0 0 12px currentColor, 0 0 24px currentColor;
 }
 
 /* Pulsing Carnival Light Buttons */
 .btn-carnival-pulse {
   position: relative;
   overflow: hidden;
-  animation: carnivalPulse 2.5s infinite alternate ease-in-out;
+  animation: carnivalPulse 2.2s infinite alternate ease-in-out;
 }
 
 .btn-carnival-pulse::after {
@@ -118,35 +139,35 @@ html.grand-finale-gold .glass-card-glow {
   background: linear-gradient(
     60deg,
     transparent 30%,
-    rgba(255, 255, 255, 0.25) 50%,
+    rgba(255, 255, 255, 0.35) 50%,
     transparent 70%
   );
   transform: rotate(30deg);
-  animation: shimmerSweep 3.5s infinite linear;
+  animation: shimmerSweep 3s infinite linear;
 }
 
 .btn-gold-pulse {
   position: relative;
   overflow: hidden;
-  box-shadow: 0 0 15px rgba(234, 179, 8, 0.4);
+  box-shadow: 0 0 20px rgba(255, 215, 0, 0.5);
   animation: goldPulse 2s infinite alternate ease-in-out;
 }
 
 @keyframes carnivalPulse {
   0% {
-    box-shadow: 0 0 10px rgba(255, 0, 85, 0.4), 0 0 20px rgba(0, 240, 255, 0.2);
+    box-shadow: 0 0 15px rgba(255, 0, 127, 0.5), 0 0 25px rgba(0, 240, 255, 0.3);
   }
   100% {
-    box-shadow: 0 0 25px rgba(255, 215, 0, 0.8), 0 0 40px rgba(255, 0, 85, 0.6);
+    box-shadow: 0 0 35px rgba(255, 215, 0, 0.9), 0 0 50px rgba(255, 0, 127, 0.7);
   }
 }
 
 @keyframes goldPulse {
   0% {
-    box-shadow: 0 0 12px rgba(234, 179, 8, 0.4), 0 0 25px rgba(250, 204, 21, 0.2);
+    box-shadow: 0 0 15px rgba(255, 215, 0, 0.5), 0 0 30px rgba(250, 204, 21, 0.3);
   }
   100% {
-    box-shadow: 0 0 30px rgba(234, 179, 8, 0.9), 0 0 50px rgba(245, 158, 11, 0.7);
+    box-shadow: 0 0 35px rgba(255, 215, 0, 0.95), 0 0 60px rgba(245, 158, 11, 0.8);
   }
 }
 
@@ -239,13 +260,14 @@ html.grand-finale-gold .glass-card-glow {
 
 /* Glow Utilities */
 .neon-glow-gold {
-  filter: drop-shadow(0 0 12px rgba(255, 215, 0, 0.6));
+  filter: drop-shadow(0 0 14px rgba(255, 215, 0, 0.8));
 }
 
 .neon-glow-crimson {
-  filter: drop-shadow(0 0 12px rgba(255, 0, 85, 0.6));
+  filter: drop-shadow(0 0 14px rgba(255, 0, 127, 0.8));
 }
 
 .neon-glow-cyan {
-  filter: drop-shadow(0 0 12px rgba(0, 240, 255, 0.6));
+  filter: drop-shadow(0 0 14px rgba(0, 240, 255, 0.8));
 }
+
