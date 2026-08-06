@@ -46,6 +46,7 @@ const envSchema = z.object({
   CLOUDINARY_CLOUD_NAME: z.string().optional().default(''),
   CLOUDINARY_API_KEY: z.string().optional().default(''),
   CLOUDINARY_API_SECRET: z.string().optional().default(''),
+  REDIS_URL: z.string().optional().default('redis://127.0.0.1:6379'),
 });
 
 const _env = envSchema.safeParse(rawEnv);

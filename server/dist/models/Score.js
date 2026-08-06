@@ -31,5 +31,8 @@ const scoreSchema = new Schema({
 });
 // Compound index to ensure unique score record per team per task
 scoreSchema.index({ team: 1, task: 1 }, { unique: true });
+// Compound indexes for fast Leaderboard calculations and score aggregation
+scoreSchema.index({ team: 1, pointsEarned: -1 });
+scoreSchema.index({ pointsEarned: -1, team: 1 });
 export const Score = model('Score', scoreSchema);
 export default Score;

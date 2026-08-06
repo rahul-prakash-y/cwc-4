@@ -1,10 +1,12 @@
 import { FastifyRequest, FastifyReply } from 'fastify';
+import mongoose from 'mongoose';
 import { Team } from '../models/Team.js';
 import { Task } from '../models/Task.js';
 import { Score } from '../models/Score.js';
 import { Submission, SubmissionFileType } from '../models/Submission.js';
 import { User } from '../models/User.js';
 import { uploadToCloudinary } from '../utils/cloudinary.js';
+import { delCache } from '../utils/redis.js';
 
 /**
  * Task 4: Fetch logged-in student's team dashboard data
@@ -214,36 +216,74 @@ export async function submitTask(
     });
   }
 
-  // Create or update submission
-  const existingSubmission = await Submission.findOne({ team: team._id, task: task._id });
+  // Create or update submission using MongoDB session transaction for data consistency
+  const session = await mongoose.startSession();
+  let transactionStarted = false;
+  try {
+    try {
+      session.startTransaction();
+      transactionStarted = true;
+    } catch {
+      // Fallback for standalone MongoDB environments without replica set
+    }
 
-  let submission;
-  if (existingSubmission) {
-    existingSubmission.githubUrl = githubUrl || existingSubmission.githubUrl;
-    existingSubmission.fileUrl = fileUrl || existingSubmission.fileUrl;
-    existingSubmission.fileType = fileType || existingSubmission.fileType || 'github';
-    existingSubmission.notes = notes || existingSubmission.notes;
-    existingSubmission.submittedAt = new Date();
-    existingSubmission.status = 'Submitted';
-    submission = await existingSubmission.save();
-  } else {
-    submission = await Submission.create({
-      team: team._id,
-      task: task._id,
-      submittedBy: user._id,
-      githubUrl: githubUrl || '',
-      fileUrl: fileUrl || '',
-      fileType: fileType || (fileUrl ? (fileUrl.endsWith('.pdf') ? 'pdf' : 'image') : 'github'),
-      notes: notes || '',
-      status: 'Submitted',
-      submittedAt: new Date(),
+    const sessionOption = transactionStarted ? { session } : {};
+
+    const existingSubmission = await Submission.findOne(
+      { team: team._id, task: task._id },
+      null,
+      sessionOption
+    );
+
+    let submission;
+    if (existingSubmission) {
+      existingSubmission.githubUrl = githubUrl || existingSubmission.githubUrl;
+      existingSubmission.fileUrl = fileUrl || existingSubmission.fileUrl;
+      existingSubmission.fileType = fileType || existingSubmission.fileType || 'github';
+      existingSubmission.notes = notes || existingSubmission.notes;
+      existingSubmission.submittedAt = new Date();
+      existingSubmission.status = 'Submitted';
+      submission = await existingSubmission.save(sessionOption);
+    } else {
+      const payload = {
+        team: team._id,
+        task: task._id,
+        submittedBy: user._id,
+        githubUrl: githubUrl || '',
+        fileUrl: fileUrl || '',
+        fileType: fileType || (fileUrl ? (fileUrl.endsWith('.pdf') ? 'pdf' : 'image') : 'github'),
+        notes: notes || '',
+        status: 'Submitted' as const,
+        submittedAt: new Date(),
+      };
+
+      if (transactionStarted) {
+        const created = await Submission.create([payload], { session });
+        submission = created[0];
+      } else {
+        submission = await Submission.create(payload);
+      }
+    }
+
+    if (transactionStarted) {
+      await session.commitTransaction();
+    }
+
+    // Invalidate public leaderboard cache
+    await delCache('cwc:leaderboard');
+
+    return reply.status(201).send({
+      message: 'Task submitted successfully! 🎉',
+      submission,
     });
+  } catch (error) {
+    if (transactionStarted) {
+      await session.abortTransaction();
+    }
+    throw error;
+  } finally {
+    session.endSession();
   }
-
-  return reply.status(201).send({
-    message: 'Task submitted successfully! 🎉',
-    submission,
-  });
 }
 
 /**

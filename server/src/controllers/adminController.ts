@@ -5,6 +5,7 @@ import { Task, TaskType } from '../models/Task.js';
 import { Announcement } from '../models/Announcement.js';
 import { Score } from '../models/Score.js';
 import { Setting } from '../models/Setting.js';
+import { delCache } from '../utils/redis.js';
 
 /* ==========================================================================
    GRAND FINALE GLOBAL TOGGLE CONTROLLERS
@@ -251,6 +252,8 @@ export async function createAnnouncement(
     timestamp: new Date(),
   });
 
+  await delCache('cwc:announcements');
+
   return reply.status(201).send({
     message: 'Global announcement posted! 📢',
     announcement,
@@ -272,6 +275,8 @@ export async function deleteAnnouncement(
   if (!deleted) {
     return reply.status(404).send({ error: 'Not Found', message: 'Announcement not found' });
   }
+
+  await delCache('cwc:announcements');
 
   return reply.send({
     message: 'Announcement deleted successfully.',
@@ -305,31 +310,58 @@ export async function grantAdvantage(
     });
   }
 
-  const team = await Team.findById(teamId);
-  if (!team) {
-    return reply.status(404).send({ error: 'Not Found', message: 'Team not found' });
-  }
+  const session = await mongoose.startSession();
+  let transactionStarted = false;
+  try {
+    try {
+      session.startTransaction();
+      transactionStarted = true;
+    } catch {
+      // Standalone MongoDB fallback without replica set
+    }
 
-  const existingAdv = team.advantages.find(
-    (a) => a.advantage.toLowerCase() === advantage.toLowerCase()
-  );
+    const sessionOption = transactionStarted ? { session } : {};
 
-  if (existingAdv) {
-    existingAdv.quantity += quantity;
-  } else {
-    team.advantages.push({
-      advantage,
-      quantity,
-      grantedAt: new Date(),
+    const team = await Team.findById(teamId, null, sessionOption);
+    if (!team) {
+      if (transactionStarted) await session.abortTransaction();
+      return reply.status(404).send({ error: 'Not Found', message: 'Team not found' });
+    }
+
+    const existingAdv = team.advantages.find(
+      (a) => a.advantage.toLowerCase() === advantage.toLowerCase()
+    );
+
+    if (existingAdv) {
+      existingAdv.quantity += quantity;
+    } else {
+      team.advantages.push({
+        advantage,
+        quantity,
+        grantedAt: new Date(),
+      });
+    }
+
+    await team.save(sessionOption);
+
+    if (transactionStarted) {
+      await session.commitTransaction();
+    }
+
+    await delCache('cwc:leaderboard');
+
+    return reply.send({
+      message: `Granted advantage '${advantage}' (+${quantity}) to team '${team.teamName}'! 🎁`,
+      team,
     });
+  } catch (error) {
+    if (transactionStarted) {
+      await session.abortTransaction();
+    }
+    throw error;
+  } finally {
+    session.endSession();
   }
-
-  await team.save();
-
-  return reply.send({
-    message: `Granted advantage '${advantage}' (+${quantity}) to team '${team.teamName}'! 🎁`,
-    team,
-  });
 }
 
 interface SetImmunityBody {
@@ -429,6 +461,8 @@ export async function updateScoresBatch(
       return { teamId: item.teamId, success: true };
     })
   );
+
+  await delCache('cwc:leaderboard');
 
   return reply.send({
     message: 'Batch score sheet updated successfully! 📊',

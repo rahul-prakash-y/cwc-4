@@ -58,5 +58,9 @@ const taskSchema = new Schema<ITaskDocument>(
   }
 );
 
+// Compound indexes for fetching active and upcoming visible tasks
+taskSchema.index({ visibility: 1, startTime: 1, endTime: 1 });
+taskSchema.index({ visibility: 1, endTime: 1 });
+
 export const Task = model<ITaskDocument, ITaskModel>('Task', taskSchema);
 export default Task;

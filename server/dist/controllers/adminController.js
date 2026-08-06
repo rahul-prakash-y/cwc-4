@@ -4,6 +4,7 @@ import { Task } from '../models/Task.js';
 import { Announcement } from '../models/Announcement.js';
 import { Score } from '../models/Score.js';
 import { Setting } from '../models/Setting.js';
+import { delCache } from '../utils/redis.js';
 /* ==========================================================================
    GRAND FINALE GLOBAL TOGGLE CONTROLLERS
    ========================================================================== */
@@ -151,6 +152,7 @@ export async function createAnnouncement(request, reply) {
         author: author || 'Carnival Admin 🎪',
         timestamp: new Date(),
     });
+    await delCache('cwc:announcements');
     return reply.status(201).send({
         message: 'Global announcement posted! 📢',
         announcement,
@@ -166,6 +168,7 @@ export async function deleteAnnouncement(request, reply) {
     if (!deleted) {
         return reply.status(404).send({ error: 'Not Found', message: 'Announcement not found' });
     }
+    await delCache('cwc:announcements');
     return reply.send({
         message: 'Announcement deleted successfully.',
         announcementId,
@@ -180,26 +183,53 @@ export async function grantAdvantage(request, reply) {
             message: 'Advantage name is required (e.g. Double Points, Extra Time, Skip, Golden Coin, Hint)',
         });
     }
-    const team = await Team.findById(teamId);
-    if (!team) {
-        return reply.status(404).send({ error: 'Not Found', message: 'Team not found' });
-    }
-    const existingAdv = team.advantages.find((a) => a.advantage.toLowerCase() === advantage.toLowerCase());
-    if (existingAdv) {
-        existingAdv.quantity += quantity;
-    }
-    else {
-        team.advantages.push({
-            advantage,
-            quantity,
-            grantedAt: new Date(),
+    const session = await mongoose.startSession();
+    let transactionStarted = false;
+    try {
+        try {
+            session.startTransaction();
+            transactionStarted = true;
+        }
+        catch {
+            // Standalone MongoDB fallback without replica set
+        }
+        const sessionOption = transactionStarted ? { session } : {};
+        const team = await Team.findById(teamId, null, sessionOption);
+        if (!team) {
+            if (transactionStarted)
+                await session.abortTransaction();
+            return reply.status(404).send({ error: 'Not Found', message: 'Team not found' });
+        }
+        const existingAdv = team.advantages.find((a) => a.advantage.toLowerCase() === advantage.toLowerCase());
+        if (existingAdv) {
+            existingAdv.quantity += quantity;
+        }
+        else {
+            team.advantages.push({
+                advantage,
+                quantity,
+                grantedAt: new Date(),
+            });
+        }
+        await team.save(sessionOption);
+        if (transactionStarted) {
+            await session.commitTransaction();
+        }
+        await delCache('cwc:leaderboard');
+        return reply.send({
+            message: `Granted advantage '${advantage}' (+${quantity}) to team '${team.teamName}'! 🎁`,
+            team,
         });
     }
-    await team.save();
-    return reply.send({
-        message: `Granted advantage '${advantage}' (+${quantity}) to team '${team.teamName}'! 🎁`,
-        team,
-    });
+    catch (error) {
+        if (transactionStarted) {
+            await session.abortTransaction();
+        }
+        throw error;
+    }
+    finally {
+        session.endSession();
+    }
 }
 export async function setTeamImmunity(request, reply) {
     const { teamId } = request.params;
@@ -252,6 +282,7 @@ export async function updateScoresBatch(request, reply) {
         }
         return { teamId: item.teamId, success: true };
     }));
+    await delCache('cwc:leaderboard');
     return reply.send({
         message: 'Batch score sheet updated successfully! 📊',
         updatedCount: results.length,
