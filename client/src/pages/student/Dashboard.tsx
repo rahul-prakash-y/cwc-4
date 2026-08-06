@@ -139,24 +139,27 @@ export const StudentDashboard: React.FC = () => {
   const sampleTask: TaskDetail = {
     id: 'task-day5',
     dayNumber: 5,
-    title: 'Mid-Season Arena Boss Fight: Real-Time Multiplayer Arena',
-    category: 'Boss Fight',
+    title: 'Mid-Season Arena Rapid Fire: Real-Time WebSockets Architecture',
+    category: 'Rapid Fire',
+    type: 'Rapid Fire',
     points: 500,
     duration: '4 Hours',
     startTime: '02:00 PM',
     endTime: '06:00 PM',
     deadline: '03h 42m 18s',
-    description: `Build and deploy a real-time multiplayer mini-game application.
-Requirements include:
-**1.** Fastify WebSockets for synchronized state.
-**2.** Framer Motion UI effects & live carnival point tracking.
-**3.** Public GitHub repo URL & Cloudinary video demonstration.`,
-    constraints: ['Max 4 members per team submission', 'Fastify / Node.js backend requirement'],
+    interactiveTimeLimit: 60,
+    mcqOptions: [
+      'A) socket.emit("join-room", roomName)',
+      'B) socket.broadcast.to(room).emit(event)',
+      'C) socket.on("connect_error", callback)',
+      'D) io.to(room).emit("SCORE_UPDATED", payload)',
+    ],
+    description: `Which Socket.io server-side call broadcasts an event to all clients in specified rooms? Select your answer card before the Rapid Fire timer expires!`,
+    constraints: ['Max 60 seconds per Rapid Fire attempt', 'Auto-submission enforced on timer expiration'],
     requirements: [
-      'Provide a public GitHub repository link with clean commits and documentation.',
-      'Demonstrate real-time WebSocket communication between at least 2 clients.',
-      'Upload a Cloudinary video demonstration or architectural PDF report.',
-      'Ensure smooth CSS/Framer Motion animations for player score updates.',
+      'Select Option A, B, C, or D.',
+      'Click "Lock In Card" to confirm your choice.',
+      'Submit your answer or let the 60s Rapid Fire timer auto-submit.',
     ],
   };
 

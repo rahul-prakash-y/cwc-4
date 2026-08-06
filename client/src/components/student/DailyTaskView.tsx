@@ -22,12 +22,14 @@ import { triggerCarnivalConfetti } from '../hero/ConfettiEffect';
 import { useDraftSave } from '../../hooks/useDraftSave';
 import { useJitterSubmit } from '../../hooks/useJitterSubmit';
 import { AdvantageAction } from './AdvantageAction';
+import { InteractiveTask, TaskType, TestCase } from './InteractiveTask';
 
 export interface TaskDetail {
   id: string;
   dayNumber: number;
   title: string;
   category: string;
+  type?: TaskType;
   points: number;
   duration: string;
   startTime: string;
@@ -37,6 +39,9 @@ export interface TaskDetail {
   constraints?: string[];
   requirements: string[];
   submissionTypesAllowed?: string[];
+  mcqOptions?: string[];
+  interactiveTimeLimit?: number;
+  testCases?: TestCase[];
 }
 
 interface DailyTaskViewProps {
@@ -280,6 +285,25 @@ export const DailyTaskView: React.FC<DailyTaskViewProps> = ({ task, onTaskSubmit
           </div>
         </div>
       </div>
+
+      {/* Interactive Task Widget Renderer (MCQ, Rapid Fire, Code Completion, Treasure Hunt, Puzzle) */}
+      {task.type &&
+        ['MCQ', 'Rapid Fire', 'Code Completion', 'Output Prediction', 'Treasure Hunt', 'Puzzle'].includes(task.type) && (
+          <div className="pt-4 border-t border-white/10">
+            <InteractiveTask
+              id={task.id}
+              title={task.title}
+              description={task.description}
+              type={task.type}
+              points={task.points}
+              mcqOptions={task.mcqOptions}
+              interactiveTimeLimit={task.interactiveTimeLimit}
+              testCases={task.testCases}
+              status={status}
+              onSuccessSubmitted={onTaskSubmitted}
+            />
+          </div>
+        )}
 
       {/* Code & Submission Input Form */}
       <AnimatePresence>
