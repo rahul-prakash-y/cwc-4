@@ -6,6 +6,7 @@ export interface UserPayload {
   userId: string;
   email: string;
   role: 'admin' | 'student';
+  isFirstLogin?: boolean;
   teamId?: string;
 }
 

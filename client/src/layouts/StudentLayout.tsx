@@ -1,13 +1,15 @@
 import React, { useState } from 'react';
 import { Outlet, Link, useLocation, Navigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Shield, LayoutDashboard, CheckSquare, Trophy, Zap, Ticket, ArrowLeft, Menu, X, Bell, LogOut } from 'lucide-react';
+import { Shield, LayoutDashboard, CheckSquare, Trophy, Zap, Ticket, ArrowLeft, Menu, X, Bell, LogOut, Settings as SettingsIcon } from 'lucide-react';
 import { AnnouncementToast } from '../components/common/AnnouncementToast';
+import { Settings } from '../components/student/Settings';
 import { useAuth } from '../context/AuthContext';
 
 export const StudentLayout: React.FC = () => {
   const location = useLocation();
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const { user, isAuthenticated, isLoading, logout } = useAuth();
 
   // If token check is complete and user is not logged in, redirect to login
@@ -24,6 +26,8 @@ export const StudentLayout: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-[#0B0A16] text-slate-100 flex font-sans">
+      <Settings isOpen={isSettingsOpen} onClose={() => setIsSettingsOpen(false)} />
+
       {/* Student Sidebar */}
       <aside
         className={`fixed lg:sticky top-0 left-0 z-40 w-64 h-screen bg-[#151329]/95 backdrop-blur-2xl border-r border-white/10 flex flex-col justify-between p-4 transition-transform duration-300 ${
@@ -82,6 +86,13 @@ export const StudentLayout: React.FC = () => {
         {/* Footer info & Exit */}
         <div className="pt-4 border-t border-white/10 space-y-2">
           <button
+            onClick={() => setIsSettingsOpen(true)}
+            className="w-full flex items-center gap-2 px-4 py-2.5 rounded-xl glass-card text-xs font-semibold text-carnival-gold hover:text-white hover:bg-carnival-gold/10 transition-all"
+          >
+            <SettingsIcon className="w-4 h-4" />
+            <span>Security & Settings</span>
+          </button>
+          <button
             onClick={logout}
             className="w-full flex items-center gap-2 px-4 py-2.5 rounded-xl glass-card text-xs font-semibold text-rose-400 hover:text-rose-300 hover:bg-rose-500/10 transition-all"
           >
@@ -122,12 +133,17 @@ export const StudentLayout: React.FC = () => {
               <Bell className="w-4 h-4" />
               <span className="absolute top-1 right-1 w-2 h-2 rounded-full bg-carnival-crimson animate-ping" />
             </button>
-            <div className="flex items-center gap-2 p-1.5 rounded-xl glass-card border-white/10">
+            <button
+              onClick={() => setIsSettingsOpen(true)}
+              className="flex items-center gap-2 p-1.5 rounded-xl glass-card border-white/10 hover:border-carnival-gold/50 transition-all text-left"
+              title="Click to open Settings & Change Password"
+            >
               <div className="w-7 h-7 rounded-lg bg-carnival-gold/20 text-carnival-gold flex items-center justify-center font-bold text-xs">
                 {user?.name ? user.name.slice(0, 2).toUpperCase() : 'AS'}
               </div>
               <span className="text-xs font-bold text-white hidden sm:inline">{user?.name || 'Aarav Sharma'}</span>
-            </div>
+              <SettingsIcon className="w-3.5 h-3.5 text-slate-400 ml-1 hidden sm:inline" />
+            </button>
           </div>
         </header>
 

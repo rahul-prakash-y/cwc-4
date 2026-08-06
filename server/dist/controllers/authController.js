@@ -6,12 +6,12 @@ import { sendCarnivalEmail } from '../utils/mailer.js';
 import { getRegistrationEmailHtml } from '../utils/emailTemplates.js';
 /**
  * Task 1: Register Team ("Carnival Ticket" Application)
- * Creates the leader user account and sets Team status to 'Pending'
+ * Creates the leader user account with standard default password and sets Team status to 'Pending'
  */
 export async function registerTeam(request, reply) {
     const { teamName, themeColor, logoUrl, residenceType, leader, members = [] } = request.body;
     // Validation
-    if (!teamName || !leader || !leader.name || !leader.email || !leader.password) {
+    if (!teamName || !leader || !leader.name || !leader.email) {
         return reply.status(400).send({
             error: 'Bad Request',
             message: 'Missing required team or leader information',
@@ -34,14 +34,17 @@ export async function registerTeam(request, reply) {
             message: 'A team with this carnival team name already exists.',
         });
     }
-    // Hash password with bcrypt
-    const passwordHash = await bcrypt.hash(leader.password, 10);
-    // Create Leader User account
+    // Set standard default password if not provided
+    const rawPassword = leader.password || 'CWC4-Student-2026';
+    // Hash default password with bcrypt
+    const passwordHash = await bcrypt.hash(rawPassword, 10);
+    // Create Leader User account with isFirstLogin: true
     const newUser = await User.create({
         name: leader.name.trim(),
         email: normalizedEmail,
         passwordHash,
         role: 'student',
+        isFirstLogin: true,
     });
     // Create Team Application with status 'Pending' (Carnival Ticket)
     const newTeam = await Team.create({
@@ -64,11 +67,12 @@ export async function registerTeam(request, reply) {
         advantages: [],
         immunity: false,
     });
-    // Generate JWT token
+    // Generate JWT token including isFirstLogin boolean flag
     const token = generateToken({
         userId: newUser._id.toString(),
         email: newUser.email,
         role: newUser.role,
+        isFirstLogin: newUser.isFirstLogin,
         teamId: newTeam._id.toString(),
     });
     // Asynchronously dispatch Team Registration Confirmation & Passcodes Email
@@ -89,6 +93,7 @@ export async function registerTeam(request, reply) {
             name: newUser.name,
             email: newUser.email,
             role: newUser.role,
+            isFirstLogin: newUser.isFirstLogin ?? true,
         },
         team: {
             id: newTeam._id,
@@ -102,7 +107,7 @@ export async function registerTeam(request, reply) {
 }
 /**
  * Task 1: User / Team Login
- * Authenticates email & password, returns JWT token and user/team data
+ * Authenticates email & password, returns JWT token and user/team data including isFirstLogin flag
  */
 export async function login(request, reply) {
     const { email, password } = request.body;
@@ -138,10 +143,12 @@ export async function login(request, reply) {
             ],
         });
     }
+    const isFirstLoginFlag = user.isFirstLogin ?? true;
     const token = generateToken({
         userId: user._id.toString(),
         email: user.email,
         role: user.role,
+        isFirstLogin: isFirstLoginFlag,
         teamId: team ? team._id.toString() : undefined,
     });
     return reply.send({
@@ -153,6 +160,7 @@ export async function login(request, reply) {
             email: user.email,
             role: user.role,
             avatarUrl: user.avatarUrl,
+            isFirstLogin: isFirstLoginFlag,
         },
         team: team
             ? {
@@ -165,6 +173,82 @@ export async function login(request, reply) {
                 immunity: team.immunity,
             }
             : null,
+    });
+}
+/**
+ * Task 2: Backend Change Password Route handler
+ * Accepts { oldPassword, newPassword }, verifies oldPassword with bcrypt, hashes newPassword,
+ * sets isFirstLogin: false, and returns updated user and fresh JWT.
+ */
+export async function changePassword(request, reply) {
+    if (!request.user) {
+        return reply.status(401).send({
+            error: 'Unauthorized',
+            message: 'Authentication required',
+        });
+    }
+    const { oldPassword, newPassword } = (request.body || {});
+    if (!oldPassword || !newPassword) {
+        return reply.status(400).send({
+            error: 'Bad Request',
+            message: 'Both old password and new password are required.',
+        });
+    }
+    const user = await User.findById(request.user.userId);
+    if (!user) {
+        return reply.status(404).send({
+            error: 'Not Found',
+            message: 'User not found.',
+        });
+    }
+    const isOldPasswordValid = await bcrypt.compare(oldPassword, user.passwordHash);
+    if (!isOldPasswordValid) {
+        return reply.status(400).send({
+            error: 'Bad Request',
+            message: 'Incorrect current password.',
+        });
+    }
+    if (newPassword.length < 6) {
+        return reply.status(400).send({
+            error: 'Bad Request',
+            message: 'New password must be at least 6 characters long.',
+        });
+    }
+    // Hash new password and set isFirstLogin to false
+    const newPasswordHash = await bcrypt.hash(newPassword, 10);
+    user.passwordHash = newPasswordHash;
+    user.isFirstLogin = false;
+    await user.save();
+    let teamId = request.user.teamId;
+    if (user.role === 'student' && !teamId) {
+        const team = await Team.findOne({
+            $or: [
+                { 'leader.userId': user._id },
+                { 'leader.email': user.email },
+                { 'members.email': user.email },
+            ],
+        });
+        if (team)
+            teamId = team._id.toString();
+    }
+    const newToken = generateToken({
+        userId: user._id.toString(),
+        email: user.email,
+        role: user.role,
+        isFirstLogin: false,
+        teamId,
+    });
+    return reply.send({
+        message: '🔑 Password updated successfully! Your arena account security setup is complete.',
+        token: newToken,
+        user: {
+            id: user._id,
+            name: user.name,
+            email: user.email,
+            role: user.role,
+            avatarUrl: user.avatarUrl,
+            isFirstLogin: false,
+        },
     });
 }
 /**
@@ -192,11 +276,13 @@ export async function registerAdmin(request, reply) {
         email: normalizedEmail,
         passwordHash,
         role: 'admin',
+        isFirstLogin: false,
     });
     const token = generateToken({
         userId: adminUser._id.toString(),
         email: adminUser.email,
         role: adminUser.role,
+        isFirstLogin: false,
     });
     return reply.status(201).send({
         message: 'Admin account created successfully 🎩',
@@ -206,6 +292,7 @@ export async function registerAdmin(request, reply) {
             name: adminUser.name,
             email: adminUser.email,
             role: adminUser.role,
+            isFirstLogin: false,
         },
     });
 }
@@ -237,6 +324,7 @@ export async function getMe(request, reply) {
             email: user.email,
             role: user.role,
             avatarUrl: user.avatarUrl,
+            isFirstLogin: user.isFirstLogin ?? true,
         },
         team,
     });

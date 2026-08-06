@@ -5,6 +5,7 @@ export interface User {
   name: string;
   email: string;
   role: 'student' | 'admin';
+  isFirstLogin?: boolean;
   teamId?: string;
   teamName?: string;
   ticketId?: string;
@@ -17,6 +18,7 @@ interface AuthContextType {
   isLoading: boolean;
   login: (token: string, user: User) => void;
   logout: () => void;
+  updateUser: (updatedFields: Partial<User>, newToken?: string) => void;
   register: (data: any) => Promise<any>;
   apiFetch: (endpoint: string, options?: RequestInit) => Promise<any>;
   isAuthenticated: boolean;
@@ -55,6 +57,19 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setUser(newUser);
     localStorage.setItem('cwc_jwt_token', newToken);
     localStorage.setItem('cwc_user', JSON.stringify(newUser));
+  };
+
+  const updateUser = (updatedFields: Partial<User>, newToken?: string) => {
+    setUser((prevUser) => {
+      if (!prevUser) return null;
+      const updated = { ...prevUser, ...updatedFields };
+      localStorage.setItem('cwc_user', JSON.stringify(updated));
+      return updated;
+    });
+    if (newToken) {
+      setToken(newToken);
+      localStorage.setItem('cwc_jwt_token', newToken);
+    }
   };
 
   const logout = () => {
@@ -116,6 +131,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     isLoading,
     login,
     logout,
+    updateUser,
     register,
     apiFetch,
     isAuthenticated: !!token && !!user,

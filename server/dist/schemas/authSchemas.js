@@ -59,3 +59,14 @@ export const registerAdminSchema = {
         },
     },
 };
+export const changePasswordSchema = {
+    body: {
+        type: 'object',
+        required: ['oldPassword', 'newPassword'],
+        additionalProperties: false,
+        properties: {
+            oldPassword: { type: 'string', minLength: 1, maxLength: 128 },
+            newPassword: { type: 'string', minLength: 6, maxLength: 128 },
+        },
+    },
+};

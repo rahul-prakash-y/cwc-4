@@ -23,6 +23,10 @@ const userSchema = new Schema({
         default: 'student',
         required: true,
     },
+    isFirstLogin: {
+        type: Boolean,
+        default: true,
+    },
     avatarUrl: {
         type: String,
         default: '',

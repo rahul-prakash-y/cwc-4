@@ -13,6 +13,8 @@ import { LoginPage } from './pages/LoginPage';
 import { LoginSelection } from './pages/public/LoginSelection';
 import { StudentDashboard } from './pages/StudentDashboard';
 import { AdminDashboard } from './pages/AdminDashboard';
+import { FirstLoginGuard } from './components/auth/FirstLoginGuard';
+import { ForcePasswordChange } from './pages/student/ForcePasswordChange';
 
 export default function App() {
   return (
@@ -31,9 +33,27 @@ export default function App() {
                 <Route path="login/admin" element={<LoginPage />} />
               </Route>
 
-              {/* Student Dashboard Layout (Protected) */}
-              <Route path="/student" element={<StudentLayout />}>
+              {/* Force Password Change (Distraction-free screen for First Login) */}
+              <Route
+                path="/student/setup-password"
+                element={
+                  <FirstLoginGuard>
+                    <ForcePasswordChange />
+                  </FirstLoginGuard>
+                }
+              />
+
+              {/* Student Dashboard Layout (Protected by FirstLoginGuard) */}
+              <Route
+                path="/student"
+                element={
+                  <FirstLoginGuard>
+                    <StudentLayout />
+                  </FirstLoginGuard>
+                }
+              >
                 <Route index element={<StudentDashboard />} />
+                <Route path="dashboard" element={<StudentDashboard />} />
                 <Route path="tasks" element={<StudentDashboard />} />
                 <Route path="advantages" element={<StudentDashboard />} />
                 <Route path="leaderboard" element={<StudentDashboard />} />
@@ -61,3 +81,4 @@ export default function App() {
     </AuthProvider>
   );
 }
+

@@ -7,6 +7,7 @@ export interface IUser {
   email: string;
   passwordHash: string;
   role: UserRole;
+  isFirstLogin?: boolean;
   avatarUrl?: string;
   createdAt?: Date;
   updatedAt?: Date;
@@ -40,6 +41,10 @@ const userSchema = new Schema<IUserDocument>(
       enum: ['admin', 'student'],
       default: 'student',
       required: true,
+    },
+    isFirstLogin: {
+      type: Boolean,
+      default: true,
     },
     avatarUrl: {
       type: String,
