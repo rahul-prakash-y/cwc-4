@@ -47,6 +47,18 @@ const envSchema = z.object({
   CLOUDINARY_API_KEY: z.string().optional().default(''),
   CLOUDINARY_API_SECRET: z.string().optional().default(''),
   REDIS_URL: z.string().optional().default('redis://127.0.0.1:6379'),
+  SMTP_HOST: z.string().optional().default('smtp.gmail.com'),
+  SMTP_PORT: z.preprocess(
+    (val) => (val === undefined || val === '' ? undefined : Number(val)),
+    z.number().optional().default(587)
+  ),
+  SMTP_SECURE: z.preprocess(
+    (val) => val === 'true' || val === true,
+    z.boolean().optional().default(false)
+  ),
+  SMTP_USER: z.string().optional().default(''),
+  SMTP_PASS: z.string().optional().default(''),
+  SMTP_FROM: z.string().optional().default('CWC Season 4 Carnival <noreply@cwcseason4.com>'),
 });
 
 const _env = envSchema.safeParse(rawEnv);

@@ -3,6 +3,8 @@ import bcrypt from 'bcryptjs';
 import { User } from '../models/User.js';
 import { Team } from '../models/Team.js';
 import { generateToken } from '../middleware/auth.js';
+import { sendEmail } from '../utils/mailer.js';
+import { getRegistrationEmailHtml } from '../utils/emailTemplates.js';
 
 interface RegisterTeamBody {
   teamName: string;
@@ -106,6 +108,22 @@ export async function registerTeam(request: FastifyRequest<{ Body: RegisterTeamB
     email: newUser.email,
     role: newUser.role,
     teamId: newTeam._id.toString(),
+  });
+
+  // Asynchronously dispatch Team Registration Confirmation & Passcodes Email
+  setImmediate(() => {
+    const html = getRegistrationEmailHtml({
+      teamName: newTeam.teamName,
+      leaderName: leader.name,
+      leaderEmail: normalizedEmail,
+      passcode: `CWC4-${newTeam._id.toString().substring(18).toUpperCase()}`,
+    });
+
+    sendEmail({
+      to: normalizedEmail,
+      subject: `🎪 Registration Confirmation & Passcode - Team ${newTeam.teamName}`,
+      html,
+    });
   });
 
   return reply.status(201).send({

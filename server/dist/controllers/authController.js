@@ -2,6 +2,8 @@ import bcrypt from 'bcryptjs';
 import { User } from '../models/User.js';
 import { Team } from '../models/Team.js';
 import { generateToken } from '../middleware/auth.js';
+import { sendEmail } from '../utils/mailer.js';
+import { getRegistrationEmailHtml } from '../utils/emailTemplates.js';
 /**
  * Task 1: Register Team ("Carnival Ticket" Application)
  * Creates the leader user account and sets Team status to 'Pending'
@@ -67,6 +69,20 @@ export async function registerTeam(request, reply) {
         email: newUser.email,
         role: newUser.role,
         teamId: newTeam._id.toString(),
+    });
+    // Asynchronously dispatch Team Registration Confirmation & Passcodes Email
+    setImmediate(() => {
+        const html = getRegistrationEmailHtml({
+            teamName: newTeam.teamName,
+            leaderName: leader.name,
+            leaderEmail: normalizedEmail,
+            passcode: `CWC4-${newTeam._id.toString().substring(18).toUpperCase()}`,
+        });
+        sendEmail({
+            to: normalizedEmail,
+            subject: `🎪 Registration Confirmation & Passcode - Team ${newTeam.teamName}`,
+            html,
+        });
     });
     return reply.status(201).send({
         message: '🎪 Carnival Ticket application submitted successfully! Team status: Pending Approval.',

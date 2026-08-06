@@ -11,6 +11,13 @@ import {
   broadcastNewAnnouncement,
   broadcastStatusChanged,
 } from '../socket.js';
+import { sendEmail, sendBackgroundEmailBatch } from '../utils/mailer.js';
+import {
+  getDailyTaskEmailHtml,
+  getAdvantageGrantedEmailHtml,
+  getStatusAlertEmailHtml,
+  getAnnouncementEmailHtml,
+} from '../utils/emailTemplates.js';
 
 /* ==========================================================================
    GRAND FINALE GLOBAL TOGGLE CONTROLLERS
@@ -142,6 +149,21 @@ export async function updateTeamStatus(
 
   await delCache('cwc:leaderboard');
 
+  // Asynchronously dispatch Status Alert Email to Team Leader
+  if (team.leader?.email) {
+    setImmediate(() => {
+      const html = getStatusAlertEmailHtml({
+        teamName: team.teamName,
+        status: team.status,
+      });
+      sendEmail({
+        to: team.leader.email,
+        subject: `🎪 Team Status Update: ${team.status} - ${team.teamName}`,
+        html,
+      });
+    });
+  }
+
   return reply.send({
     message: `Team status updated to ${status} successfully! 🎪`,
     team,
@@ -180,6 +202,21 @@ export async function eliminateTeam(
   });
 
   await delCache('cwc:leaderboard');
+
+  // Asynchronously dispatch Elimination Email Alert
+  if (team.leader?.email) {
+    setImmediate(() => {
+      const html = getStatusAlertEmailHtml({
+        teamName: team.teamName,
+        status: 'Eliminated',
+      });
+      sendEmail({
+        to: team.leader.email,
+        subject: `🚨 Urgent: Elimination Status Alert - Team ${team.teamName}`,
+        html,
+      });
+    });
+  }
 
   return reply.send({
     message: `Team '${team.teamName}' has been eliminated.`,
@@ -222,6 +259,33 @@ export async function createTask(
     startTime: new Date(startTime),
     endTime: new Date(endTime),
     visibility,
+  });
+
+  // Asynchronously broadcast Daily Task Live Alert Email to all registered Team Leaders
+  setImmediate(async () => {
+    try {
+      const teams = await Team.find({ 'leader.email': { $exists: true } });
+      const recipients = Array.from(
+        new Set(teams.map((t) => t.leader?.email).filter((e): e is string => Boolean(e)))
+      );
+      if (recipients.length > 0) {
+        const html = getDailyTaskEmailHtml({
+          taskTitle: newTask.title,
+          taskType: newTask.type,
+          points: newTask.points,
+          description: newTask.description,
+          startTime: newTask.startTime,
+          endTime: newTask.endTime,
+        });
+        sendBackgroundEmailBatch({
+          recipients,
+          subject: `🎯 Daily Task Alert: ${newTask.title} (+${newTask.points} PTS)`,
+          html,
+        });
+      }
+    } catch (err) {
+      console.error('Failed to broadcast daily task email alert:', err);
+    }
   });
 
   return reply.status(201).send({
@@ -285,13 +349,14 @@ interface CreateAnnouncementBody {
   message: string;
   pinned?: boolean;
   author?: string;
+  sendEmailAlert?: boolean;
 }
 
 export async function createAnnouncement(
   request: FastifyRequest<{ Body: CreateAnnouncementBody }>,
   reply: FastifyReply
 ) {
-  const { message, pinned = false, author } = request.body;
+  const { message, pinned = false, author, sendEmailAlert = false } = request.body;
 
   if (!message) {
     return reply.status(400).send({
@@ -300,10 +365,12 @@ export async function createAnnouncement(
     });
   }
 
+  const announcementAuthor = author || 'Carnival Admin 🎪';
+
   const announcement = await Announcement.create({
     message,
     pinned,
-    author: author || 'Carnival Admin 🎪',
+    author: announcementAuthor,
     timestamp: new Date(),
   });
 
@@ -318,9 +385,40 @@ export async function createAnnouncement(
     timestamp: announcement.timestamp,
   });
 
+  // Task 3: Trigger background email broadcast if sendEmailAlert is checked
+  if (sendEmailAlert) {
+    setImmediate(async () => {
+      try {
+        const teams = await Team.find({ 'leader.email': { $exists: true } });
+        const recipients = Array.from(
+          new Set(teams.map((t) => t.leader?.email).filter((e): e is string => Boolean(e)))
+        );
+
+        if (recipients.length > 0) {
+          const html = getAnnouncementEmailHtml({
+            announcementMessage: message,
+            author: announcementAuthor,
+            timestamp: announcement.timestamp,
+          });
+
+          sendBackgroundEmailBatch({
+            recipients,
+            subject: `📢 CWC Season 4 Announcement: ${message.slice(0, 50)}${message.length > 50 ? '...' : ''}`,
+            html,
+          });
+        }
+      } catch (err) {
+        console.error('Failed to trigger announcement background email alert:', err);
+      }
+    });
+  }
+
   return reply.status(201).send({
-    message: 'Global announcement posted! 📢',
+    message: sendEmailAlert
+      ? 'Global announcement posted & background email alerts dispatched! 📢📧'
+      : 'Global announcement posted! 📢',
     announcement,
+    emailAlertTriggered: Boolean(sendEmailAlert),
   });
 }
 
@@ -444,6 +542,26 @@ export async function grantAdvantage(
       teamName: team.teamName,
       type: 'ADVANTAGE_GRANTED',
     });
+
+    // Asynchronously send Advantage Granted Email Alert to Team Leader
+    if (team.leader?.email) {
+      const leaderEmail = team.leader.email;
+      const teamName = team.teamName;
+      const immunity = team.immunity;
+      setImmediate(() => {
+        const html = getAdvantageGrantedEmailHtml({
+          teamName,
+          advantage,
+          quantity,
+          immunity,
+        });
+        sendEmail({
+          to: leaderEmail,
+          subject: `🎁 Power-Up Granted: ${advantage} - Team ${teamName}`,
+          html,
+        });
+      });
+    }
 
     return reply.send({
       message: `Granted advantage '${advantage}' (+${quantity}) to team '${team.teamName}'! 🎁`,

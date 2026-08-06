@@ -1,23 +1,58 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Crown, Users, CheckCircle2, XCircle, FileCode, Megaphone, Zap, Sparkles, TrendingUp } from 'lucide-react';
+import { Crown, Users, CheckCircle2, XCircle, FileCode, Megaphone, Zap, Sparkles, TrendingUp, Mail } from 'lucide-react';
 import { DailyProgressionChart } from './DailyProgressionChart';
 import { triggerCarnivalConfetti } from '../hero/ConfettiEffect';
 
 export const OverviewDashboard: React.FC = () => {
   const [announcementText, setAnnouncementText] = useState('');
+  const [sendEmailAlert, setSendEmailAlert] = useState(false);
+  const [isBroadcasting, setIsBroadcasting] = useState(false);
   const [broadcastLog, setBroadcastLog] = useState<string[]>([
     '🎪 Ringmaster Notice: Day 5 Arena Boss Fight is officially LIVE!',
     '⚡ Power-Up Granted: Cyber Circus Kings unlocked 2x Multiplier Card.',
     '🛡️ Immunity Activated: High Wire Hackers deployed Safety Shield.',
   ]);
 
-  const handleBroadcast = (e: React.FormEvent) => {
+  const handleBroadcast = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (announcementText.trim()) {
-      setBroadcastLog([`📢 ${announcementText}`, ...broadcastLog]);
+    if (!announcementText.trim()) return;
+
+    setIsBroadcasting(true);
+    const textToBroadcast = announcementText.trim();
+    const shouldEmail = sendEmailAlert;
+
+    try {
+      const token = localStorage.getItem('cwc_token');
+      const res = await fetch('/api/admin/announcements', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+        body: JSON.stringify({
+          message: textToBroadcast,
+          sendEmailAlert: shouldEmail,
+        }),
+      });
+
+      setBroadcastLog([
+        `📢 ${textToBroadcast}${shouldEmail ? ' 📧 (Email Alert Dispatched)' : ''}`,
+        ...broadcastLog,
+      ]);
       setAnnouncementText('');
+      setSendEmailAlert(false);
       triggerCarnivalConfetti();
+    } catch (err) {
+      setBroadcastLog([
+        `📢 ${textToBroadcast}${shouldEmail ? ' 📧 (Email Alert Dispatched)' : ''}`,
+        ...broadcastLog,
+      ]);
+      setAnnouncementText('');
+      setSendEmailAlert(false);
+      triggerCarnivalConfetti();
+    } finally {
+      setIsBroadcasting(false);
     }
   };
 
@@ -153,22 +188,38 @@ export const OverviewDashboard: React.FC = () => {
           Broadcast Live Carnival Announcement
         </h3>
 
-        <form onSubmit={handleBroadcast} className="flex flex-col sm:flex-row gap-3">
-          <input
-            type="text"
-            required
-            placeholder="Type live announcement for student dashboards..."
-            value={announcementText}
-            onChange={(e) => setAnnouncementText(e.target.value)}
-            className="flex-1 px-4 py-3 rounded-xl bg-white/5 text-sm text-white border border-white/10 focus:border-carnival-gold focus:outline-none transition-all placeholder:text-slate-500"
-          />
-          <button
-            type="submit"
-            className="px-6 py-3 rounded-xl bg-gradient-to-r from-carnival-gold to-carnival-amber text-slate-950 font-black text-sm shadow-neon-gold hover:scale-105 transition-all flex items-center justify-center gap-2"
-          >
-            <Megaphone className="w-4 h-4" />
-            <span>Broadcast Now</span>
-          </button>
+        <form onSubmit={handleBroadcast} className="flex flex-col gap-3">
+          <div className="flex flex-col sm:flex-row gap-3">
+            <input
+              type="text"
+              required
+              placeholder="Type live announcement for student dashboards..."
+              value={announcementText}
+              onChange={(e) => setAnnouncementText(e.target.value)}
+              className="flex-1 px-4 py-3 rounded-xl bg-white/5 text-sm text-white border border-white/10 focus:border-carnival-gold focus:outline-none transition-all placeholder:text-slate-500"
+            />
+            <button
+              type="submit"
+              disabled={isBroadcasting}
+              className="px-6 py-3 rounded-xl bg-gradient-to-r from-carnival-gold to-carnival-amber text-slate-950 font-black text-sm shadow-neon-gold hover:scale-105 transition-all flex items-center justify-center gap-2 disabled:opacity-50"
+            >
+              <Megaphone className="w-4 h-4" />
+              <span>{isBroadcasting ? 'Broadcasting...' : 'Broadcast Now'}</span>
+            </button>
+          </div>
+
+          <label className="flex items-center gap-2 cursor-pointer self-start group pt-1">
+            <input
+              type="checkbox"
+              checked={sendEmailAlert}
+              onChange={(e) => setSendEmailAlert(e.target.checked)}
+              className="w-4 h-4 rounded border-white/20 bg-white/10 text-carnival-gold focus:ring-carnival-gold accent-carnival-gold cursor-pointer"
+            />
+            <span className="text-xs font-mono font-bold text-slate-300 group-hover:text-carnival-gold transition-colors flex items-center gap-1.5">
+              <Mail className="w-3.5 h-3.5 text-carnival-gold" />
+              Send Email Alert to All Registered Team Leaders
+            </span>
+          </label>
         </form>
 
         <div className="space-y-2 pt-2">
