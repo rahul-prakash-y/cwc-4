@@ -46,6 +46,11 @@ const teamSchema = new Schema({
         default: 'Pending',
         required: true,
     },
+    residenceType: {
+        type: String,
+        enum: ['Hosteller', 'Day Scholar'],
+        default: 'Hosteller',
+    },
     advantages: {
         type: [advantageSchema],
         default: [],

@@ -7,5 +7,7 @@ export * from './Submission.js';
 export * from './Setting.js';
 export * from './Gallery.js';
 export * from './Draft.js';
+export * from './Attendance.js';
+
 
 

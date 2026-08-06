@@ -22,6 +22,11 @@ import {
   createGalleryItem,
   deleteGalleryItem,
 } from '../controllers/galleryController.js';
+import {
+  getAttendance,
+  saveAttendance,
+  runAttendanceAutoChecker,
+} from '../controllers/attendanceController.js';
 import { authenticate, isAdmin } from '../middleware/auth.js';
 import {
   toggleGrandFinaleSchema,
@@ -53,6 +58,11 @@ export async function adminRoutes(fastify: FastifyInstance) {
   fastify.get('/teams/events', streamTeamStatusEvents);
   fastify.patch('/teams/:teamId/status', { schema: updateTeamStatusSchema }, updateTeamStatus);
   fastify.patch('/teams/:teamId/eliminate', { schema: eliminateTeamSchema }, eliminateTeam);
+
+  // Attendance Management & Auto-Checker
+  fastify.get('/attendance', getAttendance);
+  fastify.post('/attendance', saveAttendance);
+  fastify.post('/attendance/auto-check', runAttendanceAutoChecker);
 
   // Advantages & Immunities & Score Batch
   fastify.post('/teams/:teamId/advantages', { schema: grantAdvantageSchema }, grantAdvantage);

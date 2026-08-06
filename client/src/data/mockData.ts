@@ -289,4 +289,28 @@ export const MOCK_RULES: RuleCategory[] = [
       },
     ],
   },
+  {
+    id: 'attendance',
+    title: 'Attendance & Mandatory Presence Codex',
+    iconName: '📋',
+    description: 'Attendance thresholds and automatic danger flag policies for hostellers and day scholars.',
+    badgeText: 'Faculty Rule',
+    rules: [
+      {
+        title: 'Daily Minimum Member Presence Threshold',
+        content: 'Each team must have at least 50% of its registered members present for each daily arena session. Teams with less than 50% member presence on any single day are flagged for warning.',
+        tag: '50% Minimum',
+      },
+      {
+        title: 'Cumulative 60% Attendance Requirement',
+        content: 'Teams must maintain at least 60% overall member attendance across all 10 days of CWC Season 4. Teams dropping below 60% cumulative attendance are automatically flagged as "In Danger".',
+        tag: 'Danger Flag',
+      },
+      {
+        title: 'Hosteller & Day Scholar Verification Protocol',
+        content: 'Hostellers must complete physical lab check-in, while Day Scholars complete virtual daily presence check-in before 23:59 IST. Unexcused consecutive absences lead to status escalation.',
+        tag: 'Residency Check',
+      },
+    ],
+  },
 ];

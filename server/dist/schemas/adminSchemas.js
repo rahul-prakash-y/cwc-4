@@ -94,6 +94,16 @@ export const updateScoresBatchSchema = {
         },
     },
 };
+const taskTypeEnum = [
+    'Main',
+    'Special',
+    'MCQ',
+    'Rapid Fire',
+    'Code Completion',
+    'Output Prediction',
+    'Treasure Hunt',
+    'Puzzle',
+];
 export const createTaskSchema = {
     body: {
         type: 'object',
@@ -102,11 +112,26 @@ export const createTaskSchema = {
         properties: {
             title: { type: 'string', minLength: 1, maxLength: 200 },
             description: { type: 'string' },
-            type: { type: 'string', enum: ['Main', 'Special', 'MCQ'] },
+            type: { type: 'string', enum: taskTypeEnum },
             points: { type: 'number', minimum: 0 },
             startTime: { type: 'string' },
             endTime: { type: 'string' },
             visibility: { type: 'boolean' },
+            mcqOptions: { type: 'array', items: { type: 'string' } },
+            correctAnswer: { type: 'string' },
+            timeLimitSeconds: { type: 'number', minimum: 0 },
+            testCases: {
+                type: 'array',
+                items: {
+                    type: 'object',
+                    required: ['expectedOutput'],
+                    properties: {
+                        input: { type: 'string' },
+                        expectedOutput: { type: 'string' },
+                        isHidden: { type: 'boolean' },
+                    },
+                },
+            },
         },
     },
 };
@@ -124,11 +149,25 @@ export const updateTaskSchema = {
         properties: {
             title: { type: 'string', minLength: 1, maxLength: 200 },
             description: { type: 'string' },
-            type: { type: 'string', enum: ['Main', 'Special', 'MCQ'] },
+            type: { type: 'string', enum: taskTypeEnum },
             points: { type: 'number', minimum: 0 },
             startTime: { type: 'string' },
             endTime: { type: 'string' },
             visibility: { type: 'boolean' },
+            mcqOptions: { type: 'array', items: { type: 'string' } },
+            correctAnswer: { type: 'string' },
+            timeLimitSeconds: { type: 'number', minimum: 0 },
+            testCases: {
+                type: 'array',
+                items: {
+                    type: 'object',
+                    properties: {
+                        input: { type: 'string' },
+                        expectedOutput: { type: 'string' },
+                        isHidden: { type: 'boolean' },
+                    },
+                },
+            },
         },
     },
 };

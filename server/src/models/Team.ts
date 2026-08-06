@@ -29,6 +29,7 @@ export interface ITeam {
   themeColor: string;
   logoUrl?: string;
   status: TeamStatus;
+  residenceType?: 'Hosteller' | 'Day Scholar';
   advantages: IAdvantageItem[];
   immunity: boolean;
   createdAt?: Date;
@@ -98,6 +99,11 @@ const teamSchema = new Schema<ITeamDocument>(
       enum: ['Pending', 'Approved', 'Eliminated', 'Safe', 'Danger', 'Qualified'],
       default: 'Pending',
       required: true,
+    },
+    residenceType: {
+      type: String,
+      enum: ['Hosteller', 'Day Scholar'],
+      default: 'Hosteller',
     },
     advantages: {
       type: [advantageSchema],

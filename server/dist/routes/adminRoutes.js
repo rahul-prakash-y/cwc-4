@@ -1,5 +1,6 @@
 import { getAllTeams, updateTeamStatus, eliminateTeam, streamTeamStatusEvents, createTask, getAllTasksAdmin, updateTask, deleteTask, createAnnouncement, getAllAnnouncementsAdmin, deleteAnnouncement, grantAdvantage, setTeamImmunity, updateScoresBatch, getGrandFinale, toggleGrandFinale, } from '../controllers/adminController.js';
 import { getGalleryItems, createGalleryItem, deleteGalleryItem, } from '../controllers/galleryController.js';
+import { getAttendance, saveAttendance, runAttendanceAutoChecker, } from '../controllers/attendanceController.js';
 import { authenticate, isAdmin } from '../middleware/auth.js';
 import { toggleGrandFinaleSchema, updateTeamStatusSchema, eliminateTeamSchema, grantAdvantageSchema, setTeamImmunitySchema, updateScoresBatchSchema, createTaskSchema, updateTaskSchema, deleteTaskSchema, createAnnouncementSchema, deleteAnnouncementSchema, } from '../schemas/adminSchemas.js';
 import { deleteGallerySchema } from '../schemas/gallerySchemas.js';
@@ -15,6 +16,10 @@ export async function adminRoutes(fastify) {
     fastify.get('/teams/events', streamTeamStatusEvents);
     fastify.patch('/teams/:teamId/status', { schema: updateTeamStatusSchema }, updateTeamStatus);
     fastify.patch('/teams/:teamId/eliminate', { schema: eliminateTeamSchema }, eliminateTeam);
+    // Attendance Management & Auto-Checker
+    fastify.get('/attendance', getAttendance);
+    fastify.post('/attendance', saveAttendance);
+    fastify.post('/attendance/auto-check', runAttendanceAutoChecker);
     // Advantages & Immunities & Score Batch
     fastify.post('/teams/:teamId/advantages', { schema: grantAdvantageSchema }, grantAdvantage);
     fastify.post('/teams/:teamId/immunity', { schema: setTeamImmunitySchema }, setTeamImmunity);

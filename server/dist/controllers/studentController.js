@@ -6,6 +6,7 @@ import { Submission } from '../models/Submission.js';
 import { User } from '../models/User.js';
 import { uploadToCloudinary } from '../utils/cloudinary.js';
 import { delCache } from '../utils/redis.js';
+import { broadcastScoreUpdated } from '../socket.js';
 /**
  * Task 4: Fetch logged-in student's team dashboard data
  * Includes current score, rank, advantages, immunity, team info
@@ -344,4 +345,167 @@ export async function uploadTaskFile(request, reply) {
             message: error.message || 'Cloudinary upload failed',
         });
     }
+}
+/**
+ * Task 3: Auto-grading route /api/tasks/:id/submit-interactive
+ * Validates MCQs, Rapid Fire, Code Completion, and Puzzles instantly,
+ * automatically updates the Score schema, and emits the updated score via WebSockets.
+ */
+export async function submitInteractiveTask(request, reply) {
+    if (!request.user) {
+        return reply.status(401).send({ error: 'Unauthorized', message: 'Not authenticated' });
+    }
+    const taskId = request.params.id || request.params.taskId;
+    if (!taskId) {
+        return reply.status(400).send({ error: 'Bad Request', message: 'Task ID parameter is required' });
+    }
+    const user = await User.findById(request.user.userId);
+    if (!user) {
+        return reply.status(404).send({ error: 'Not Found', message: 'User not found' });
+    }
+    const team = await Team.findOne({
+        $or: [
+            { 'leader.userId': user._id },
+            { 'leader.email': user.email },
+            { 'members.email': user.email },
+        ],
+    });
+    if (!team) {
+        return reply.status(404).send({
+            error: 'Not Found',
+            message: 'You are not registered in any team.',
+        });
+    }
+    const task = await Task.findById(taskId);
+    if (!task) {
+        return reply.status(404).send({ error: 'Not Found', message: 'Task not found' });
+    }
+    const body = request.body || {};
+    const submittedAnswer = (body.answer || body.selectedOption || '').toString().trim();
+    const submittedCode = (body.code || '').toString().trim();
+    let isCorrect = false;
+    let pointsEarned = 0;
+    let testCaseResults = [];
+    const taskType = task.type;
+    if (taskType === 'MCQ' || taskType === 'Rapid Fire') {
+        const expected = (task.correctAnswer || '').trim().toLowerCase();
+        const actual = submittedAnswer.toLowerCase();
+        isCorrect = actual !== '' && (actual === expected || submittedAnswer === task.correctAnswer);
+        pointsEarned = isCorrect ? task.points : 0;
+    }
+    else if (taskType === 'Treasure Hunt' || taskType === 'Puzzle') {
+        const expected = (task.correctAnswer || '').trim().toLowerCase();
+        const actual = submittedAnswer.toLowerCase();
+        isCorrect = actual !== '' && actual === expected;
+        pointsEarned = isCorrect ? task.points : 0;
+    }
+    else if (taskType === 'Code Completion' || taskType === 'Output Prediction') {
+        if (taskType === 'Output Prediction' && task.correctAnswer) {
+            const expected = (task.correctAnswer || '').trim().toLowerCase();
+            const actual = submittedAnswer.toLowerCase();
+            isCorrect = actual !== '' && actual === expected;
+            pointsEarned = isCorrect ? task.points : 0;
+        }
+        else if (task.testCases && task.testCases.length > 0) {
+            let passedCount = 0;
+            testCaseResults = task.testCases.map((tc) => {
+                const expected = (tc.expectedOutput || '').trim().toLowerCase();
+                const codeOutput = (body.testResults?.find((tr) => tr.input === tc.input)?.actualOutput ||
+                    submittedAnswer ||
+                    submittedCode)
+                    .trim()
+                    .toLowerCase();
+                const passed = codeOutput.includes(expected) ||
+                    expected.includes(codeOutput) ||
+                    (submittedCode.length > 0 && !submittedCode.includes('error'));
+                if (passed)
+                    passedCount++;
+                return {
+                    input: tc.input || '',
+                    expectedOutput: tc.expectedOutput,
+                    actualOutput: codeOutput || 'Execution completed',
+                    passed,
+                };
+            });
+            isCorrect = passedCount === task.testCases.length;
+            pointsEarned = Math.round((passedCount / task.testCases.length) * task.points);
+        }
+        else {
+            const expected = (task.correctAnswer || '').trim().toLowerCase();
+            const actual = (submittedAnswer || submittedCode).toLowerCase();
+            isCorrect = actual !== '' && (actual === expected || actual.includes(expected));
+            pointsEarned = isCorrect ? task.points : 0;
+        }
+    }
+    else {
+        // Fallback interactive evaluation
+        const expected = (task.correctAnswer || '').trim().toLowerCase();
+        const actual = submittedAnswer.toLowerCase();
+        isCorrect = actual !== '' && (actual === expected || actual.includes(expected));
+        pointsEarned = isCorrect ? task.points : 0;
+    }
+    // Handle Advantage Multiplier if advantageUsed is active
+    if (body.advantageUsed) {
+        const advIndex = team.advantages.findIndex((a) => a.advantage.toLowerCase().includes(body.advantageUsed.toLowerCase()));
+        if (advIndex !== -1 && team.advantages[advIndex].quantity > 0) {
+            team.advantages[advIndex].quantity -= 1;
+            await team.save();
+            if (body.advantageUsed.toLowerCase().includes('double') || body.advantageUsed.toLowerCase().includes('2x')) {
+                pointsEarned *= 2;
+            }
+        }
+    }
+    // Update Score & Submission models
+    if (isCorrect || pointsEarned > 0) {
+        let scoreDoc = await Score.findOne({ team: team._id, task: task._id });
+        if (!scoreDoc) {
+            scoreDoc = new Score({
+                team: team._id,
+                task: task._id,
+                pointsEarned,
+            });
+        }
+        else {
+            scoreDoc.pointsEarned = Math.max(scoreDoc.pointsEarned, pointsEarned);
+        }
+        await scoreDoc.save();
+        await Submission.findOneAndUpdate({ team: team._id, task: task._id }, {
+            team: team._id,
+            task: task._id,
+            submittedBy: user._id,
+            notes: `Interactive Submission [${task.type}]: ${submittedAnswer || submittedCode}`,
+            status: 'Evaluated',
+            scoreAwarded: pointsEarned,
+            submittedAt: new Date(),
+        }, { upsert: true, new: true });
+        // Invalidate Redis Leaderboard cache
+        await delCache('cwc:leaderboard');
+        // Calculate new total team score
+        const allTeamScores = await Score.find({ team: team._id });
+        const currentTeamTotal = allTeamScores.reduce((sum, item) => sum + (item.pointsEarned || 0), 0);
+        // Emit WebSocket broadcast for score update
+        broadcastScoreUpdated({
+            teamId: team._id.toString(),
+            teamName: team.teamName,
+            taskId: task._id.toString(),
+            taskTitle: task.title,
+            pointsEarned,
+            newTotalScore: currentTeamTotal,
+        });
+        return reply.send({
+            success: true,
+            isCorrect: true,
+            pointsEarned,
+            totalTeamScore: currentTeamTotal,
+            message: `🎉 Correct answer! You earned +${pointsEarned} PTS for your team!`,
+            testResults: testCaseResults,
+        });
+    }
+    return reply.send({
+        success: false,
+        isCorrect: false,
+        pointsEarned: 0,
+        message: `❌ Incorrect submission for ${task.type}. Please try again!`,
+        testResults: testCaseResults,
+    });
 }

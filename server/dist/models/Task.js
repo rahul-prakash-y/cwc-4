@@ -12,7 +12,16 @@ const taskSchema = new Schema({
     },
     type: {
         type: String,
-        enum: ['Main', 'Special', 'MCQ'],
+        enum: [
+            'Main',
+            'Special',
+            'MCQ',
+            'Rapid Fire',
+            'Code Completion',
+            'Output Prediction',
+            'Treasure Hunt',
+            'Puzzle',
+        ],
         required: [true, 'Task type is required'],
     },
     points: {
@@ -32,6 +41,26 @@ const taskSchema = new Schema({
         type: Boolean,
         default: false,
     },
+    mcqOptions: {
+        type: [String],
+        default: [],
+    },
+    correctAnswer: {
+        type: String,
+        default: '',
+        trim: true,
+    },
+    timeLimitSeconds: {
+        type: Number,
+        default: 0,
+    },
+    testCases: [
+        {
+            input: { type: String, default: '' },
+            expectedOutput: { type: String, required: true },
+            isHidden: { type: Boolean, default: false },
+        },
+    ],
 }, {
     timestamps: true,
 });

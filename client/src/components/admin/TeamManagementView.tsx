@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Users, CheckCircle2, XCircle, Edit3, Shield, AlertTriangle, Search, Filter, Plus, Save, Trash2, X, Ticket, LayoutGrid, List, Gift } from 'lucide-react';
+import { Users, CheckCircle2, XCircle, Edit3, Shield, AlertTriangle, Search, Filter, Plus, Save, Trash2, X, Ticket, LayoutGrid, List, Gift, Calendar } from 'lucide-react';
 import { MOCK_TEAMS } from '../../data/mockData';
 import { TicketTeamCard } from '../common/TicketTeamCard';
 import { GrantAdvantageModal } from './GrantAdvantageModal';
+import { DailyAttendanceView } from './DailyAttendanceView';
 
 export interface ExtendedTeam {
   id: string;
@@ -21,7 +22,7 @@ export interface ExtendedTeam {
 }
 
 export const TeamManagementView: React.FC = () => {
-  const [viewMode, setViewMode] = useState<'tickets' | 'table'>('tickets');
+  const [viewMode, setViewMode] = useState<'tickets' | 'table' | 'attendance'>('tickets');
   const [isGrantModalOpen, setIsGrantModalOpen] = useState(false);
   const [teams, setTeams] = useState<ExtendedTeam[]>([
     ...MOCK_TEAMS.map((t, idx) => ({
@@ -153,75 +154,91 @@ export const TeamManagementView: React.FC = () => {
               <List className="w-3.5 h-3.5" />
               <span>Table</span>
             </button>
+
+            <button
+              onClick={() => setViewMode('attendance')}
+              className={`px-3 py-1.5 rounded-lg text-xs font-bold font-mono flex items-center gap-1.5 transition-all ${
+                viewMode === 'attendance'
+                  ? 'bg-gradient-to-r from-carnival-gold to-amber-400 text-slate-950 shadow-neon-gold font-black'
+                  : 'text-slate-400 hover:text-white'
+              }`}
+            >
+              <Calendar className="w-3.5 h-3.5" />
+              <span>Daily Attendance</span>
+            </button>
           </div>
         </div>
       </div>
 
+      {/* Render Daily Attendance Interface */}
+      {viewMode === 'attendance' ? (
+        <DailyAttendanceView />
+      ) : (
+        <>
+          {/* Filter and Search Bar */}
+          <div className="flex flex-col md:flex-row gap-4 items-center justify-between">
+            {/* Search */}
+            <div className="relative w-full md:w-80">
+              <Search className="w-4 h-4 absolute left-3 top-3.5 text-slate-400" />
+              <input
+                type="text"
+                placeholder="Search team or leader..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="w-full pl-9 pr-4 py-2.5 rounded-xl bg-white/5 border border-white/10 text-xs text-white focus:outline-none focus:border-carnival-cyan transition-all"
+              />
+            </div>
 
-      {/* Filter and Search Bar */}
-      <div className="flex flex-col md:flex-row gap-4 items-center justify-between">
-        {/* Search */}
-        <div className="relative w-full md:w-80">
-          <Search className="w-4 h-4 absolute left-3 top-3.5 text-slate-400" />
-          <input
-            type="text"
-            placeholder="Search team or leader..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full pl-9 pr-4 py-2.5 rounded-xl bg-white/5 border border-white/10 text-xs text-white focus:outline-none focus:border-carnival-cyan transition-all"
-          />
-        </div>
+            {/* Filter Pills */}
+            <div className="flex items-center gap-2 overflow-x-auto w-full md:w-auto pb-1 md:pb-0">
+              <span className="text-xs font-mono text-slate-400 flex items-center gap-1">
+                <Filter className="w-3.5 h-3.5" /> Filter:
+              </span>
+              {['All', 'Safe', 'Danger', 'Eliminated', 'Qualified', 'Approved', 'Pending'].map((filter) => (
+                <button
+                  key={filter}
+                  onClick={() => setStatusFilter(filter)}
+                  className={`px-3 py-1.5 rounded-xl text-xs font-mono font-bold transition-all ${
+                    statusFilter === filter
+                      ? 'bg-carnival-cyan text-slate-950 shadow-neon-cyan'
+                      : 'bg-white/5 text-slate-400 hover:text-white hover:bg-white/10'
+                  }`}
+                >
+                  {filter}
+                </button>
+              ))}
+            </div>
+          </div>
 
-        {/* Filter Pills */}
-        <div className="flex items-center gap-2 overflow-x-auto w-full md:w-auto pb-1 md:pb-0">
-          <span className="text-xs font-mono text-slate-400 flex items-center gap-1">
-            <Filter className="w-3.5 h-3.5" /> Filter:
-          </span>
-          {['All', 'Safe', 'Danger', 'Eliminated', 'Qualified', 'Approved', 'Pending'].map((filter) => (
-            <button
-              key={filter}
-              onClick={() => setStatusFilter(filter)}
-              className={`px-3 py-1.5 rounded-xl text-xs font-mono font-bold transition-all ${
-                statusFilter === filter
-                  ? 'bg-carnival-cyan text-slate-950 shadow-neon-cyan'
-                  : 'bg-white/5 text-slate-400 hover:text-white hover:bg-white/10'
-              }`}
-            >
-              {filter}
-            </button>
-          ))}
-        </div>
-      </div>
+          {/* 3D Physical Admission Ticket Cards Grid */}
+          {viewMode === 'tickets' ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {filteredTeams.map((team) => (
+                <TicketTeamCard
+                  key={team.id}
+                  team={{
+                    _id: team.id,
+                    teamName: team.name,
+                    leaderName: team.leaderName,
+                    leaderEmail: team.leaderEmail,
+                    members: [team.leaderName, 'Priya Patel', 'Rohan Gupta'].slice(0, team.membersCount),
+                    track: 'Full-Stack Web',
+                    totalPoints: team.points,
+                    status: team.status,
+                    immunity: team.rank <= 2,
+                    advantages: team.rank === 1 ? [{ advantage: 'Double Points' }] : [],
+                    repoUrl: 'https://github.com/cwc/arena',
+                  }}
+                  rank={team.rank}
+                  onStatusChange={(id, status) => handleUpdateStatus(id, status as ExtendedTeam['status'])}
+                />
+              ))}
+            </div>
+          ) : null}
 
-      {/* 3D Physical Admission Ticket Cards Grid */}
-      {viewMode === 'tickets' ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredTeams.map((team) => (
-            <TicketTeamCard
-              key={team.id}
-              team={{
-                _id: team.id,
-                teamName: team.name,
-                leaderName: team.leaderName,
-                leaderEmail: team.leaderEmail,
-                members: [team.leaderName, 'Priya Patel', 'Rohan Gupta'].slice(0, team.membersCount),
-                track: 'Full-Stack Web',
-                totalPoints: team.points,
-                status: team.status,
-                immunity: team.rank <= 2,
-                advantages: team.rank === 1 ? [{ advantage: 'Double Points' }] : [],
-                repoUrl: 'https://github.com/cwc/arena',
-              }}
-              rank={team.rank}
-              onStatusChange={(id, status) => handleUpdateStatus(id, status as ExtendedTeam['status'])}
-            />
-          ))}
-        </div>
-      ) : null}
-
-
-      {/* Data Table */}
-      <div className="glass-card rounded-2xl border border-white/10 overflow-hidden shadow-2xl">
+          {/* Data Table */}
+          {viewMode === 'table' ? (
+            <div className="glass-card rounded-2xl border border-white/10 overflow-hidden shadow-2xl">
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs font-mono">
             <thead>
@@ -345,6 +362,9 @@ export const TeamManagementView: React.FC = () => {
           </table>
         </div>
       </div>
+      ) : null}
+      </>
+      )}
 
       {/* Edit Modal */}
       <AnimatePresence>
