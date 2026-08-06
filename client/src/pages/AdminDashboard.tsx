@@ -1,10 +1,10 @@
 import React from 'react';
 import { useLocation, Link } from 'react-router-dom';
 import { Crown, Users, CheckSquare, Grid, Download, Image as ImageIcon } from 'lucide-react';
-import { OverviewDashboard } from '../components/admin/OverviewDashboard';
-import { TeamManagementView } from '../components/admin/TeamManagementView';
-import { TaskManagementView } from '../components/admin/TaskManagementView';
-import { ScoreSheetView } from '../components/admin/ScoreSheetView';
+import { Dashboard } from './admin/Dashboard';
+import { Teams } from './admin/Teams';
+import { Tasks } from './admin/Tasks';
+import { ScoreSheet } from '../components/admin/ScoreSheet';
 import { ExportModuleView } from '../components/admin/ExportModuleView';
 import { MediaDashboardView } from '../components/admin/MediaDashboardView';
 import { ChampionBanner } from '../components/common/ChampionBanner';
@@ -29,13 +29,13 @@ export const AdminDashboard: React.FC = () => {
       {/* Massive Champion Banner displayed when isGrandFinale is active */}
       <ChampionBanner />
 
-      {/* Top Tab Bar for fast navigation */}
+      {/* Top Navigation Bar */}
       <div className="flex items-center gap-2 overflow-x-auto pb-2 border-b border-white/10 max-w-7xl mx-auto">
         <Link
           to="/admin"
           className={`flex items-center gap-2 px-4 py-2.5 rounded-xl font-mono text-xs font-bold transition-all ${
             activeTab === 'overview'
-              ? 'bg-carnival-gold text-slate-950 shadow-neon-gold'
+              ? 'bg-carnival-gold text-slate-950 shadow-neon-gold font-black'
               : 'glass-card text-slate-300 hover:text-white'
           }`}
         >
@@ -59,7 +59,7 @@ export const AdminDashboard: React.FC = () => {
           to="/admin/teams"
           className={`flex items-center gap-2 px-4 py-2.5 rounded-xl font-mono text-xs font-bold transition-all ${
             activeTab === 'teams'
-              ? 'bg-carnival-cyan text-slate-950 shadow-neon-cyan'
+              ? 'bg-carnival-cyan text-slate-950 shadow-neon-cyan font-black'
               : 'glass-card text-slate-300 hover:text-white'
           }`}
         >
@@ -71,7 +71,7 @@ export const AdminDashboard: React.FC = () => {
           to="/admin/tasks"
           className={`flex items-center gap-2 px-4 py-2.5 rounded-xl font-mono text-xs font-bold transition-all ${
             activeTab === 'tasks'
-              ? 'bg-carnival-purple text-white shadow-neon-purple'
+              ? 'bg-carnival-purple text-white shadow-neon-purple font-black'
               : 'glass-card text-slate-300 hover:text-white'
           }`}
         >
@@ -104,14 +104,13 @@ export const AdminDashboard: React.FC = () => {
         </Link>
       </div>
 
-      {/* Render Active View */}
-      {activeTab === 'overview' && <OverviewDashboard />}
+      {/* Render Active Page / View */}
+      {activeTab === 'overview' && <Dashboard />}
       {activeTab === 'media' && <MediaDashboardView />}
-      {activeTab === 'teams' && <TeamManagementView />}
-      {activeTab === 'tasks' && <TaskManagementView />}
-      {activeTab === 'scores' && <ScoreSheetView />}
+      {activeTab === 'teams' && <Teams />}
+      {activeTab === 'tasks' && <Tasks />}
+      {activeTab === 'scores' && <ScoreSheet />}
       {activeTab === 'export' && <ExportModuleView />}
     </div>
   );
 };
-
