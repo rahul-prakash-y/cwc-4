@@ -1,25 +1,22 @@
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.Team = void 0;
-const mongoose_1 = require("mongoose");
-const advantageSchema = new mongoose_1.Schema({
+import { Schema, model } from 'mongoose';
+const advantageSchema = new Schema({
     advantage: { type: String, required: true },
     quantity: { type: Number, required: true, default: 1, min: 0 },
     grantedAt: { type: Date, default: Date.now },
 }, { _id: false });
-const leaderSchema = new mongoose_1.Schema({
+const leaderSchema = new Schema({
     name: { type: String, required: true, trim: true },
     email: { type: String, required: true, lowercase: true, trim: true },
     phone: { type: String, trim: true },
-    userId: { type: mongoose_1.Schema.Types.ObjectId, ref: 'User' },
+    userId: { type: Schema.Types.ObjectId, ref: 'User' },
 }, { _id: false });
-const memberSchema = new mongoose_1.Schema({
+const memberSchema = new Schema({
     name: { type: String, required: true, trim: true },
     email: { type: String, required: true, lowercase: true, trim: true },
     role: { type: String, trim: true, default: 'Member' },
-    userId: { type: mongoose_1.Schema.Types.ObjectId, ref: 'User' },
+    userId: { type: Schema.Types.ObjectId, ref: 'User' },
 }, { _id: false });
-const teamSchema = new mongoose_1.Schema({
+const teamSchema = new Schema({
     teamName: {
         type: String,
         required: [true, 'Team name is required'],
@@ -60,5 +57,5 @@ const teamSchema = new mongoose_1.Schema({
 }, {
     timestamps: true,
 });
-exports.Team = (0, mongoose_1.model)('Team', teamSchema);
-exports.default = exports.Team;
+export const Team = model('Team', teamSchema);
+export default Team;

@@ -1,43 +1,26 @@
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.getGrandFinale = getGrandFinale;
-exports.toggleGrandFinale = toggleGrandFinale;
-exports.getAllTeams = getAllTeams;
-exports.updateTeamStatus = updateTeamStatus;
-exports.eliminateTeam = eliminateTeam;
-exports.createTask = createTask;
-exports.getAllTasksAdmin = getAllTasksAdmin;
-exports.updateTask = updateTask;
-exports.deleteTask = deleteTask;
-exports.createAnnouncement = createAnnouncement;
-exports.getAllAnnouncementsAdmin = getAllAnnouncementsAdmin;
-exports.deleteAnnouncement = deleteAnnouncement;
-exports.grantAdvantage = grantAdvantage;
-exports.setTeamImmunity = setTeamImmunity;
-exports.updateScoresBatch = updateScoresBatch;
-const Team_js_1 = require("../models/Team.js");
-const Task_js_1 = require("../models/Task.js");
-const Announcement_js_1 = require("../models/Announcement.js");
-const Score_js_1 = require("../models/Score.js");
-const Setting_js_1 = require("../models/Setting.js");
+import { Team } from '../models/Team.js';
+import { Task } from '../models/Task.js';
+import { Announcement } from '../models/Announcement.js';
+import { Score } from '../models/Score.js';
+import { Setting } from '../models/Setting.js';
 /* ==========================================================================
    GRAND FINALE GLOBAL TOGGLE CONTROLLERS
    ========================================================================== */
-async function getGrandFinale(_request, reply) {
-    let settingDoc = await Setting_js_1.Setting.findOne({ key: 'isGrandFinale' });
+export async function getGrandFinale(_request, reply) {
+    let settingDoc = await Setting.findOne({ key: 'isGrandFinale' });
     if (!settingDoc) {
-        settingDoc = await Setting_js_1.Setting.create({ key: 'isGrandFinale', value: false });
+        settingDoc = await Setting.create({ key: 'isGrandFinale', value: false });
     }
     return reply.send({
         isGrandFinale: Boolean(settingDoc.value),
     });
 }
-async function toggleGrandFinale(request, reply) {
-    let settingDoc = await Setting_js_1.Setting.findOne({ key: 'isGrandFinale' });
+export async function toggleGrandFinale(request, reply) {
+    let settingDoc = await Setting.findOne({ key: 'isGrandFinale' });
     const newValue = request.body?.isGrandFinale !== undefined
         ? Boolean(request.body.isGrandFinale)
         : !Boolean(settingDoc?.value);
-    settingDoc = await Setting_js_1.Setting.findOneAndUpdate({ key: 'isGrandFinale' }, { value: newValue }, { upsert: true, new: true });
+    settingDoc = await Setting.findOneAndUpdate({ key: 'isGrandFinale' }, { value: newValue }, { upsert: true, new: true });
     return reply.send({
         message: `Grand Finale Mode is now ${newValue ? '🏆 ACTIVE (GOLD THEME)' : '🎪 STANDARD CARNIVAL'}`,
         isGrandFinale: Boolean(settingDoc?.value),
@@ -46,11 +29,11 @@ async function toggleGrandFinale(request, reply) {
 /* ==========================================================================
    TEAM MANAGEMENT CONTROLLERS
    ========================================================================== */
-async function getAllTeams(_request, reply) {
-    const teams = await Team_js_1.Team.find().lean();
+export async function getAllTeams(_request, reply) {
+    const teams = await Team.find().lean();
     // Aggregate scores for each team
     const teamsWithScores = await Promise.all(teams.map(async (team) => {
-        const scores = await Score_js_1.Score.find({ team: team._id });
+        const scores = await Score.find({ team: team._id });
         const totalPoints = scores.reduce((acc, curr) => acc + (curr.pointsEarned || 0), 0);
         return {
             ...team,
@@ -62,7 +45,7 @@ async function getAllTeams(_request, reply) {
         count: teamsWithScores.length,
     });
 }
-async function updateTeamStatus(request, reply) {
+export async function updateTeamStatus(request, reply) {
     const { teamId } = request.params;
     const { status } = request.body;
     if (!['Pending', 'Approved', 'Eliminated'].includes(status)) {
@@ -71,7 +54,7 @@ async function updateTeamStatus(request, reply) {
             message: 'Invalid status. Allowed values: Pending, Approved, Eliminated',
         });
     }
-    const team = await Team_js_1.Team.findByIdAndUpdate(teamId, { status }, { new: true, runValidators: true });
+    const team = await Team.findByIdAndUpdate(teamId, { status }, { new: true, runValidators: true });
     if (!team) {
         return reply.status(404).send({ error: 'Not Found', message: 'Team not found' });
     }
@@ -80,9 +63,9 @@ async function updateTeamStatus(request, reply) {
         team,
     });
 }
-async function eliminateTeam(request, reply) {
+export async function eliminateTeam(request, reply) {
     const { teamId } = request.params;
-    const team = await Team_js_1.Team.findByIdAndUpdate(teamId, { status: 'Eliminated' }, { new: true });
+    const team = await Team.findByIdAndUpdate(teamId, { status: 'Eliminated' }, { new: true });
     if (!team) {
         return reply.status(404).send({ error: 'Not Found', message: 'Team not found' });
     }
@@ -91,7 +74,7 @@ async function eliminateTeam(request, reply) {
         team,
     });
 }
-async function createTask(request, reply) {
+export async function createTask(request, reply) {
     const { title, description, type, points, startTime, endTime, visibility = false } = request.body;
     if (!title || !type || points === undefined || !startTime || !endTime) {
         return reply.status(400).send({
@@ -99,7 +82,7 @@ async function createTask(request, reply) {
             message: 'Missing required fields for task creation',
         });
     }
-    const newTask = await Task_js_1.Task.create({
+    const newTask = await Task.create({
         title,
         description: description || '',
         type,
@@ -113,18 +96,18 @@ async function createTask(request, reply) {
         task: newTask,
     });
 }
-async function getAllTasksAdmin(_request, reply) {
-    const tasks = await Task_js_1.Task.find().sort({ startTime: 1 });
+export async function getAllTasksAdmin(_request, reply) {
+    const tasks = await Task.find().sort({ startTime: 1 });
     return reply.send({ tasks });
 }
-async function updateTask(request, reply) {
+export async function updateTask(request, reply) {
     const { taskId } = request.params;
     const updateData = request.body;
     if (updateData.startTime)
         updateData.startTime = new Date(updateData.startTime);
     if (updateData.endTime)
         updateData.endTime = new Date(updateData.endTime);
-    const updatedTask = await Task_js_1.Task.findByIdAndUpdate(taskId, updateData, {
+    const updatedTask = await Task.findByIdAndUpdate(taskId, updateData, {
         new: true,
         runValidators: true,
     });
@@ -136,9 +119,9 @@ async function updateTask(request, reply) {
         task: updatedTask,
     });
 }
-async function deleteTask(request, reply) {
+export async function deleteTask(request, reply) {
     const { taskId } = request.params;
-    const deletedTask = await Task_js_1.Task.findByIdAndDelete(taskId);
+    const deletedTask = await Task.findByIdAndDelete(taskId);
     if (!deletedTask) {
         return reply.status(404).send({ error: 'Not Found', message: 'Task not found' });
     }
@@ -147,7 +130,7 @@ async function deleteTask(request, reply) {
         taskId,
     });
 }
-async function createAnnouncement(request, reply) {
+export async function createAnnouncement(request, reply) {
     const { message, pinned = false, author } = request.body;
     if (!message) {
         return reply.status(400).send({
@@ -155,7 +138,7 @@ async function createAnnouncement(request, reply) {
             message: 'Announcement message is required',
         });
     }
-    const announcement = await Announcement_js_1.Announcement.create({
+    const announcement = await Announcement.create({
         message,
         pinned,
         author: author || 'Carnival Admin 🎪',
@@ -166,13 +149,13 @@ async function createAnnouncement(request, reply) {
         announcement,
     });
 }
-async function getAllAnnouncementsAdmin(_request, reply) {
-    const announcements = await Announcement_js_1.Announcement.find().sort({ pinned: -1, createdAt: -1 });
+export async function getAllAnnouncementsAdmin(_request, reply) {
+    const announcements = await Announcement.find().sort({ pinned: -1, createdAt: -1 });
     return reply.send({ announcements });
 }
-async function deleteAnnouncement(request, reply) {
+export async function deleteAnnouncement(request, reply) {
     const { announcementId } = request.params;
-    const deleted = await Announcement_js_1.Announcement.findByIdAndDelete(announcementId);
+    const deleted = await Announcement.findByIdAndDelete(announcementId);
     if (!deleted) {
         return reply.status(404).send({ error: 'Not Found', message: 'Announcement not found' });
     }
@@ -181,7 +164,7 @@ async function deleteAnnouncement(request, reply) {
         announcementId,
     });
 }
-async function grantAdvantage(request, reply) {
+export async function grantAdvantage(request, reply) {
     const { teamId } = request.params;
     const { advantage, quantity = 1 } = request.body;
     if (!advantage) {
@@ -190,7 +173,7 @@ async function grantAdvantage(request, reply) {
             message: 'Advantage name is required (e.g. Double Points, Extra Time, Skip, Golden Coin, Hint)',
         });
     }
-    const team = await Team_js_1.Team.findById(teamId);
+    const team = await Team.findById(teamId);
     if (!team) {
         return reply.status(404).send({ error: 'Not Found', message: 'Team not found' });
     }
@@ -211,7 +194,7 @@ async function grantAdvantage(request, reply) {
         team,
     });
 }
-async function setTeamImmunity(request, reply) {
+export async function setTeamImmunity(request, reply) {
     const { teamId } = request.params;
     const { immunity } = request.body;
     if (typeof immunity !== 'boolean') {
@@ -220,7 +203,7 @@ async function setTeamImmunity(request, reply) {
             message: 'Immunity status (boolean true/false) is required',
         });
     }
-    const team = await Team_js_1.Team.findByIdAndUpdate(teamId, { immunity }, { new: true });
+    const team = await Team.findByIdAndUpdate(teamId, { immunity }, { new: true });
     if (!team) {
         return reply.status(404).send({ error: 'Not Found', message: 'Team not found' });
     }
@@ -229,7 +212,7 @@ async function setTeamImmunity(request, reply) {
         team,
     });
 }
-async function updateScoresBatch(request, reply) {
+export async function updateScoresBatch(request, reply) {
     const { scores } = request.body;
     if (!Array.isArray(scores)) {
         return reply.status(400).send({
@@ -246,15 +229,15 @@ async function updateScoresBatch(request, reply) {
         if (item.elimination)
             updateData.status = 'Eliminated';
         if (Object.keys(updateData).length > 0) {
-            await Team_js_1.Team.findByIdAndUpdate(item.teamId, updateData);
+            await Team.findByIdAndUpdate(item.teamId, updateData);
         }
-        let taskDoc = await Task_js_1.Task.findOne({ type: 'Main Task' });
+        let taskDoc = await Task.findOne({ type: 'Main Task' });
         if (!taskDoc) {
-            taskDoc = await Task_js_1.Task.findOne();
+            taskDoc = await Task.findOne();
         }
         if (taskDoc && item.teamId) {
             const totalPoints = (item.mainTaskScore || 0) + (item.specialTaskScore || 0);
-            await Score_js_1.Score.findOneAndUpdate({ team: item.teamId, task: taskDoc._id }, {
+            await Score.findOneAndUpdate({ team: item.teamId, task: taskDoc._id }, {
                 pointsEarned: totalPoints,
                 advantagesUsed: item.advantage ? [item.advantage] : [],
                 immunityStatus: item.immunity || false,

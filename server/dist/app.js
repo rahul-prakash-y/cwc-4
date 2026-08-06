@@ -1,20 +1,20 @@
-"use strict";
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.buildApp = buildApp;
-const fastify_1 = __importDefault(require("fastify"));
-const cors_1 = __importDefault(require("@fastify/cors"));
-const multipart_1 = __importDefault(require("@fastify/multipart"));
-const env_js_1 = require("./config/env.js");
-const errorHandler_js_1 = require("./plugins/errorHandler.js");
-const authRoutes_js_1 = require("./routes/authRoutes.js");
-const adminRoutes_js_1 = require("./routes/adminRoutes.js");
-const studentRoutes_js_1 = require("./routes/studentRoutes.js");
-function buildApp() {
-    const fastify = (0, fastify_1.default)({
-        logger: env_js_1.env.NODE_ENV === 'development'
+import Fastify from 'fastify';
+import cors from '@fastify/cors';
+import multipart from '@fastify/multipart';
+import { env } from './config/env.js';
+import { setupErrorHandler } from './plugins/errorHandler.js';
+import { authRoutes } from './routes/authRoutes.js';
+import { adminRoutes } from './routes/adminRoutes.js';
+import { studentRoutes } from './routes/studentRoutes.js';
+import fastifyStatic from '@fastify/static';
+import path from 'path';
+import { fileURLToPath } from 'url';
+import fs from 'fs';
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+export function buildApp() {
+    const fastify = Fastify({
+        logger: env.NODE_ENV === 'development'
             ? {
                 transport: {
                     target: 'pino-pretty',
@@ -27,19 +27,19 @@ function buildApp() {
             : true,
     });
     // Register CORS
-    fastify.register(cors_1.default, {
-        origin: env_js_1.env.CLIENT_ORIGIN || '*',
+    fastify.register(cors, {
+        origin: env.CLIENT_ORIGIN || '*',
         methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
         credentials: true,
     });
     // Register Multipart for Cloudinary Uploads
-    fastify.register(multipart_1.default, {
+    fastify.register(multipart, {
         limits: {
             fileSize: 10 * 1024 * 1024, // 10 MB file size limit
         },
     });
     // Setup Error Handler
-    (0, errorHandler_js_1.setupErrorHandler)(fastify);
+    setupErrorHandler(fastify);
     // Health check route
     fastify.get('/health', async () => {
         return {
@@ -64,8 +64,26 @@ function buildApp() {
         return { isGrandFinale: Boolean(settingDoc?.value) };
     });
     // Register Route Plugins
-    fastify.register(authRoutes_js_1.authRoutes, { prefix: '/api/v1/auth' });
-    fastify.register(adminRoutes_js_1.adminRoutes, { prefix: '/api/v1/admin' });
-    fastify.register(studentRoutes_js_1.studentRoutes, { prefix: '/api/v1/student' });
+    fastify.register(authRoutes, { prefix: '/api/v1/auth' });
+    fastify.register(adminRoutes, { prefix: '/api/v1/admin' });
+    fastify.register(studentRoutes, { prefix: '/api/v1/student' });
+    // Serve Frontend Static Files in Production (Render)
+    const clientDistPath = path.resolve(__dirname, '../../client/dist');
+    if (fs.existsSync(clientDistPath)) {
+        fastify.register(fastifyStatic, {
+            root: clientDistPath,
+            prefix: '/',
+            wildcard: false,
+        });
+        // SPA Routing Fallback: send index.html for non-API requests
+        fastify.setNotFoundHandler((request, reply) => {
+            if (request.raw.url?.startsWith('/api')) {
+                reply.status(404).send({ error: 'API route not found' });
+            }
+            else {
+                reply.sendFile('index.html');
+            }
+        });
+    }
     return fastify;
 }

@@ -1,16 +1,13 @@
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.Score = void 0;
-const mongoose_1 = require("mongoose");
-const scoreSchema = new mongoose_1.Schema({
+import { Schema, model } from 'mongoose';
+const scoreSchema = new Schema({
     team: {
-        type: mongoose_1.Schema.Types.ObjectId,
+        type: Schema.Types.ObjectId,
         ref: 'Team',
         required: [true, 'Team reference is required'],
         index: true,
     },
     task: {
-        type: mongoose_1.Schema.Types.ObjectId,
+        type: Schema.Types.ObjectId,
         ref: 'Task',
         required: [true, 'Task reference is required'],
         index: true,
@@ -34,5 +31,5 @@ const scoreSchema = new mongoose_1.Schema({
 });
 // Compound index to ensure unique score record per team per task
 scoreSchema.index({ team: 1, task: 1 }, { unique: true });
-exports.Score = (0, mongoose_1.model)('Score', scoreSchema);
-exports.default = exports.Score;
+export const Score = model('Score', scoreSchema);
+export default Score;

@@ -1,8 +1,5 @@
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.Announcement = void 0;
-const mongoose_1 = require("mongoose");
-const announcementSchema = new mongoose_1.Schema({
+import { Schema, model } from 'mongoose';
+const announcementSchema = new Schema({
     message: {
         type: String,
         required: [true, 'Announcement message is required'],
@@ -24,5 +21,5 @@ const announcementSchema = new mongoose_1.Schema({
 }, {
     timestamps: true,
 });
-exports.Announcement = (0, mongoose_1.model)('Announcement', announcementSchema);
-exports.default = exports.Announcement;
+export const Announcement = model('Announcement', announcementSchema);
+export default Announcement;

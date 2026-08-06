@@ -1,22 +1,19 @@
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.Submission = void 0;
-const mongoose_1 = require("mongoose");
-const submissionSchema = new mongoose_1.Schema({
+import { Schema, model } from 'mongoose';
+const submissionSchema = new Schema({
     team: {
-        type: mongoose_1.Schema.Types.ObjectId,
+        type: Schema.Types.ObjectId,
         ref: 'Team',
         required: [true, 'Team ID is required'],
         index: true,
     },
     task: {
-        type: mongoose_1.Schema.Types.ObjectId,
+        type: Schema.Types.ObjectId,
         ref: 'Task',
         required: [true, 'Task ID is required'],
         index: true,
     },
     submittedBy: {
-        type: mongoose_1.Schema.Types.ObjectId,
+        type: Schema.Types.ObjectId,
         ref: 'User',
         required: [true, 'Submitted by User ID is required'],
     },
@@ -62,5 +59,5 @@ const submissionSchema = new mongoose_1.Schema({
 });
 // Index to easily query team submissions per task
 submissionSchema.index({ team: 1, task: 1 });
-exports.Submission = (0, mongoose_1.model)('Submission', submissionSchema);
-exports.default = exports.Submission;
+export const Submission = model('Submission', submissionSchema);
+export default Submission;

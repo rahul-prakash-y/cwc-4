@@ -1,7 +1,4 @@
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.setupErrorHandler = setupErrorHandler;
-function setupErrorHandler(fastify) {
+export function setupErrorHandler(fastify) {
     fastify.setErrorHandler((error, _request, reply) => {
         fastify.log.error(error);
         let statusCode = error.statusCode || 500;

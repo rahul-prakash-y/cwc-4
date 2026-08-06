@@ -1,30 +1,27 @@
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.adminRoutes = adminRoutes;
-const adminController_js_1 = require("../controllers/adminController.js");
-const auth_js_1 = require("../middleware/auth.js");
-async function adminRoutes(fastify) {
+import { getAllTeams, updateTeamStatus, eliminateTeam, createTask, getAllTasksAdmin, updateTask, deleteTask, createAnnouncement, getAllAnnouncementsAdmin, deleteAnnouncement, grantAdvantage, setTeamImmunity, updateScoresBatch, getGrandFinale, toggleGrandFinale, } from '../controllers/adminController.js';
+import { authenticate, isAdmin } from '../middleware/auth.js';
+export async function adminRoutes(fastify) {
     // All admin routes require authentication and admin role
-    fastify.addHook('preHandler', auth_js_1.authenticate);
-    fastify.addHook('preHandler', auth_js_1.isAdmin);
+    fastify.addHook('preHandler', authenticate);
+    fastify.addHook('preHandler', isAdmin);
     // Grand Finale State Toggle
-    fastify.get('/grand-finale', adminController_js_1.getGrandFinale);
-    fastify.post('/grand-finale', adminController_js_1.toggleGrandFinale);
+    fastify.get('/grand-finale', getGrandFinale);
+    fastify.post('/grand-finale', toggleGrandFinale);
     // Teams Management
-    fastify.get('/teams', adminController_js_1.getAllTeams);
-    fastify.patch('/teams/:teamId/status', adminController_js_1.updateTeamStatus);
-    fastify.patch('/teams/:teamId/eliminate', adminController_js_1.eliminateTeam);
+    fastify.get('/teams', getAllTeams);
+    fastify.patch('/teams/:teamId/status', updateTeamStatus);
+    fastify.patch('/teams/:teamId/eliminate', eliminateTeam);
     // Advantages & Immunities & Score Batch
-    fastify.post('/teams/:teamId/advantages', adminController_js_1.grantAdvantage);
-    fastify.post('/teams/:teamId/immunity', adminController_js_1.setTeamImmunity);
-    fastify.post('/scores/batch', adminController_js_1.updateScoresBatch);
+    fastify.post('/teams/:teamId/advantages', grantAdvantage);
+    fastify.post('/teams/:teamId/immunity', setTeamImmunity);
+    fastify.post('/scores/batch', updateScoresBatch);
     // Daily Tasks Management
-    fastify.post('/tasks', adminController_js_1.createTask);
-    fastify.get('/tasks', adminController_js_1.getAllTasksAdmin);
-    fastify.put('/tasks/:taskId', adminController_js_1.updateTask);
-    fastify.delete('/tasks/:taskId', adminController_js_1.deleteTask);
+    fastify.post('/tasks', createTask);
+    fastify.get('/tasks', getAllTasksAdmin);
+    fastify.put('/tasks/:taskId', updateTask);
+    fastify.delete('/tasks/:taskId', deleteTask);
     // Global Announcements
-    fastify.post('/announcements', adminController_js_1.createAnnouncement);
-    fastify.get('/announcements', adminController_js_1.getAllAnnouncementsAdmin);
-    fastify.delete('/announcements/:announcementId', adminController_js_1.deleteAnnouncement);
+    fastify.post('/announcements', createAnnouncement);
+    fastify.get('/announcements', getAllAnnouncementsAdmin);
+    fastify.delete('/announcements/:announcementId', deleteAnnouncement);
 }

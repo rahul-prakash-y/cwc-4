@@ -6,6 +6,13 @@ import { setupErrorHandler } from './plugins/errorHandler.js';
 import { authRoutes } from './routes/authRoutes.js';
 import { adminRoutes } from './routes/adminRoutes.js';
 import { studentRoutes } from './routes/studentRoutes.js';
+import fastifyStatic from '@fastify/static';
+import path from 'path';
+import { fileURLToPath } from 'url';
+import fs from 'fs';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 export function buildApp(): FastifyInstance {
   const fastify = Fastify({
@@ -66,11 +73,29 @@ export function buildApp(): FastifyInstance {
     return { isGrandFinale: Boolean(settingDoc?.value) };
   });
 
-
   // Register Route Plugins
   fastify.register(authRoutes, { prefix: '/api/v1/auth' });
   fastify.register(adminRoutes, { prefix: '/api/v1/admin' });
   fastify.register(studentRoutes, { prefix: '/api/v1/student' });
+
+  // Serve Frontend Static Files in Production (Render)
+  const clientDistPath = path.resolve(__dirname, '../../client/dist');
+  if (fs.existsSync(clientDistPath)) {
+    fastify.register(fastifyStatic, {
+      root: clientDistPath,
+      prefix: '/',
+      wildcard: false,
+    });
+
+    // SPA Routing Fallback: send index.html for non-API requests
+    fastify.setNotFoundHandler((request, reply) => {
+      if (request.raw.url?.startsWith('/api')) {
+        reply.status(404).send({ error: 'API route not found' });
+      } else {
+        reply.sendFile('index.html');
+      }
+    });
+  }
 
   return fastify;
 }
