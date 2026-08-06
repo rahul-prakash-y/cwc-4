@@ -20,6 +20,7 @@ import { adminRoutes } from './routes/adminRoutes.js';
 import { studentRoutes } from './routes/studentRoutes.js';
 import { publicRoutes } from './routes/publicRoutes.js';
 import { galleryRoutes } from './routes/galleryRoutes.js';
+import { superadminRoutes } from './routes/superadminRoutes.js';
 import { getActiveSocketsCount } from './socket.js';
 
 
@@ -191,6 +192,8 @@ export function buildApp(): FastifyInstance {
   fastify.register(authRoutes, { prefix: '/api/auth' });
   fastify.register(adminRoutes, { prefix: '/api/v1/admin' });
   fastify.register(adminRoutes, { prefix: '/api/admin' });
+  fastify.register(superadminRoutes, { prefix: '/api/v1/superadmin' });
+  fastify.register(superadminRoutes, { prefix: '/api/superadmin' });
   fastify.register(studentRoutes, { prefix: '/api/v1/student' });
   fastify.register(studentRoutes, { prefix: '/api/student' });
   fastify.register(studentRoutes, { prefix: '/api' });

@@ -32,6 +32,7 @@ export interface ITeam {
   residenceType?: 'Hosteller' | 'Day Scholar';
   advantages: IAdvantageItem[];
   immunity: boolean;
+  isBlocked?: boolean;
   createdAt?: Date;
   updatedAt?: Date;
 }
@@ -110,6 +111,10 @@ const teamSchema = new Schema<ITeamDocument>(
       default: [],
     },
     immunity: {
+      type: Boolean,
+      default: false,
+    },
+    isBlocked: {
       type: Boolean,
       default: false,
     },

@@ -1,6 +1,6 @@
 import { Schema, model, Document, Model } from 'mongoose';
 
-export type UserRole = 'admin' | 'student';
+export type UserRole = 'admin' | 'student' | 'superadmin';
 
 export interface IUser {
   name: string;
@@ -8,6 +8,7 @@ export interface IUser {
   passwordHash: string;
   role: UserRole;
   isFirstLogin?: boolean;
+  isBlocked?: boolean;
   avatarUrl?: string;
   createdAt?: Date;
   updatedAt?: Date;
@@ -38,13 +39,17 @@ const userSchema = new Schema<IUserDocument>(
     },
     role: {
       type: String,
-      enum: ['admin', 'student'],
+      enum: ['student', 'admin', 'superadmin'],
       default: 'student',
       required: true,
     },
     isFirstLogin: {
       type: Boolean,
       default: true,
+    },
+    isBlocked: {
+      type: Boolean,
+      default: false,
     },
     avatarUrl: {
       type: String,

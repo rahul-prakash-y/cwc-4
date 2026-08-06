@@ -4,8 +4,9 @@ export interface User {
   id: string;
   name: string;
   email: string;
-  role: 'student' | 'admin';
+  role: 'student' | 'admin' | 'superadmin';
   isFirstLogin?: boolean;
+  isBlocked?: boolean;
   teamId?: string;
   teamName?: string;
   ticketId?: string;
@@ -23,6 +24,7 @@ interface AuthContextType {
   apiFetch: (endpoint: string, options?: RequestInit) => Promise<any>;
   isAuthenticated: boolean;
   isAdmin: boolean;
+  isSuperAdmin: boolean;
   isStudent: boolean;
 }
 
@@ -117,9 +119,19 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       headers,
     });
 
-    if (response.status === 401) {
-      // Token expired or invalid
-      logout();
+    if (response.status === 401 || response.status === 403) {
+      const cloned = response.clone();
+      try {
+        const body = await cloned.json();
+        if (body.message?.toLowerCase().includes('blocked')) {
+          logout();
+          window.location.href = '/login?blocked=true';
+        } else if (response.status === 401) {
+          logout();
+        }
+      } catch {
+        if (response.status === 401) logout();
+      }
     }
 
     return response;
@@ -135,7 +147,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     register,
     apiFetch,
     isAuthenticated: !!token && !!user,
-    isAdmin: user?.role === 'admin',
+    isAdmin: user?.role === 'admin' || user?.role === 'superadmin',
+    isSuperAdmin: user?.role === 'superadmin',
     isStudent: user?.role === 'student',
   };
 

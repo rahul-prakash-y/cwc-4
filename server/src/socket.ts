@@ -80,6 +80,30 @@ export function broadcastFinaleTriggered(payload: { isGrandFinale: boolean }): v
   }
 }
 
+export function disconnectUserSockets(targetId: string): void {
+  if (!ioInstance) return;
+
+  const socketId = activeStudents.get(targetId);
+  if (socketId) {
+    const socket = ioInstance.sockets.sockets.get(socketId);
+    if (socket) {
+      socket.emit('ACCOUNT_BLOCKED', {
+        message: 'Your account/team has been blocked by SuperAdmin.',
+        timestamp: new Date().toISOString(),
+      });
+      socket.disconnect(true);
+    }
+    activeStudents.delete(targetId);
+    socketToStudent.delete(socketId);
+  }
+
+  // Broadcast to room
+  ioInstance.to(`team-${targetId}`).to(`user-${targetId}`).emit('ACCOUNT_BLOCKED', {
+    message: 'Your account/team has been blocked by SuperAdmin.',
+    timestamp: new Date().toISOString(),
+  });
+}
+
 
 export function getActiveSocketsCount(): number {
   return activeStudents.size;

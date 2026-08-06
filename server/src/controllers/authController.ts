@@ -190,6 +190,13 @@ export async function login(request: FastifyRequest<{ Body: LoginBody }>, reply:
     });
   }
 
+  if (user.isBlocked) {
+    return reply.status(403).send({
+      error: 'Forbidden',
+      message: 'Account has been blocked by SuperAdmin. Access revoked.',
+    });
+  }
+
   // Find associated team if student
   let team = null;
   if (user.role === 'student') {
@@ -200,6 +207,13 @@ export async function login(request: FastifyRequest<{ Body: LoginBody }>, reply:
         { 'members.email': normalizedEmail },
       ],
     });
+
+    if (team?.isBlocked) {
+      return reply.status(403).send({
+        error: 'Forbidden',
+        message: 'Your team account has been blocked by SuperAdmin. Access revoked.',
+      });
+    }
   }
 
   const isFirstLoginFlag = user.isFirstLogin ?? true;

@@ -91,6 +91,56 @@ export const AdminLayout: React.FC = () => {
               );
             })}
           </nav>
+
+          {/* Task 4: SuperAdmin Controls Section - Rendered ONLY if user.role === 'superadmin' */}
+          {user?.role === 'superadmin' && (
+            <div className="mt-6 pt-4 border-t border-purple-500/20">
+              <div className="text-[10px] font-mono uppercase text-purple-400 font-bold tracking-wider px-4 mb-2 flex items-center gap-1.5">
+                <ShieldAlert className="w-3.5 h-3.5 text-purple-400" />
+                <span>SuperAdmin Controls</span>
+              </div>
+              <nav className="space-y-1">
+                <Link
+                  to="/admin/superadmin?tab=logs"
+                  onClick={() => setSidebarOpen(false)}
+                  className={`flex items-center gap-3 px-4 py-2.5 rounded-xl text-xs font-bold transition-all ${
+                    location.pathname.includes('/admin/superadmin') && location.search.includes('tab=logs')
+                      ? 'bg-gradient-to-r from-purple-600 to-indigo-600 text-white shadow-neon-purple font-black'
+                      : 'text-purple-300 hover:text-white hover:bg-purple-500/10'
+                  }`}
+                >
+                  <span className="text-sm">📜</span>
+                  <span>Audit Logs</span>
+                </Link>
+
+                <Link
+                  to="/admin/superadmin?tab=security"
+                  onClick={() => setSidebarOpen(false)}
+                  className={`flex items-center gap-3 px-4 py-2.5 rounded-xl text-xs font-bold transition-all ${
+                    location.pathname.includes('/admin/superadmin') && (location.search.includes('tab=security') || !location.search)
+                      ? 'bg-gradient-to-r from-rose-600 to-pink-600 text-white shadow-[0_0_15px_rgba(225,29,72,0.4)] font-black'
+                      : 'text-purple-300 hover:text-white hover:bg-purple-500/10'
+                  }`}
+                >
+                  <span className="text-sm">🛡️</span>
+                  <span>Security Center</span>
+                </Link>
+
+                <Link
+                  to="/admin/superadmin?tab=admins"
+                  onClick={() => setSidebarOpen(false)}
+                  className={`flex items-center gap-3 px-4 py-2.5 rounded-xl text-xs font-bold transition-all ${
+                    location.pathname.includes('/admin/superadmin') && location.search.includes('tab=admins')
+                      ? 'bg-gradient-to-r from-amber-500 to-yellow-500 text-slate-950 shadow-neon-gold font-black'
+                      : 'text-purple-300 hover:text-white hover:bg-purple-500/10'
+                  }`}
+                >
+                  <span className="text-sm">👑</span>
+                  <span>Admin Management</span>
+                </Link>
+              </nav>
+            </div>
+          )}
         </div>
 
         {/* Footer info & Exit */}
@@ -100,7 +150,7 @@ export const AdminLayout: React.FC = () => {
             className="w-full flex items-center gap-2 px-4 py-2.5 rounded-xl glass-card text-xs font-semibold text-rose-400 hover:text-rose-300 hover:bg-rose-500/10 transition-all"
           >
             <LogOut className="w-4 h-4" />
-            <span>Logout Admin</span>
+            <span>Logout {user?.role === 'superadmin' ? 'SuperAdmin' : 'Admin'}</span>
           </button>
           <Link
             to="/"
@@ -125,8 +175,12 @@ export const AdminLayout: React.FC = () => {
             </button>
             <h1 className="font-extrabold text-lg text-white font-mono flex items-center gap-2">
               <span>Admin Arena Control Center</span>
-              <span className="text-xs px-2 py-0.5 rounded-full bg-carnival-crimson text-white font-bold font-sans">
-                SUPERADMIN
+              <span className={`text-xs px-2.5 py-0.5 rounded-full font-bold font-sans ${
+                user?.role === 'superadmin'
+                  ? 'bg-gradient-to-r from-purple-600 via-pink-600 to-rose-600 text-white shadow-neon-purple animate-pulse'
+                  : 'bg-carnival-crimson text-white'
+              }`}>
+                {user?.role === 'superadmin' ? '⚡ SUPERADMIN' : 'ADMIN'}
               </span>
             </h1>
           </div>

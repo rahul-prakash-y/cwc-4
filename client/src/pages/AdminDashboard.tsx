@@ -8,13 +8,17 @@ import { ScoreSheet } from '../components/admin/ScoreSheet';
 import { Export } from './admin/Export';
 import { Media } from './admin/Media';
 import { Attendance } from './admin/Attendance';
+import { SuperAdminDashboard } from './admin/SuperAdminDashboard';
 import { ChampionBanner } from '../components/common/ChampionBanner';
+import { useAuth } from '../context/AuthContext';
 
 export const AdminDashboard: React.FC = () => {
   const location = useLocation();
+  const { user } = useAuth();
 
   // Determine active view tab based on current path
   const getTabFromPath = () => {
+    if (location.pathname.includes('/admin/superadmin')) return 'superadmin';
     if (location.pathname.includes('/admin/attendance')) return 'attendance';
     if (location.pathname.includes('/admin/media')) return 'media';
     if (location.pathname.includes('/admin/teams')) return 'teams';
@@ -44,6 +48,20 @@ export const AdminDashboard: React.FC = () => {
           <Crown className="w-4 h-4" />
           <span>Overview</span>
         </Link>
+
+        {user?.role === 'superadmin' && (
+          <Link
+            to="/admin/superadmin"
+            className={`flex items-center gap-2 px-4 py-2.5 rounded-xl font-mono text-xs font-bold transition-all ${
+              activeTab === 'superadmin'
+                ? 'bg-gradient-to-r from-purple-600 via-pink-600 to-rose-600 text-white shadow-neon-purple font-black'
+                : 'glass-card text-purple-300 hover:text-white border-purple-500/30'
+            }`}
+          >
+            <span>⚡</span>
+            <span>SuperAdmin Hub</span>
+          </Link>
+        )}
 
         <Link
           to="/admin/attendance"
@@ -119,6 +137,7 @@ export const AdminDashboard: React.FC = () => {
       </div>
 
       {/* Render Active Page / View */}
+      {activeTab === 'superadmin' && <SuperAdminDashboard />}
       {activeTab === 'overview' && <Dashboard />}
       {activeTab === 'attendance' && <Attendance />}
       {activeTab === 'media' && <Media />}
