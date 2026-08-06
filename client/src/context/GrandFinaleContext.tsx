@@ -22,7 +22,7 @@ export const GrandFinaleProvider: React.FC<{ children: React.ReactNode }> = ({ c
 
   const fetchStatus = async () => {
     try {
-      const res = await fetch('http://localhost:5000/api/v1/settings/grand-finale');
+      const res = await fetch('/api/v1/settings/grand-finale');
       if (res.ok) {
         const data = await res.json();
         const active = Boolean(data.isGrandFinale);
