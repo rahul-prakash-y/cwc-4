@@ -27,6 +27,7 @@ import { TeamProgress } from '../../components/student/TeamProgress';
 import { AdvantagesLocker } from '../../components/student/AdvantagesLocker';
 import { LiveLeaderboardTable, LeaderboardTeam } from '../../components/dashboard/LiveLeaderboardTable';
 import { ChampionBanner } from '../../components/common/ChampionBanner';
+import { AdvantageGrantedToast, AdvantageGrantedPayload } from '../../components/common/AdvantageGrantedToast';
 import { MOCK_TEAMS, MOCK_TIMELINE } from '../../data/mockData';
 
 export const StudentDashboard: React.FC = () => {
@@ -168,6 +169,34 @@ Requirements include:
     if (el) el.scrollIntoView({ behavior: 'smooth' });
   };
 
+  const handleRealtimeAdvantage = (payload: AdvantageGrantedPayload) => {
+    if (payload.immunity) {
+      setAdvantages((prev) => [
+        ...prev,
+        {
+          id: `adv-${Date.now()}`,
+          name: 'Immunity Shield',
+          icon: '🛡️',
+          type: 'Shield',
+          status: 'active',
+          description: 'Shields team against elimination on 1 missed sprint.',
+        },
+      ]);
+    } else if (payload.advantage) {
+      setAdvantages((prev) => [
+        ...prev,
+        {
+          id: `adv-${Date.now()}`,
+          name: payload.advantage,
+          icon: payload.advantage.toLowerCase().includes('coin') ? '🪙' : payload.advantage.toLowerCase().includes('time') ? '⏳' : '⚡',
+          type: payload.advantage,
+          status: 'active',
+          description: `Admin granted perk: ${payload.advantage}`,
+        },
+      ]);
+    }
+  };
+
   const currentPath = location.pathname;
 
   return (
@@ -181,6 +210,7 @@ Requirements include:
       }`}
     >
       <ChampionBanner />
+      <AdvantageGrantedToast onAdvantageReceived={handleRealtimeAdvantage} />
 
       {/* TASK 1: Student Top Bar */}
       <section id="overview-section">

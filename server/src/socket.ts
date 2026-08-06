@@ -62,6 +62,15 @@ export function broadcastStatusChanged(payload: any): void {
   }
 }
 
+export function broadcastAdvantageGranted(payload: any): void {
+  if (ioInstance) {
+    ioInstance.to(GLOBAL_ROOM).to(STUDENT_ROOM).to(ADMIN_ROOM).emit('ADVANTAGE_GRANTED', {
+      timestamp: new Date().toISOString(),
+      ...payload,
+    });
+  }
+}
+
 export function getActiveSocketsCount(): number {
   return activeStudents.size;
 }

@@ -21,6 +21,7 @@ import {
 import { triggerCarnivalConfetti } from '../hero/ConfettiEffect';
 import { useDraftSave } from '../../hooks/useDraftSave';
 import { useJitterSubmit } from '../../hooks/useJitterSubmit';
+import { AdvantageAction } from './AdvantageAction';
 
 export interface TaskDetail {
   id: string;
@@ -271,6 +272,11 @@ export const DailyTaskView: React.FC<DailyTaskViewProps> = ({ task, onTaskSubmit
                 {lastSavedTime ? `Last saved at: ${lastSavedTime}` : 'Saving changes automatically to localStorage & API...'}
               </div>
             </div>
+
+            {/* Task 3: Apply Advantage Menu Component */}
+            {status !== 'Eliminated' && (
+              <AdvantageAction taskId={task.id} />
+            )}
           </div>
         </div>
       </div>

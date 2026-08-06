@@ -7,6 +7,7 @@ import {
   submitInteractiveTask,
   uploadTaskFile,
   useAdvantage,
+  applyAdvantage,
 } from '../controllers/studentController.js';
 import { verifyJWT, isStudent } from '../middleware/auth.js';
 import { submitTaskSchema, saveDraftSchema, useAdvantageSchema } from '../schemas/studentSchemas.js';
@@ -31,6 +32,9 @@ export async function studentRoutes(fastify: FastifyInstance) {
 
   // Interactive Task Auto-Grading Routes
   fastify.post('/tasks/:id/submit-interactive', submitInteractiveTask);
+
+  // Apply Advantage to specific task
+  fastify.post('/tasks/:id/apply-advantage', applyAdvantage);
 
   // Use / Deduct Advantage
   fastify.post('/advantages/use', { schema: useAdvantageSchema }, useAdvantage);

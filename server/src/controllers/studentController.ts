@@ -719,3 +719,169 @@ export async function submitInteractiveTask(
   });
 }
 
+/**
+ * Task 2 & Task 3: Apply Advantage for a specific task (/api/student/tasks/:id/apply-advantage)
+ * Verifies team ownership of advantage, applies effect, and decrements inventory.
+ */
+export async function applyAdvantage(
+  request: FastifyRequest<{
+    Params: { id?: string; taskId?: string };
+    Body: { advantage?: string; advantageType?: string };
+  }>,
+  reply: FastifyReply
+) {
+  if (!request.user) {
+    return reply.status(401).send({ error: 'Unauthorized', message: 'Not authenticated' });
+  }
+
+  const taskId = request.params.id || request.params.taskId;
+  if (!taskId) {
+    return reply.status(400).send({ error: 'Bad Request', message: 'Task ID parameter is required' });
+  }
+
+  const { advantage, advantageType } = request.body || {};
+  const requestedAdv = (advantage || advantageType || '').trim();
+
+  if (!requestedAdv) {
+    return reply.status(400).send({
+      error: 'Bad Request',
+      message: 'Advantage name is required (e.g. Double Points, Extra Time, Skip Question, Golden Coin, Hint Card, Bonus Question)',
+    });
+  }
+
+  // Find user & team
+  const user = await User.findById(request.user.userId);
+  if (!user) {
+    return reply.status(404).send({ error: 'Not Found', message: 'User not found' });
+  }
+
+  const team = await Team.findOne({
+    $or: [
+      { 'leader.userId': user._id },
+      { 'leader.email': user.email },
+      { 'members.email': user.email },
+    ],
+  });
+
+  if (!team) {
+    return reply.status(404).send({ error: 'Not Found', message: 'Team not found' });
+  }
+
+  // Check if team owns this advantage or immunity
+  const isImmunityReq = requestedAdv.toLowerCase().includes('immunity');
+  let advIndex = -1;
+
+  if (!isImmunityReq) {
+    advIndex = team.advantages.findIndex(
+      (a) => a.advantage.toLowerCase() === requestedAdv.toLowerCase() ||
+             a.advantage.toLowerCase().includes(requestedAdv.toLowerCase()) ||
+             requestedAdv.toLowerCase().includes(a.advantage.toLowerCase())
+    );
+
+    if (advIndex === -1 || team.advantages[advIndex].quantity <= 0) {
+      return reply.status(400).send({
+        error: 'Bad Request',
+        message: `Your team does not own any available '${requestedAdv}' advantage. Inventory quantity is 0.`,
+      });
+    }
+  } else if (!team.immunity) {
+    return reply.status(400).send({
+      error: 'Bad Request',
+      message: 'Your team does not own Immunity protection.',
+    });
+  }
+
+  // Find task
+  let task = null;
+  if (mongoose.Types.ObjectId.isValid(taskId)) {
+    task = await Task.findById(taskId);
+  }
+
+  // Apply effect logic
+  let effect: any = {
+    type: requestedAdv,
+    appliedAt: new Date().toISOString(),
+  };
+
+  const advLower = requestedAdv.toLowerCase();
+  if (advLower.includes('time') || advLower.includes('extra time')) {
+    effect.extendedTimeMinutes = 45;
+    effect.badgeText = '⏳ Extra Time Active (+45 Mins Extension)';
+    effect.message = 'Task deadline extended by +45 minutes!';
+  } else if (advLower.includes('hint') || advLower.includes('hint card')) {
+    effect.hintText = task?.correctAnswer
+      ? `💡 Architectural Clue: Expected pattern keyword starts with "${task.correctAnswer.slice(0, 3)}..."`
+      : '💡 Architectural Clue: Leverage asynchronous Redis cache invalidation & non-blocking WebSocket broadcasts for optimal performance.';
+    effect.badgeText = '💡 Hint Card Revealed';
+    effect.message = 'Architectural hint revealed successfully!';
+  } else if (advLower.includes('double') || advLower.includes('points') || advLower.includes('multiplier')) {
+    effect.doublePointsMultiplier = 2;
+    effect.badgeText = '⚡ 2x Double Points Multiplier Active';
+    effect.message = '2x Double Points Multiplier applied to task submission!';
+  } else if (advLower.includes('skip')) {
+    effect.skipPass = true;
+    effect.badgeText = 'Pass Constraint Pass Active';
+    effect.message = 'Skip Pass applied! 1 task constraint bypassed.';
+  } else if (advLower.includes('coin') || advLower.includes('golden')) {
+    effect.bonusScore = 100;
+    effect.badgeText = '🪙 Golden Coin (+100 PTS)';
+    effect.message = 'Golden Coin applied! +100 bonus points added.';
+  } else if (advLower.includes('bonus')) {
+    effect.bonusChallengeUnlocked = true;
+    effect.badgeText = '🎁 Side Quest Ticket Unlocked';
+    effect.message = 'Bonus Question Side Quest unlocked!';
+  } else {
+    effect.badgeText = `⚡ ${requestedAdv} Active`;
+    effect.message = `Advantage '${requestedAdv}' applied successfully!`;
+  }
+
+  // Decrement inventory
+  if (advIndex !== -1) {
+    team.advantages[advIndex].quantity -= 1;
+    if (team.advantages[advIndex].quantity <= 0) {
+      team.advantages.splice(advIndex, 1);
+    }
+  }
+
+  await team.save();
+
+  // If task valid, record advantage in Score record
+  if (task) {
+    let scoreDoc = await Score.findOne({ team: team._id, task: task._id });
+    if (!scoreDoc) {
+      scoreDoc = new Score({
+        team: team._id,
+        task: task._id,
+        pointsEarned: effect.bonusScore || 0,
+        advantagesUsed: [requestedAdv],
+      });
+    } else {
+      if (effect.bonusScore) scoreDoc.pointsEarned += effect.bonusScore;
+      if (!scoreDoc.advantagesUsed.includes(requestedAdv)) {
+        scoreDoc.advantagesUsed.push(requestedAdv);
+      }
+    }
+    await scoreDoc.save();
+  }
+
+  await delCache('cwc:leaderboard');
+
+  broadcastScoreUpdated({
+    teamId: team._id.toString(),
+    teamName: team.teamName,
+    taskId: task?._id?.toString() || taskId,
+    advantageApplied: requestedAdv,
+    type: 'ADVANTAGE_APPLIED',
+  });
+
+  return reply.send({
+    success: true,
+    message: effect.message,
+    advantage: requestedAdv,
+    effect,
+    advantagesRemaining: team.advantages,
+    immunity: team.immunity,
+  });
+}
+
+

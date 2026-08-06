@@ -10,6 +10,7 @@ import {
   broadcastScoreUpdated,
   broadcastNewAnnouncement,
   broadcastStatusChanged,
+  broadcastAdvantageGranted,
 } from '../socket.js';
 import { sendEmail, sendBackgroundEmailBatch } from '../utils/mailer.js';
 import {
@@ -579,10 +580,18 @@ export async function grantAdvantage(
     await delCache('cwc:leaderboard');
 
     // Broadcast WebSocket event for advantage grant
+    broadcastAdvantageGranted({
+      teamId: team._id.toString(),
+      teamName: team.teamName,
+      advantage: effectiveAdvantage,
+      quantity,
+      advantages: team.advantages,
+      immunity: team.immunity,
+    });
     broadcastStatusChanged({
       teamId: team._id.toString(),
       teamName: team.teamName,
-      advantage,
+      advantage: effectiveAdvantage,
       quantity,
       advantages: team.advantages,
       immunity: team.immunity,
