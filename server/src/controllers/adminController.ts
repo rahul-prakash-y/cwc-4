@@ -69,36 +69,67 @@ export async function getAllTeams(_request: FastifyRequest, reply: FastifyReply)
   });
 }
 
+import { EventEmitter } from 'events';
+
+export const teamBroadcaster = new EventEmitter();
+teamBroadcaster.setMaxListeners(100);
+
+export async function streamTeamStatusEvents(_request: FastifyRequest, reply: FastifyReply) {
+  reply.raw.setHeader('Content-Type', 'text/event-stream');
+  reply.raw.setHeader('Cache-Control', 'no-cache');
+  reply.raw.setHeader('Connection', 'keep-alive');
+  reply.raw.setHeader('Access-Control-Allow-Origin', '*');
+
+  const onStatusChange = (data: any) => {
+    reply.raw.write(`data: ${JSON.stringify(data)}\n\n`);
+  };
+
+  teamBroadcaster.on('status-changed', onStatusChange);
+
+  _request.raw.on('close', () => {
+    teamBroadcaster.off('status-changed', onStatusChange);
+  });
+}
+
 export async function updateTeamStatus(
   request: FastifyRequest<{
     Params: { teamId: string };
-    Body: { status: 'Pending' | 'Approved' | 'Eliminated' };
+    Body: { status: 'Pending' | 'Approved' | 'Eliminated' | 'Safe' | 'Danger' | 'Qualified' };
   }>,
   reply: FastifyReply
 ) {
   const { teamId } = request.params;
   const { status } = request.body;
 
-  if (!mongoose.Types.ObjectId.isValid(teamId)) {
-    return reply.status(400).send({ error: 'Bad Request', message: 'Invalid Team ID' });
-  }
-
-  if (!['Pending', 'Approved', 'Eliminated'].includes(status)) {
+  const validStatuses = ['Pending', 'Approved', 'Eliminated', 'Safe', 'Danger', 'Qualified'];
+  if (!validStatuses.includes(status)) {
     return reply.status(400).send({
       error: 'Bad Request',
-      message: 'Invalid status. Allowed values: Pending, Approved, Eliminated',
+      message: `Invalid status. Allowed values: ${validStatuses.join(', ')}`,
     });
   }
 
-  const team = await Team.findByIdAndUpdate(
-    teamId,
-    { status },
-    { new: true, runValidators: true }
-  );
+  let team = null;
+  if (mongoose.Types.ObjectId.isValid(teamId)) {
+    team = await Team.findByIdAndUpdate(teamId, { status }, { new: true, runValidators: true });
+  }
+  if (!team) {
+    team = await Team.findOneAndUpdate({ teamName: teamId }, { status }, { new: true, runValidators: true });
+  }
 
   if (!team) {
     return reply.status(404).send({ error: 'Not Found', message: 'Team not found' });
   }
+
+  // Broadcast status change to connected frontend clients
+  teamBroadcaster.emit('status-changed', {
+    teamId: team._id.toString(),
+    teamName: team.teamName,
+    status: team.status,
+    timestamp: new Date().toISOString(),
+  });
+
+  await delCache('cwc:leaderboard');
 
   return reply.send({
     message: `Team status updated to ${status} successfully! 🎪`,
@@ -112,19 +143,26 @@ export async function eliminateTeam(
 ) {
   const { teamId } = request.params;
 
-  if (!mongoose.Types.ObjectId.isValid(teamId)) {
-    return reply.status(400).send({ error: 'Bad Request', message: 'Invalid Team ID' });
+  let team = null;
+  if (mongoose.Types.ObjectId.isValid(teamId)) {
+    team = await Team.findByIdAndUpdate(teamId, { status: 'Eliminated' }, { new: true });
   }
-
-  const team = await Team.findByIdAndUpdate(
-    teamId,
-    { status: 'Eliminated' },
-    { new: true }
-  );
+  if (!team) {
+    team = await Team.findOneAndUpdate({ teamName: teamId }, { status: 'Eliminated' }, { new: true });
+  }
 
   if (!team) {
     return reply.status(404).send({ error: 'Not Found', message: 'Team not found' });
   }
+
+  teamBroadcaster.emit('status-changed', {
+    teamId: team._id.toString(),
+    teamName: team.teamName,
+    status: 'Eliminated',
+    timestamp: new Date().toISOString(),
+  });
+
+  await delCache('cwc:leaderboard');
 
   return reply.send({
     message: `Team '${team.teamName}' has been eliminated.`,

@@ -26,24 +26,30 @@ export const TicketTeamCard: React.FC<TicketTeamCardProps> = ({ team, rank, onSt
       case 'Safe':
         return (
           <span className="px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 text-[10px] font-mono font-bold flex items-center gap-1">
-            <CheckCircle2 className="w-3 h-3" /> SAFE PASS
+            <CheckCircle2 className="w-3 h-3 text-emerald-400" /> SAFE PASS
           </span>
         );
       case 'Danger':
         return (
-          <span className="px-2.5 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/40 text-[10px] font-mono font-bold flex items-center gap-1">
-            <AlertTriangle className="w-3 h-3" /> DANGER ZONE
+          <span className="px-2.5 py-0.5 rounded-full bg-orange-500/20 text-orange-300 border border-orange-500/40 text-[10px] font-mono font-bold flex items-center gap-1 animate-pulse">
+            <AlertTriangle className="w-3 h-3 text-orange-400" /> DANGER ZONE
           </span>
         );
       case 'Eliminated':
         return (
           <span className="px-2.5 py-0.5 rounded-full bg-rose-500/20 text-rose-300 border border-rose-500/40 text-[10px] font-mono font-bold flex items-center gap-1">
-            <XCircle className="w-3 h-3" /> ELIMINATED
+            <XCircle className="w-3 h-3 text-rose-400" /> ELIMINATED
+          </span>
+        );
+      case 'Qualified':
+        return (
+          <span className="px-2.5 py-0.5 rounded-full bg-blue-500/20 text-blue-300 border border-blue-500/40 text-[10px] font-mono font-bold flex items-center gap-1">
+            <Award className="w-3 h-3 text-blue-400" /> QUALIFIED
           </span>
         );
       default:
         return (
-          <span className="px-2.5 py-0.5 rounded-full bg-blue-500/20 text-blue-300 border border-blue-500/40 text-[10px] font-mono font-bold">
+          <span className="px-2.5 py-0.5 rounded-full bg-purple-500/20 text-purple-300 border border-purple-500/40 text-[10px] font-mono font-bold">
             PENDING
           </span>
         );
@@ -171,24 +177,30 @@ export const TicketTeamCard: React.FC<TicketTeamCardProps> = ({ team, rank, onSt
             )}
 
             {onStatusChange && (
-              <div className="flex items-center gap-2">
+              <div className="grid grid-cols-2 gap-1.5 pt-1">
                 <button
-                  onClick={() => onStatusChange(team._id, 'Approved')}
-                  className="flex-1 py-1 rounded-lg bg-emerald-500/20 text-emerald-300 hover:bg-emerald-500/30 text-[10px] font-mono font-bold border border-emerald-500/30"
+                  onClick={() => onStatusChange(team._id, 'Safe')}
+                  className="py-1 px-1.5 rounded-lg bg-emerald-500/20 text-emerald-300 hover:bg-emerald-500/40 text-[9px] font-mono font-bold border border-emerald-500/40 transition-all text-center"
                 >
-                  Safe
+                  🟢 Safe
                 </button>
                 <button
                   onClick={() => onStatusChange(team._id, 'Danger')}
-                  className="flex-1 py-1 rounded-lg bg-amber-500/20 text-amber-300 hover:bg-amber-500/30 text-[10px] font-mono font-bold border border-amber-500/30"
+                  className="py-1 px-1.5 rounded-lg bg-orange-500/20 text-orange-300 hover:bg-orange-500/40 text-[9px] font-mono font-bold border border-orange-500/40 transition-all text-center"
                 >
-                  Danger
+                  🟠 Danger
                 </button>
                 <button
                   onClick={() => onStatusChange(team._id, 'Eliminated')}
-                  className="flex-1 py-1 rounded-lg bg-rose-500/20 text-rose-300 hover:bg-rose-500/30 text-[10px] font-mono font-bold border border-rose-500/30"
+                  className="py-1 px-1.5 rounded-lg bg-rose-500/20 text-rose-300 hover:bg-rose-500/40 text-[9px] font-mono font-bold border border-rose-500/40 transition-all text-center"
                 >
-                  Eliminate
+                  🔴 Eliminated
+                </button>
+                <button
+                  onClick={() => onStatusChange(team._id, 'Qualified')}
+                  className="py-1 px-1.5 rounded-lg bg-blue-500/20 text-blue-300 hover:bg-blue-500/40 text-[9px] font-mono font-bold border border-blue-500/40 transition-all text-center"
+                >
+                  🔵 Qualified
                 </button>
               </div>
             )}

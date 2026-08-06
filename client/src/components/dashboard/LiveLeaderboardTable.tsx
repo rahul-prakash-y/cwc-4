@@ -155,16 +155,18 @@ export const LiveLeaderboardTable: React.FC<LiveLeaderboardTableProps> = ({
             <tr className="text-[11px] font-mono font-bold text-slate-400 uppercase tracking-wider px-4">
               <th className="py-2 px-4">Rank & Trend</th>
               <th className="py-2 px-4">Team</th>
-              <th className="py-2 px-4 text-center">Played (P)</th>
-              <th className="py-2 px-4 text-center">Wins (W)</th>
+              <th className="py-2 px-4 text-center">Status</th>
+              <th className="py-2 px-4 text-center">P</th>
+              <th className="py-2 px-4 text-center">W</th>
               <th className="py-2 px-4 text-center">Streak</th>
               <th className="py-2 px-4 text-right">Points (PTS)</th>
             </tr>
           </thead>
           <tbody>
             <AnimatePresence>
-              {filteredTeams.map((team) => {
+              {filteredTeams.map((team, idx) => {
                 const isCurrentTeam = team.id === currentTeamId;
+                const teamStatus = team.status || (idx === 4 ? 'Danger' : idx === 5 ? 'Eliminated' : idx === 0 ? 'Qualified' : 'Safe');
 
                 return (
                   <motion.tr
@@ -175,7 +177,11 @@ export const LiveLeaderboardTable: React.FC<LiveLeaderboardTableProps> = ({
                     exit={{ opacity: 0, y: -10 }}
                     transition={{ type: 'spring', stiffness: 350, damping: 25 }}
                     className={`rounded-2xl text-sm transition-colors ${
-                      isCurrentTeam
+                      teamStatus === 'Eliminated'
+                        ? 'bg-rose-950/20 opacity-75 border border-rose-500/30'
+                        : teamStatus === 'Danger'
+                        ? 'bg-orange-950/30 border border-orange-500/50 animate-pulse'
+                        : isCurrentTeam
                         ? 'bg-gradient-to-r from-[#241E11] via-[#1A1838] to-[#241E11] border-2 border-carnival-gold shadow-neon-gold text-white font-bold'
                         : 'bg-black/40 hover:bg-white/5 text-slate-200 border border-white/10'
                     }`}
@@ -234,7 +240,9 @@ export const LiveLeaderboardTable: React.FC<LiveLeaderboardTableProps> = ({
                         </div>
                         <div>
                           <div className="font-extrabold text-white flex items-center gap-2">
-                            <span>{team.name}</span>
+                            <span className={teamStatus === 'Eliminated' ? 'line-through text-slate-400' : ''}>
+                              {team.name}
+                            </span>
                             {isCurrentTeam && (
                               <span className="px-2 py-0.5 rounded text-[9px] font-mono uppercase bg-carnival-gold text-slate-950 font-black">
                                 YOU
@@ -244,6 +252,30 @@ export const LiveLeaderboardTable: React.FC<LiveLeaderboardTableProps> = ({
                           <div className="text-xs text-slate-400 line-clamp-1">{team.tagline}</div>
                         </div>
                       </div>
+                    </td>
+
+                    {/* Status Badge Cell */}
+                    <td className="py-4 px-4 text-center whitespace-nowrap">
+                      {teamStatus === 'Danger' && (
+                        <span className="px-2.5 py-1 rounded-full bg-orange-500/20 text-orange-300 border border-orange-500/40 font-mono font-bold text-[10px] inline-flex items-center gap-1 animate-pulse">
+                          🟠 DANGER
+                        </span>
+                      )}
+                      {teamStatus === 'Eliminated' && (
+                        <span className="px-2.5 py-1 rounded-full bg-rose-500/20 text-rose-300 border border-rose-500/40 font-mono font-bold text-[10px] inline-flex items-center gap-1">
+                          🔴 ELIMINATED
+                        </span>
+                      )}
+                      {teamStatus === 'Qualified' && (
+                        <span className="px-2.5 py-1 rounded-full bg-blue-500/20 text-blue-300 border border-blue-500/40 font-mono font-bold text-[10px] inline-flex items-center gap-1">
+                          🔵 QUALIFIED
+                        </span>
+                      )}
+                      {(teamStatus === 'Safe' || teamStatus === 'Approved') && (
+                        <span className="px-2.5 py-1 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 font-mono font-bold text-[10px] inline-flex items-center gap-1">
+                          🟢 SAFE
+                        </span>
+                      )}
                     </td>
 
                     {/* Played (P) */}

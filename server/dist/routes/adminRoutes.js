@@ -1,4 +1,4 @@
-import { getAllTeams, updateTeamStatus, eliminateTeam, createTask, getAllTasksAdmin, updateTask, deleteTask, createAnnouncement, getAllAnnouncementsAdmin, deleteAnnouncement, grantAdvantage, setTeamImmunity, updateScoresBatch, getGrandFinale, toggleGrandFinale, } from '../controllers/adminController.js';
+import { getAllTeams, updateTeamStatus, eliminateTeam, streamTeamStatusEvents, createTask, getAllTasksAdmin, updateTask, deleteTask, createAnnouncement, getAllAnnouncementsAdmin, deleteAnnouncement, grantAdvantage, setTeamImmunity, updateScoresBatch, getGrandFinale, toggleGrandFinale, } from '../controllers/adminController.js';
 import { getGalleryItems, createGalleryItem, deleteGalleryItem, } from '../controllers/galleryController.js';
 import { authenticate, isAdmin } from '../middleware/auth.js';
 import { toggleGrandFinaleSchema, updateTeamStatusSchema, eliminateTeamSchema, grantAdvantageSchema, setTeamImmunitySchema, updateScoresBatchSchema, createTaskSchema, updateTaskSchema, deleteTaskSchema, createAnnouncementSchema, deleteAnnouncementSchema, } from '../schemas/adminSchemas.js';
@@ -12,6 +12,7 @@ export async function adminRoutes(fastify) {
     fastify.post('/grand-finale', { schema: toggleGrandFinaleSchema }, toggleGrandFinale);
     // Teams Management
     fastify.get('/teams', getAllTeams);
+    fastify.get('/teams/events', streamTeamStatusEvents);
     fastify.patch('/teams/:teamId/status', { schema: updateTeamStatusSchema }, updateTeamStatus);
     fastify.patch('/teams/:teamId/eliminate', { schema: eliminateTeamSchema }, eliminateTeam);
     // Advantages & Immunities & Score Batch

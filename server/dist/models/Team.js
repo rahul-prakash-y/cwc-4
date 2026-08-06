@@ -42,7 +42,7 @@ const teamSchema = new Schema({
     },
     status: {
         type: String,
-        enum: ['Pending', 'Approved', 'Eliminated'],
+        enum: ['Pending', 'Approved', 'Eliminated', 'Safe', 'Danger', 'Qualified'],
         default: 'Pending',
         required: true,
     },

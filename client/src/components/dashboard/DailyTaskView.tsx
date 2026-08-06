@@ -37,9 +37,10 @@ export interface TaskDetail {
 interface DailyTaskViewProps {
   task: TaskDetail;
   onTaskSubmitted?: (data: { githubUrl: string; demoUrl: string; fileUrl: string; notes: string }) => void;
+  status?: string;
 }
 
-export const DailyTaskView: React.FC<DailyTaskViewProps> = ({ task, onTaskSubmitted }) => {
+export const DailyTaskView: React.FC<DailyTaskViewProps> = ({ task, onTaskSubmitted, status = 'Safe' }) => {
   const [isStarted, setIsStarted] = useState(false);
   const [githubUrl, setGithubUrl] = useState('');
   const [demoUrl, setDemoUrl] = useState('');
@@ -197,16 +198,31 @@ export const DailyTaskView: React.FC<DailyTaskViewProps> = ({ task, onTaskSubmit
         <div className="flex flex-col justify-between p-6 rounded-2xl bg-gradient-to-b from-[#1C1733] to-[#120F24] border border-white/15 space-y-6">
           <div className="space-y-3">
             <div className="text-xs font-mono font-bold text-slate-400 uppercase">Arena Status</div>
-            <div className="text-xl font-extrabold text-white flex items-center gap-2">
-              <span className="w-3 h-3 rounded-full bg-emerald-400 animate-ping" />
-              Arena Ready & Open
-            </div>
+            {status === 'Eliminated' ? (
+              <div className="text-lg font-extrabold text-rose-400 flex items-center gap-2">
+                <span className="w-3 h-3 rounded-full bg-rose-500 animate-ping" />
+                Arena Submissions Locked 🔒
+              </div>
+            ) : (
+              <div className="text-xl font-extrabold text-white flex items-center gap-2">
+                <span className="w-3 h-3 rounded-full bg-emerald-400 animate-ping" />
+                Arena Ready & Open
+              </div>
+            )}
             <p className="text-xs text-slate-300">
-              Click &quot;Start Challenge&quot; to initialize your submission portal. The timer will keep running until your team submits.
+              {status === 'Eliminated'
+                ? 'Your team is currently eliminated from active arena submissions. Thank you for participating!'
+                : 'Click "Start Challenge" to initialize your submission portal. The timer will keep running until your team submits.'}
             </p>
           </div>
 
-          {!isStarted ? (
+          {status === 'Eliminated' ? (
+            <div className="p-4 rounded-2xl bg-rose-500/20 border border-rose-500/50 text-rose-300 text-xs font-mono font-bold flex flex-col items-center justify-center text-center gap-2">
+              <AlertCircle className="w-6 h-6 text-rose-400" />
+              <span>ELIMINATED STATUS</span>
+              <span className="text-[10px] text-slate-300 font-normal">Submissions & arena controls are locked.</span>
+            </div>
+          ) : !isStarted ? (
             <button
               onClick={() => setIsStarted(true)}
               className="w-full py-4 px-6 rounded-2xl bg-gradient-to-r from-carnival-gold via-amber-500 to-carnival-crimson text-slate-950 font-black text-sm uppercase tracking-wider flex items-center justify-center gap-3 shadow-neon-gold hover:scale-[1.02] active:scale-95 transition-all"

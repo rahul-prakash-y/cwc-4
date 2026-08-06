@@ -12,7 +12,7 @@ export interface Team {
   rank: number;
   points: number;
   members: TeamMember[];
-  status: 'Approved' | 'Pending' | 'Arena Ready';
+  status: 'Safe' | 'Danger' | 'Eliminated' | 'Qualified' | 'Approved' | 'Pending' | 'Arena Ready';
   avatar: string;
   themeColor: string;
   streak: number;

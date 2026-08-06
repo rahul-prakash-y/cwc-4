@@ -12,13 +12,15 @@ export interface AdvantageItem {
   description: string;
 }
 
-interface TopBarBannerProps {
+export interface TopBarBannerProps {
   teamName: string;
   rank: number;
   totalScore: number;
   streak: number;
   advantages: AdvantageItem[];
   onActivateAdvantage: (id: string) => void;
+  status?: 'Safe' | 'Danger' | 'Eliminated' | 'Qualified' | 'Approved' | string;
+  onStatusChange?: (newStatus: 'Safe' | 'Danger' | 'Eliminated' | 'Qualified') => void;
 }
 
 export const TopBarBanner: React.FC<TopBarBannerProps> = ({
@@ -28,6 +30,8 @@ export const TopBarBanner: React.FC<TopBarBannerProps> = ({
   streak,
   advantages,
   onActivateAdvantage,
+  status = 'Safe',
+  onStatusChange,
 }) => {
   const activeAdvantages = advantages.filter((a) => a.status === 'active');
   const readyAdvantages = advantages.filter((a) => a.status === 'ready');
@@ -35,6 +39,41 @@ export const TopBarBanner: React.FC<TopBarBannerProps> = ({
   const handleActivate = (adv: AdvantageItem) => {
     triggerCarnivalConfetti();
     onActivateAdvantage(adv.id);
+  };
+
+  const getStatusBadge = () => {
+    switch (status) {
+      case 'Danger':
+        return (
+          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-orange-500/20 text-orange-300 border border-orange-500/40 text-xs font-mono font-bold animate-pulse shadow-neon-gold">
+            <AlertCircle className="w-3.5 h-3.5 text-orange-400" />
+            <span>STATUS: DANGER ZONE ⚠️</span>
+          </span>
+        );
+      case 'Eliminated':
+        return (
+          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-rose-500/20 text-rose-300 border border-rose-500/40 text-xs font-mono font-bold shadow-neon-crimson">
+            <AlertCircle className="w-3.5 h-3.5 text-rose-400" />
+            <span>STATUS: ELIMINATED 🔒</span>
+          </span>
+        );
+      case 'Qualified':
+        return (
+          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-500/20 text-blue-300 border border-blue-500/40 text-xs font-mono font-bold shadow-neon-cyan">
+            <Award className="w-3.5 h-3.5 text-blue-400" />
+            <span>STATUS: QUALIFIED 🌟</span>
+          </span>
+        );
+      case 'Approved':
+      case 'Safe':
+      default:
+        return (
+          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 text-xs font-mono font-bold shadow-neon-gold">
+            <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
+            <span>STATUS: SAFE PASS 🛡️</span>
+          </span>
+        );
+    }
   };
 
   return (
@@ -55,6 +94,46 @@ export const TopBarBanner: React.FC<TopBarBannerProps> = ({
               <Award className="w-3.5 h-3.5" />
               <span>CARNIVAL VIP TICKET #CWC4-8842</span>
             </span>
+
+            {getStatusBadge()}
+
+            {onStatusChange && (
+              <div className="inline-flex items-center gap-1 p-1 rounded-full bg-black/60 border border-white/10 text-[10px] font-mono">
+                <span className="text-slate-400 px-1 font-bold">Simulate:</span>
+                <button
+                  onClick={() => onStatusChange('Safe')}
+                  className={`px-2 py-0.5 rounded-full transition-all ${
+                    status === 'Safe' ? 'bg-emerald-500 text-slate-950 font-bold' : 'text-slate-300 hover:text-white'
+                  }`}
+                >
+                  Safe
+                </button>
+                <button
+                  onClick={() => onStatusChange('Danger')}
+                  className={`px-2 py-0.5 rounded-full transition-all ${
+                    status === 'Danger' ? 'bg-orange-500 text-slate-950 font-bold' : 'text-slate-300 hover:text-white'
+                  }`}
+                >
+                  Danger
+                </button>
+                <button
+                  onClick={() => onStatusChange('Eliminated')}
+                  className={`px-2 py-0.5 rounded-full transition-all ${
+                    status === 'Eliminated' ? 'bg-rose-500 text-white font-bold' : 'text-slate-300 hover:text-white'
+                  }`}
+                >
+                  Eliminated
+                </button>
+                <button
+                  onClick={() => onStatusChange('Qualified')}
+                  className={`px-2 py-0.5 rounded-full transition-all ${
+                    status === 'Qualified' ? 'bg-blue-500 text-white font-bold' : 'text-slate-300 hover:text-white'
+                  }`}
+                >
+                  Qualified
+                </button>
+              </div>
+            )}
 
             {activeAdvantages.map((adv) => (
               <span

@@ -16,7 +16,7 @@ export const updateTeamStatusSchema: FastifySchema = {
     type: 'object',
     required: ['teamId'],
     properties: {
-      teamId: { type: 'string', pattern: objectIdPattern },
+      teamId: { type: 'string' },
     },
   },
   body: {
@@ -24,7 +24,7 @@ export const updateTeamStatusSchema: FastifySchema = {
     required: ['status'],
     additionalProperties: false,
     properties: {
-      status: { type: 'string', enum: ['Pending', 'Approved', 'Eliminated'] },
+      status: { type: 'string', enum: ['Pending', 'Approved', 'Eliminated', 'Safe', 'Danger', 'Qualified'] },
     },
   },
 };

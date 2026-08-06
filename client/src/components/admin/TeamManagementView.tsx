@@ -11,7 +11,7 @@ export interface ExtendedTeam {
   tagline: string;
   rank: number;
   points: number;
-  status: 'Approved' | 'Pending' | 'Safe' | 'Danger' | 'Eliminated';
+  status: 'Approved' | 'Pending' | 'Safe' | 'Danger' | 'Eliminated' | 'Qualified';
   avatar: string;
   themeColor: string;
   streak: number;
@@ -30,7 +30,7 @@ export const TeamManagementView: React.FC = () => {
       tagline: t.tagline,
       rank: t.rank,
       points: t.points,
-      status: (idx === 0 || idx === 1 ? 'Approved' : idx === 4 ? 'Danger' : idx === 5 ? 'Eliminated' : 'Safe') as ExtendedTeam['status'],
+      status: (idx === 0 ? 'Qualified' : idx === 1 ? 'Approved' : idx === 4 ? 'Danger' : idx === 5 ? 'Eliminated' : 'Safe') as ExtendedTeam['status'],
       avatar: t.avatar,
       themeColor: t.themeColor,
       streak: t.streak,
@@ -55,13 +55,26 @@ export const TeamManagementView: React.FC = () => {
     return matchesSearch && t.status === statusFilter;
   });
 
-  const handleUpdateStatus = (id: string, newStatus: ExtendedTeam['status']) => {
+  const handleUpdateStatus = async (id: string, newStatus: ExtendedTeam['status']) => {
     setTeams(teams.map((t) => (t.id === id ? { ...t, status: newStatus } : t)));
+
+    try {
+      await fetch(`/api/admin/teams/${id}/status`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ status: newStatus }),
+      });
+    } catch (err) {
+      console.warn('Backend sync attempted; team state updated locally:', err);
+    }
   };
 
   const handleSaveEdit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!editingTeam) return;
+    handleUpdateStatus(editingTeam.id, editingTeam.status);
     setTeams(teams.map((t) => (t.id === editingTeam.id ? editingTeam : t)));
     setEditingTeam(null);
   };
@@ -75,13 +88,14 @@ export const TeamManagementView: React.FC = () => {
   const getStatusBadge = (status: ExtendedTeam['status']) => {
     switch (status) {
       case 'Approved':
-        return 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30';
       case 'Safe':
-        return 'bg-cyan-500/20 text-cyan-400 border-cyan-500/30';
+        return 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30';
       case 'Danger':
-        return 'bg-amber-500/20 text-amber-400 border-amber-500/30';
+        return 'bg-orange-500/20 text-orange-400 border-orange-500/30 animate-pulse';
       case 'Eliminated':
         return 'bg-rose-500/20 text-rose-400 border-rose-500/30';
+      case 'Qualified':
+        return 'bg-blue-500/20 text-blue-400 border-blue-500/30';
       case 'Pending':
         return 'bg-purple-500/20 text-purple-400 border-purple-500/30';
       default:
@@ -163,7 +177,7 @@ export const TeamManagementView: React.FC = () => {
           <span className="text-xs font-mono text-slate-400 flex items-center gap-1">
             <Filter className="w-3.5 h-3.5" /> Filter:
           </span>
-          {['All', 'Approved', 'Safe', 'Danger', 'Eliminated', 'Pending'].map((filter) => (
+          {['All', 'Safe', 'Danger', 'Eliminated', 'Qualified', 'Approved', 'Pending'].map((filter) => (
             <button
               key={filter}
               onClick={() => setStatusFilter(filter)}
@@ -258,27 +272,16 @@ export const TeamManagementView: React.FC = () => {
                     </span>
                   </td>
 
-                  {/* Quick Status Mark Buttons */}
+                  {/* Quick Status Mark Buttons: Safe (Green), Danger (Orange), Eliminated (Red), Qualified (Blue) */}
                   <td className="p-4 text-center">
                     <div className="inline-flex items-center gap-1.5 p-1 rounded-xl bg-black/40 border border-white/5">
                       <button
-                        onClick={() => handleUpdateStatus(team.id, 'Approved')}
-                        title="Approve Team"
-                        className={`px-2 py-1 rounded text-[10px] font-bold ${
-                          team.status === 'Approved'
-                            ? 'bg-emerald-500 text-black'
-                            : 'text-slate-400 hover:text-emerald-400 hover:bg-emerald-500/10'
-                        }`}
-                      >
-                        Approve
-                      </button>
-                      <button
                         onClick={() => handleUpdateStatus(team.id, 'Safe')}
                         title="Mark Safe"
-                        className={`px-2 py-1 rounded text-[10px] font-bold ${
+                        className={`px-2.5 py-1 rounded text-[10px] font-bold transition-all ${
                           team.status === 'Safe'
-                            ? 'bg-cyan-500 text-black'
-                            : 'text-slate-400 hover:text-cyan-400 hover:bg-cyan-500/10'
+                            ? 'bg-emerald-500 text-slate-950 shadow-sm'
+                            : 'text-slate-400 hover:text-emerald-400 hover:bg-emerald-500/10'
                         }`}
                       >
                         Safe
@@ -286,10 +289,10 @@ export const TeamManagementView: React.FC = () => {
                       <button
                         onClick={() => handleUpdateStatus(team.id, 'Danger')}
                         title="Mark Danger"
-                        className={`px-2 py-1 rounded text-[10px] font-bold ${
+                        className={`px-2.5 py-1 rounded text-[10px] font-bold transition-all ${
                           team.status === 'Danger'
-                            ? 'bg-amber-500 text-black'
-                            : 'text-slate-400 hover:text-amber-400 hover:bg-amber-500/10'
+                            ? 'bg-orange-500 text-slate-950 shadow-sm'
+                            : 'text-slate-400 hover:text-orange-400 hover:bg-orange-500/10'
                         }`}
                       >
                         Danger
@@ -297,13 +300,24 @@ export const TeamManagementView: React.FC = () => {
                       <button
                         onClick={() => handleUpdateStatus(team.id, 'Eliminated')}
                         title="Mark Eliminated"
-                        className={`px-2 py-1 rounded text-[10px] font-bold ${
+                        className={`px-2.5 py-1 rounded text-[10px] font-bold transition-all ${
                           team.status === 'Eliminated'
-                            ? 'bg-rose-500 text-white'
+                            ? 'bg-rose-500 text-white shadow-sm'
                             : 'text-slate-400 hover:text-rose-400 hover:bg-rose-500/10'
                         }`}
                       >
-                        Evict
+                        Eliminated
+                      </button>
+                      <button
+                        onClick={() => handleUpdateStatus(team.id, 'Qualified')}
+                        title="Mark Qualified"
+                        className={`px-2.5 py-1 rounded text-[10px] font-bold transition-all ${
+                          team.status === 'Qualified'
+                            ? 'bg-blue-500 text-white shadow-sm'
+                            : 'text-slate-400 hover:text-blue-400 hover:bg-blue-500/10'
+                        }`}
+                      >
+                        Qualified
                       </button>
                     </div>
                   </td>
@@ -411,10 +425,11 @@ export const TeamManagementView: React.FC = () => {
                       }
                       className="w-full px-4 py-2.5 rounded-xl bg-[#1A1228] border border-white/10 text-xs text-white focus:outline-none focus:border-carnival-cyan"
                     >
-                      <option value="Approved">Approved</option>
                       <option value="Safe">Safe</option>
                       <option value="Danger">Danger</option>
                       <option value="Eliminated">Eliminated</option>
+                      <option value="Qualified">Qualified</option>
+                      <option value="Approved">Approved</option>
                       <option value="Pending">Pending</option>
                     </select>
                   </div>

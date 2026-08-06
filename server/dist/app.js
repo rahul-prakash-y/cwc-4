@@ -157,7 +157,9 @@ export function buildApp() {
     fastify.register(publicRoutes, { prefix: '/api/v1' });
     fastify.register(authRoutes, { prefix: '/api/v1/auth' });
     fastify.register(adminRoutes, { prefix: '/api/v1/admin' });
+    fastify.register(adminRoutes, { prefix: '/api/admin' });
     fastify.register(studentRoutes, { prefix: '/api/v1/student' });
+    fastify.register(studentRoutes, { prefix: '/api/student' });
     // Serve Frontend Static Files in Production (Render)
     const clientDistPath = path.resolve(__dirname, '../../client/dist');
     if (fs.existsSync(clientDistPath)) {

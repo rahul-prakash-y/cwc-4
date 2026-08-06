@@ -1,6 +1,6 @@
 import { Schema, model, Document, Model, Types } from 'mongoose';
 
-export type TeamStatus = 'Pending' | 'Approved' | 'Eliminated';
+export type TeamStatus = 'Pending' | 'Approved' | 'Eliminated' | 'Safe' | 'Danger' | 'Qualified';
 
 export interface ITeamLeader {
   name: string;
@@ -95,7 +95,7 @@ const teamSchema = new Schema<ITeamDocument>(
     },
     status: {
       type: String,
-      enum: ['Pending', 'Approved', 'Eliminated'],
+      enum: ['Pending', 'Approved', 'Eliminated', 'Safe', 'Danger', 'Qualified'],
       default: 'Pending',
       required: true,
     },
