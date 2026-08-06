@@ -1,13 +1,13 @@
 import React from 'react';
 import { HeroSection } from '../components/hero/HeroSection';
-import { AboutCWC } from '../components/about/AboutCWC';
+import { About } from '../components/landing/About';
 import { SeasonTimeline } from '../components/timeline/SeasonTimeline';
-import { PrizeSection } from '../components/prizes/PrizeSection';
+import { Prizes } from '../components/landing/Prizes';
 import { GallerySection } from '../components/gallery/GallerySection';
 import { RegisteredTeams } from '../components/teams/RegisteredTeams';
 import { RuleBook } from '../components/rules/RuleBook';
-import { SponsorMarquee } from '../components/sponsors/SponsorMarquee';
-import { ContactSection } from '../components/contact/ContactSection';
+import { Sponsors } from '../components/landing/Sponsors';
+import { Contact } from '../components/landing/Contact';
 
 export const LandingPage: React.FC = () => {
   return (
@@ -16,15 +16,15 @@ export const LandingPage: React.FC = () => {
       <HeroSection />
 
       {/* 2. Task 1: About CWC Section */}
-      <AboutCWC />
+      <About />
 
       {/* 3. Season Timeline */}
       <SeasonTimeline />
 
       {/* 4. Task 2: Prize Section */}
-      <PrizeSection />
+      <Prizes />
 
-      {/* 5. Task 4: Media Gallery Section */}
+      {/* 5. Media Gallery Section */}
       <GallerySection />
 
       {/* 6. Registered Teams */}
@@ -34,11 +34,10 @@ export const LandingPage: React.FC = () => {
       <RuleBook />
 
       {/* 8. Task 3: Sponsors Component */}
-      <SponsorMarquee />
+      <Sponsors />
 
       {/* 9. Task 4: Contact & Venue Section */}
-      <ContactSection />
+      <Contact />
     </div>
   );
 };
-

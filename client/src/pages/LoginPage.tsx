@@ -1,14 +1,16 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate, useSearchParams, Link } from 'react-router-dom';
+import { useNavigate, useSearchParams, useLocation, Link } from 'react-router-dom';
 import { User, Shield, Lock, Ticket, ArrowRight, Eye, EyeOff, Sparkles, KeyRound, CheckCircle2, AlertCircle } from 'lucide-react';
 import { triggerCarnivalConfetti } from '../components/hero/ConfettiEffect';
 
 export const LoginPage: React.FC = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const [searchParams] = useSearchParams();
 
   // Active mode: 'student' or 'admin'
-  const initialRole = searchParams.get('role') === 'admin' ? 'admin' : 'student';
+  const isPathAdmin = location.pathname.includes('/admin');
+  const initialRole = isPathAdmin || searchParams.get('role') === 'admin' ? 'admin' : 'student';
   const [activeRole, setActiveRole] = useState<'student' | 'admin'>(initialRole);
 
   // Form State
@@ -26,11 +28,12 @@ export const LoginPage: React.FC = () => {
   const [securityToken, setSecurityToken] = useState('9988');
 
   useEffect(() => {
-    const roleParam = searchParams.get('role');
-    if (roleParam === 'admin' || roleParam === 'student') {
-      setActiveRole(roleParam);
+    if (location.pathname.includes('/admin') || searchParams.get('role') === 'admin') {
+      setActiveRole('admin');
+    } else if (location.pathname.includes('/student') || searchParams.get('role') === 'student') {
+      setActiveRole('student');
     }
-  }, [searchParams]);
+  }, [location.pathname, searchParams]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
