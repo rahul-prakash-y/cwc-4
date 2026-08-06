@@ -33,6 +33,7 @@ export interface ITeam {
   advantages: IAdvantageItem[];
   immunity: boolean;
   isBlocked?: boolean;
+  totalPublicVotes?: number;
   createdAt?: Date;
   updatedAt?: Date;
 }
@@ -117,6 +118,11 @@ const teamSchema = new Schema<ITeamDocument>(
     isBlocked: {
       type: Boolean,
       default: false,
+    },
+    totalPublicVotes: {
+      type: Number,
+      default: 0,
+      min: 0,
     },
   },
   {

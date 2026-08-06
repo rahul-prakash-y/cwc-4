@@ -32,6 +32,8 @@ import { AdvantageGrantedToast, AdvantageGrantedPayload } from '../../components
 import { triggerCarnivalConfetti } from '../../components/hero/ConfettiEffect';
 import { useSocket } from '../../context/SocketContext';
 import { useTheme } from '../../context/ThemeContext';
+import { VotingBooth } from '../../components/student/VotingBooth';
+import { FanFavoriteBoard } from '../../components/landing/FanFavoriteBoard';
 import { MOCK_TEAMS, MOCK_TIMELINE } from '../../data/mockData';
 
 export const StudentDashboard: React.FC = () => {
@@ -56,6 +58,9 @@ export const StudentDashboard: React.FC = () => {
   // Survival Status state: Safe | Danger | Eliminated | Qualified
   const [teamStatus, setTeamStatus] = useState<'Safe' | 'Danger' | 'Eliminated' | 'Qualified' | string>('Safe');
   const [qualifiedConfettiFired, setQualifiedConfettiFired] = useState(false);
+
+  // Task 4: Voting Booth Modal state
+  const [isVotingBoothOpen, setIsVotingBoothOpen] = useState(false);
 
   // Task 4: Real-time Socket.io listener for STATUS_CHANGED event
   useEffect(() => {
@@ -371,11 +376,20 @@ export const StudentDashboard: React.FC = () => {
               </div>
 
               {/* Welcome Team Name Header */}
-              <h1 className="text-3xl sm:text-5xl font-black text-white tracking-tight flex flex-wrap items-center gap-3">
-                Welcome <span className="text-gradient-carnival">{teamName}</span> 🔥
-              </h1>
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                <h1 className="text-3xl sm:text-5xl font-black text-white tracking-tight flex flex-wrap items-center gap-3">
+                  Welcome <span className="text-gradient-carnival">{teamName}</span> 🔥
+                </h1>
+                <button
+                  onClick={() => setIsVotingBoothOpen(true)}
+                  className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-amber-500 via-pink-600 to-purple-600 hover:from-amber-400 hover:to-purple-500 text-white font-extrabold text-sm shadow-lg shadow-amber-500/25 border border-amber-400/40 transition flex items-center gap-2"
+                >
+                  <span className="text-lg">🎟️</span>
+                  <span>Open Voting Booth</span>
+                </button>
+              </div>
               <p className="text-slate-300 text-sm sm:text-base max-w-2xl">
-                CWC Season 4 Student Command • Manage arena submissions, track 10-day carnival lights, and apply advantage power-ups.
+                CWC Season 4 Student Command • Manage arena submissions, track 10-day carnival lights, and cast daily spectator votes!
               </p>
             </div>
           </div>
@@ -561,9 +575,18 @@ export const StudentDashboard: React.FC = () => {
 
           <AdvantagesLocker onApplyAdvantage={(id, type) => console.log('Applied', id, type)} />
 
+          {/* Fan Favorite Real-Time Voting Leaderboard */}
+          <FanFavoriteBoard />
+
           <LiveLeaderboardTable teams={initialLeaderboardTeams} currentTeamId="team-1" />
         </div>
       </div>
+
+      {/* Fan Favorite Voting Booth Modal */}
+      <VotingBooth
+        isOpen={isVotingBoothOpen}
+        onClose={() => setIsVotingBoothOpen(false)}
+      />
     </div>
   );
 };

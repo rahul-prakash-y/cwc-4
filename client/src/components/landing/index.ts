@@ -7,3 +7,5 @@ export { Contact } from './Contact';
 export { RegisteredTeams } from './RegisteredTeams';
 export { RuleBook } from './RuleBook';
 export { RegistrationModal } from './RegistrationModal';
+export { FanFavoriteBoard } from './FanFavoriteBoard';
+

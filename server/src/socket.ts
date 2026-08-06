@@ -80,6 +80,15 @@ export function broadcastFinaleTriggered(payload: { isGrandFinale: boolean }): v
   }
 }
 
+export function broadcastVotesUpdated(payload: any): void {
+  if (ioInstance) {
+    ioInstance.to(GLOBAL_ROOM).to(STUDENT_ROOM).to(ADMIN_ROOM).emit('VOTES_UPDATED', {
+      timestamp: new Date().toISOString(),
+      ...payload,
+    });
+  }
+}
+
 export function disconnectUserSockets(targetId: string): void {
   if (!ioInstance) return;
 
