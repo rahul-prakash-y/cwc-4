@@ -5,7 +5,7 @@ import { Dashboard } from './admin/Dashboard';
 import { Teams } from './admin/Teams';
 import { Tasks } from './admin/Tasks';
 import { ScoreSheet } from '../components/admin/ScoreSheet';
-import { ExportModuleView } from '../components/admin/ExportModuleView';
+import { Export } from './admin/Export';
 import { MediaDashboardView } from '../components/admin/MediaDashboardView';
 import { ChampionBanner } from '../components/common/ChampionBanner';
 
@@ -110,7 +110,7 @@ export const AdminDashboard: React.FC = () => {
       {activeTab === 'teams' && <Teams />}
       {activeTab === 'tasks' && <Tasks />}
       {activeTab === 'scores' && <ScoreSheet />}
-      {activeTab === 'export' && <ExportModuleView />}
+      {activeTab === 'export' && <Export />}
     </div>
   );
 };

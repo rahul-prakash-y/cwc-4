@@ -5,12 +5,14 @@ import { Task, TaskType } from '../models/Task.js';
 import { Announcement } from '../models/Announcement.js';
 import { Score } from '../models/Score.js';
 import { Setting } from '../models/Setting.js';
+import { Settings } from '../models/Settings.js';
 import { delCache } from '../utils/redis.js';
 import {
   broadcastScoreUpdated,
   broadcastNewAnnouncement,
   broadcastStatusChanged,
   broadcastAdvantageGranted,
+  broadcastFinaleTriggered,
 } from '../socket.js';
 import { sendEmail, sendBackgroundEmailBatch } from '../utils/mailer.js';
 import {
@@ -25,12 +27,16 @@ import {
    ========================================================================== */
 
 export async function getGrandFinale(_request: FastifyRequest, reply: FastifyReply) {
+  let settingsDoc = await Settings.findOne();
+  if (!settingsDoc) {
+    settingsDoc = await Settings.create({ isGrandFinale: false });
+  }
   let settingDoc = await Setting.findOne({ key: 'isGrandFinale' });
   if (!settingDoc) {
-    settingDoc = await Setting.create({ key: 'isGrandFinale', value: false });
+    settingDoc = await Setting.create({ key: 'isGrandFinale', value: settingsDoc.isGrandFinale });
   }
   return reply.send({
-    isGrandFinale: Boolean(settingDoc.value),
+    isGrandFinale: Boolean(settingsDoc.isGrandFinale),
   });
 }
 
@@ -38,21 +44,31 @@ export async function toggleGrandFinale(
   request: FastifyRequest<{ Body: { isGrandFinale?: boolean } }>,
   reply: FastifyReply
 ) {
-  let settingDoc = await Setting.findOne({ key: 'isGrandFinale' });
+  let settingsDoc = await Settings.findOne();
+  if (!settingsDoc) {
+    settingsDoc = await Settings.create({ isGrandFinale: false });
+  }
+
   const newValue =
     request.body?.isGrandFinale !== undefined
       ? Boolean(request.body.isGrandFinale)
-      : !Boolean(settingDoc?.value);
+      : !Boolean(settingsDoc.isGrandFinale);
 
-  settingDoc = await Setting.findOneAndUpdate(
+  settingsDoc.isGrandFinale = newValue;
+  await settingsDoc.save();
+
+  await Setting.findOneAndUpdate(
     { key: 'isGrandFinale' },
     { value: newValue },
     { upsert: true, new: true }
   );
 
+  // Instantly emit FINALE_TRIGGERED WebSocket event to all connected clients
+  broadcastFinaleTriggered({ isGrandFinale: newValue });
+
   return reply.send({
     message: `Grand Finale Mode is now ${newValue ? '🏆 ACTIVE (GOLD THEME)' : '🎪 STANDARD CARNIVAL'}`,
-    isGrandFinale: Boolean(settingDoc?.value),
+    isGrandFinale: newValue,
   });
 }
 

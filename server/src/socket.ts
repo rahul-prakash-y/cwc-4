@@ -71,6 +71,16 @@ export function broadcastAdvantageGranted(payload: any): void {
   }
 }
 
+export function broadcastFinaleTriggered(payload: { isGrandFinale: boolean }): void {
+  if (ioInstance) {
+    ioInstance.emit('FINALE_TRIGGERED', {
+      timestamp: new Date().toISOString(),
+      ...payload,
+    });
+  }
+}
+
+
 export function getActiveSocketsCount(): number {
   return activeStudents.size;
 }

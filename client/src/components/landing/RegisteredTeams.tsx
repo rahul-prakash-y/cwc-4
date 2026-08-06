@@ -153,7 +153,7 @@ export const RegisteredTeams: React.FC = () => {
           <span>Fetching Arena Ticket Roster...</span>
         </div>
       ) : (
-        /* Grid of Admission-Ticket Styled Carnival Cards */
+        /* Grid of 3D Physical Admission-Ticket Styled Carnival Cards */
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {filteredTeams.map((team: Team) => (
             <motion.div
@@ -161,110 +161,168 @@ export const RegisteredTeams: React.FC = () => {
               initial={{ opacity: 0, y: 30 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
-              whileHover={{ y: -8, scale: 1.02 }}
-              transition={{ duration: 0.3 }}
-              className="glass-card rounded-3xl p-6 border border-carnival-gold/30 hover:border-carnival-gold shadow-xl hover:shadow-[0_0_35px_rgba(255,215,0,0.35)] group transition-all duration-300 flex flex-col justify-between relative overflow-hidden"
+              className="ticket-flip-card min-h-[420px] w-full group cursor-pointer"
             >
-              {/* Ticket Semicircle Side Cutouts */}
-              <div className="absolute -left-3 top-1/2 -translate-y-1/2 w-6 h-6 rounded-full bg-[#0B0A16] border-r border-white/20 z-10" />
-              <div className="absolute -right-3 top-1/2 -translate-y-1/2 w-6 h-6 rounded-full bg-[#0B0A16] border-l border-white/20 z-10" />
+              <div className="ticket-flip-inner min-h-[420px]">
+                {/* FRONT OF TICKET */}
+                <div className="ticket-flip-front glass-card rounded-3xl p-6 border border-carnival-gold/30 group-hover:border-carnival-gold shadow-xl hover:shadow-[0_0_35px_rgba(255,215,0,0.35)] flex flex-col justify-between relative overflow-hidden bg-[#151329]/95">
+                  {/* Ticket Semicircle Side Cutouts */}
+                  <div className="absolute -left-3 top-1/2 -translate-y-1/2 w-6 h-6 rounded-full bg-[#0B0A16] border-r border-white/20 z-10" />
+                  <div className="absolute -right-3 top-1/2 -translate-y-1/2 w-6 h-6 rounded-full bg-[#0B0A16] border-l border-white/20 z-10" />
 
-              {/* Ambient Corner Accent */}
-              <div
-                className="absolute top-0 right-0 w-36 h-36 rounded-full blur-2xl opacity-25 group-hover:opacity-50 transition-opacity"
-                style={{ backgroundColor: team.themeColor }}
-              />
+                  {/* Ambient Corner Accent */}
+                  <div
+                    className="absolute top-0 right-0 w-36 h-36 rounded-full blur-2xl opacity-25 group-hover:opacity-50 transition-opacity"
+                    style={{ backgroundColor: team.themeColor }}
+                  />
 
-              {/* Ticket Header Stub */}
-              <div>
-                <div className="flex items-center justify-between text-[10px] font-mono font-bold text-carnival-gold uppercase tracking-widest mb-3">
-                  <span className="flex items-center gap-1">
-                    <Ticket className="w-3.5 h-3.5 text-carnival-gold" />
-                    ADMISSION TICKET #{team.id.toUpperCase()}
-                  </span>
-                  <span className="text-emerald-400">PASSED ARENA</span>
-                </div>
-
-                <div className="flex items-start justify-between gap-3 mb-4">
-                  <div className="flex items-center gap-3">
-                    {/* Mascot Avatar */}
-                    <div
-                      className="w-12 h-12 rounded-2xl flex items-center justify-center text-2xl shadow-lg border border-white/20 group-hover:scale-110 transition-transform"
-                      style={{ backgroundColor: `${team.themeColor}22` }}
-                    >
-                      {team.avatar}
+                  {/* Ticket Header Stub */}
+                  <div>
+                    <div className="flex items-center justify-between text-[10px] font-mono font-bold text-carnival-gold uppercase tracking-widest mb-3">
+                      <span className="flex items-center gap-1">
+                        <Ticket className="w-3.5 h-3.5 text-carnival-gold" />
+                        TICKET #{team.id.toUpperCase()}
+                      </span>
+                      <span className="text-emerald-400">PASSED ARENA</span>
                     </div>
-                    <div>
-                      <h3 className="font-extrabold text-xl text-white group-hover:text-carnival-gold transition-colors">
-                        {team.name}
-                      </h3>
-                      <p className="text-xs text-slate-400 italic line-clamp-1">"{team.tagline}"</p>
-                    </div>
-                  </div>
 
-                  {/* Rank Badge */}
-                  <div>{getRankBadge(team.rank)}</div>
-                </div>
-
-                {/* Status & Points Bar */}
-                <div className="flex items-center justify-between p-3 rounded-xl bg-black/50 border border-white/10 mb-4 font-mono text-xs shadow-inner">
-                  <div className="flex items-center gap-1.5 text-emerald-400 font-semibold">
-                    <CheckCircle2 className="w-4 h-4" />
-                    <span>{team.status}</span>
-                  </div>
-                  <div className="flex items-center gap-1.5 text-carnival-gold font-extrabold text-sm">
-                    <Flame className="w-4 h-4 text-carnival-crimson fill-carnival-crimson animate-pulse" />
-                    <span>{team.points} PTS</span>
-                  </div>
-                </div>
-
-                {/* Dotted Ticket Perforation Line */}
-                <div className="border-b border-dashed border-white/20 my-4 relative">
-                  <span className="absolute left-1/2 -translate-x-1/2 -top-2 bg-[#151329] px-2 text-[9px] font-mono text-slate-500 uppercase">
-                    TEAMS ROSTER
-                  </span>
-                </div>
-
-                {/* Team Members List */}
-                <div className="space-y-2.5">
-                  {team.members.map((member, idx) => (
-                    <div
-                      key={idx}
-                      className="flex items-center justify-between p-2 rounded-xl bg-white/5 hover:bg-white/10 transition-colors"
-                    >
-                      <div className="flex items-center gap-2.5">
-                        <img
-                          src={member.avatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80'}
-                          alt={member.name}
-                          className="w-7 h-7 rounded-full object-cover border border-carnival-gold/40"
-                        />
+                    <div className="flex items-start justify-between gap-3 mb-4">
+                      <div className="flex items-center gap-3">
+                        <div
+                          className="w-12 h-12 rounded-2xl flex items-center justify-center text-2xl shadow-lg border border-white/20 group-hover:scale-110 transition-transform"
+                          style={{ backgroundColor: `${team.themeColor}22` }}
+                        >
+                          {team.avatar}
+                        </div>
                         <div>
-                          <div className="text-xs font-semibold text-white">{member.name}</div>
-                          <div className="text-[10px] text-carnival-cyan font-mono">{member.role}</div>
+                          <h3 className="font-extrabold text-xl text-white group-hover:text-carnival-gold transition-colors">
+                            {team.name}
+                          </h3>
+                          <p className="text-xs text-slate-400 italic line-clamp-1">"{team.tagline}"</p>
                         </div>
                       </div>
 
-                      {member.github && (
-                        <a
-                          href={`https://github.com/${member.github}`}
-                          target="_blank"
-                          rel="noreferrer"
-                          className="text-slate-400 hover:text-white p-1"
-                          title={`GitHub: @${member.github}`}
-                        >
-                          <Github className="w-4 h-4" />
-                        </a>
-                      )}
+                      <div>{getRankBadge(team.rank)}</div>
                     </div>
-                  ))}
+
+                    {/* Status & Points Bar */}
+                    <div className="flex items-center justify-between p-3 rounded-xl bg-black/50 border border-white/10 mb-4 font-mono text-xs shadow-inner">
+                      <div className="flex items-center gap-1.5 text-emerald-400 font-semibold">
+                        <CheckCircle2 className="w-4 h-4" />
+                        <span>{team.status}</span>
+                      </div>
+                      <div className="flex items-center gap-1.5 text-carnival-gold font-extrabold text-sm">
+                        <Flame className="w-4 h-4 text-carnival-crimson fill-carnival-crimson animate-pulse" />
+                        <span>{team.points} PTS</span>
+                      </div>
+                    </div>
+
+                    {/* Dotted Ticket Perforation Line */}
+                    <div className="border-b border-dashed border-white/20 my-4 relative">
+                      <span className="absolute left-1/2 -translate-x-1/2 -top-2 bg-[#151329] px-2 text-[9px] font-mono text-slate-500 uppercase">
+                        ROSTER • HOVER TO FLIP
+                      </span>
+                    </div>
+
+                    {/* Team Members List */}
+                    <div className="space-y-2">
+                      {team.members.map((member, idx) => (
+                        <div
+                          key={idx}
+                          className="flex items-center justify-between p-2 rounded-xl bg-white/5 hover:bg-white/10 transition-colors"
+                        >
+                          <div className="flex items-center gap-2.5">
+                            <img
+                              src={member.avatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80'}
+                              alt={member.name}
+                              className="w-7 h-7 rounded-full object-cover border border-carnival-gold/40"
+                            />
+                            <div>
+                              <div className="text-xs font-semibold text-white">{member.name}</div>
+                              <div className="text-[10px] text-carnival-cyan font-mono">{member.role}</div>
+                            </div>
+                          </div>
+
+                          {member.github && (
+                            <a
+                              href={`https://github.com/${member.github}`}
+                              target="_blank"
+                              rel="noreferrer"
+                              className="text-slate-400 hover:text-white p-1"
+                              title={`GitHub: @${member.github}`}
+                            >
+                              <Github className="w-4 h-4" />
+                            </a>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Bottom Glow Line */}
+                  <div
+                    className="absolute bottom-0 inset-x-0 h-[2px] opacity-40 group-hover:opacity-100 transition-opacity"
+                    style={{ backgroundColor: team.themeColor }}
+                  />
+                </div>
+
+                {/* BACK OF TICKET (Physical Ticket Reverse Details) */}
+                <div className="ticket-flip-back glass-card rounded-3xl p-6 border-2 border-carnival-gold shadow-2xl flex flex-col justify-between relative overflow-hidden bg-gradient-to-b from-[#1C172E] via-[#120F24] to-[#0B0916] text-slate-200">
+                  {/* Ticket Semicircle Side Cutouts */}
+                  <div className="absolute -left-3 top-1/2 -translate-y-1/2 w-6 h-6 rounded-full bg-[#0B0A16] border-r border-white/20 z-10" />
+                  <div className="absolute -right-3 top-1/2 -translate-y-1/2 w-6 h-6 rounded-full bg-[#0B0A16] border-l border-white/20 z-10" />
+
+                  <div>
+                    {/* Back Header */}
+                    <div className="flex items-center justify-between pb-3 border-b border-white/10 mb-4">
+                      <div className="flex items-center gap-2">
+                        <Shield className="w-5 h-5 text-carnival-gold" />
+                        <span className="font-extrabold text-white text-sm">ARENA PASS VERIFICATION</span>
+                      </div>
+                      <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-carnival-gold/20 text-carnival-gold border border-carnival-gold/30">
+                        OFFICIAL STAMP
+                      </span>
+                    </div>
+
+                    {/* Team Badges & Perks */}
+                    <div className="space-y-3 mb-4">
+                      <div className="text-xs font-mono text-slate-400 uppercase font-bold">Granted Perks & Badges:</div>
+                      <div className="flex flex-wrap gap-2">
+                        {team.badges.map((b, i) => (
+                          <span
+                            key={i}
+                            className="px-2.5 py-1 rounded-xl bg-white/10 border border-white/10 text-xs font-semibold text-white flex items-center gap-1"
+                          >
+                            <span>{b}</span>
+                          </span>
+                        ))}
+                        {team.streak > 0 && (
+                          <span className="px-2.5 py-1 rounded-xl bg-carnival-crimson/20 border border-carnival-crimson/40 text-carnival-crimson text-xs font-bold font-mono">
+                            🔥 {team.streak}-Day Streak
+                          </span>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Simulated Barcode & Serial */}
+                    <div className="p-3 rounded-2xl bg-black/60 border border-white/10 text-center font-mono space-y-1">
+                      <div className="text-[10px] text-slate-400">SERIAL BARCODE #CWC4-{team.id.toUpperCase()}-2026</div>
+                      <div className="h-8 bg-[#0F0D1C] rounded-lg flex items-center justify-center tracking-widest text-carnival-gold text-lg font-bold select-none border border-carnival-gold/30">
+                        ||| | |||| | ||| || ||||
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Back Footer Link */}
+                  <div className="pt-4 border-t border-white/10 flex items-center justify-between text-xs font-mono">
+                    <span className="text-slate-400">CWC SEASON 4</span>
+                    <span className="text-carnival-gold font-bold flex items-center gap-1">
+                      <span>VERIFIED TICKET</span>
+                      <CheckCircle2 className="w-3.5 h-3.5" />
+                    </span>
+                  </div>
                 </div>
               </div>
-
-              {/* Bottom Glow Line */}
-              <div
-                className="absolute bottom-0 inset-x-0 h-[2px] opacity-40 group-hover:opacity-100 transition-opacity"
-                style={{ backgroundColor: team.themeColor }}
-              />
             </motion.div>
           ))}
         </div>

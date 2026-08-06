@@ -31,11 +31,20 @@ import { ChampionBanner } from '../../components/common/ChampionBanner';
 import { AdvantageGrantedToast, AdvantageGrantedPayload } from '../../components/common/AdvantageGrantedToast';
 import { triggerCarnivalConfetti } from '../../components/hero/ConfettiEffect';
 import { useSocket } from '../../context/SocketContext';
+import { useTheme } from '../../context/ThemeContext';
 import { MOCK_TEAMS, MOCK_TIMELINE } from '../../data/mockData';
 
 export const StudentDashboard: React.FC = () => {
   const location = useLocation();
   const { socket } = useSocket();
+  const { isGrandFinale, triggerFireworks } = useTheme();
+
+  // Trigger fireworks on Grand Finale activation
+  useEffect(() => {
+    if (isGrandFinale) {
+      triggerFireworks();
+    }
+  }, [isGrandFinale, triggerFireworks]);
 
   // Active Team state
   const [teamName] = useState('Cyber Circus Kings');
