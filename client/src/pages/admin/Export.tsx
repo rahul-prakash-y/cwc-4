@@ -270,7 +270,80 @@ export const Export: React.FC = () => {
     }
   });
 
-  // 3. Generate PDF Participation Certificate using jsPDF
+  // 3. College Faculty Attendance Report CSV Export Headers & Data Mapping
+  const attendanceHeaders = [
+    { label: 'Student / Member Name', key: 'studentName' },
+    { label: 'Team Name', key: 'teamName' },
+    { label: 'Role', key: 'role' },
+    { label: 'Residence Status (Hosteller/Day Scholar)', key: 'residenceType' },
+    { label: 'Contact Email', key: 'email' },
+    { label: 'Day 1', key: 'day1' },
+    { label: 'Day 2', key: 'day2' },
+    { label: 'Day 3', key: 'day3' },
+    { label: 'Day 4', key: 'day4' },
+    { label: 'Day 5', key: 'day5' },
+    { label: 'Day 6', key: 'day6' },
+    { label: 'Day 7', key: 'day7' },
+    { label: 'Day 8', key: 'day8' },
+    { label: 'Day 9', key: 'day9' },
+    { label: 'Day 10', key: 'day10' },
+    { label: 'Total Days Present', key: 'totalPresent' },
+    { label: 'Attendance Rate (%)', key: 'attendanceRate' },
+    { label: 'Rule Book Status', key: 'complianceStatus' },
+  ];
+
+  const attendanceData: any[] = [];
+  sortedTeams.forEach((team) => {
+    const allMembersList: { name: string; email?: string; role?: string; residenceType?: string }[] = [];
+    if (team.leaderName) {
+      allMembersList.push({
+        name: team.leaderName,
+        email: team.leaderEmail || 'N/A',
+        role: 'Team Leader',
+        residenceType: team.residenceType || 'Hosteller',
+      });
+    }
+    if (Array.isArray(team.members)) {
+      team.members.forEach((m) => {
+        const memName = typeof m === 'string' ? m : m.name;
+        if (memName !== team.leaderName) {
+          allMembersList.push({
+            name: memName,
+            email: typeof m === 'string' ? `${memName.toLowerCase().replace(/\s+/g, '.')}@cwc.org` : m.email || 'N/A',
+            role: typeof m === 'string' ? 'Team Member' : m.role || 'Team Member',
+            residenceType: typeof m === 'string' ? team.residenceType || 'Hosteller' : m.residenceType || team.residenceType || 'Hosteller',
+          });
+        }
+      });
+    }
+
+    allMembersList.forEach((mem) => {
+      const presenceDaysCount = team.attendanceDays || 9;
+      const dayStatus: Record<string, string> = {};
+      let presentTotal = 0;
+
+      for (let day = 1; day <= 10; day++) {
+        const isPresent = day <= presenceDaysCount;
+        dayStatus[`day${day}`] = isPresent ? 'Present' : 'Absent';
+        if (isPresent) presentTotal++;
+      }
+
+      const rate = Math.round((presentTotal / 10) * 100);
+      attendanceData.push({
+        studentName: mem.name,
+        teamName: team.teamName,
+        role: mem.role || 'Member',
+        residenceType: mem.residenceType || team.residenceType || 'Hosteller',
+        email: mem.email || 'N/A',
+        ...dayStatus,
+        totalPresent: `${presentTotal} / 10 Days`,
+        attendanceRate: `${rate}%`,
+        complianceStatus: team.status === 'Danger' ? 'Flagged (In Danger)' : 'Compliant (Safe)',
+      });
+    });
+  });
+
+  // 4. Generate PDF Participation Certificate using jsPDF
   const generateCertificatePDF = (team: ExportTeamData, rankIndex: number) => {
     const doc = new jsPDF({
       orientation: 'landscape',
@@ -427,16 +500,18 @@ export const Export: React.FC = () => {
       </div>
 
       {/* CSV Export Action Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {/* Card 1: Final Score Sheet */}
-        <div className="glass-card p-6 rounded-3xl border-carnival-gold/30 hover:border-carnival-gold transition-all group relative overflow-hidden bg-gradient-to-b from-[#1C172B]/90 to-[#120F24]/90">
-          <div className="w-12 h-12 rounded-2xl bg-carnival-gold/20 text-carnival-gold flex items-center justify-center mb-4 group-hover:scale-110 transition-transform shadow-neon-gold">
-            <FileSpreadsheet className="w-6 h-6" />
+        <div className="glass-card p-6 rounded-3xl border-carnival-gold/30 hover:border-carnival-gold transition-all group relative overflow-hidden bg-gradient-to-b from-[#1C172B]/90 to-[#120F24]/90 flex flex-col justify-between">
+          <div>
+            <div className="w-12 h-12 rounded-2xl bg-carnival-gold/20 text-carnival-gold flex items-center justify-center mb-4 group-hover:scale-110 transition-transform shadow-neon-gold">
+              <FileSpreadsheet className="w-6 h-6" />
+            </div>
+            <h3 className="font-extrabold text-white text-xl mb-1">Final Score Sheet CSV</h3>
+            <p className="text-xs text-slate-300 mb-6 leading-relaxed">
+              Export complete final score breakdown including all team ranks, main task scores, special task scores, immunity flags, advantage perks, and repo links.
+            </p>
           </div>
-          <h3 className="font-extrabold text-white text-xl mb-1">Final Score Sheet CSV</h3>
-          <p className="text-xs text-slate-300 mb-6 leading-relaxed">
-            Export complete final score breakdown including all team ranks, main task scores, special task scores, immunity flags, advantage perks, and repo links.
-          </p>
           <CSVLink
             data={scoreSheetData}
             headers={scoreSheetHeaders}
@@ -449,14 +524,16 @@ export const Export: React.FC = () => {
         </div>
 
         {/* Card 2: Participation List Roster */}
-        <div className="glass-card p-6 rounded-3xl border-carnival-cyan/30 hover:border-carnival-cyan transition-all group relative overflow-hidden bg-gradient-to-b from-[#101F30]/90 to-[#120F24]/90">
-          <div className="w-12 h-12 rounded-2xl bg-carnival-cyan/20 text-carnival-cyan flex items-center justify-center mb-4 group-hover:scale-110 transition-transform shadow-neon-cyan">
-            <Users className="w-6 h-6" />
+        <div className="glass-card p-6 rounded-3xl border-carnival-cyan/30 hover:border-carnival-cyan transition-all group relative overflow-hidden bg-gradient-to-b from-[#101F30]/90 to-[#120F24]/90 flex flex-col justify-between">
+          <div>
+            <div className="w-12 h-12 rounded-2xl bg-carnival-cyan/20 text-carnival-cyan flex items-center justify-center mb-4 group-hover:scale-110 transition-transform shadow-neon-cyan">
+              <Users className="w-6 h-6" />
+            </div>
+            <h3 className="font-extrabold text-white text-xl mb-1">Participation List CSV</h3>
+            <p className="text-xs text-slate-300 mb-6 leading-relaxed">
+              Export individual student roster detailing emails, contact phones, hosteller vs day scholar residence status, assigned team roles, and track details.
+            </p>
           </div>
-          <h3 className="font-extrabold text-white text-xl mb-1">Participation List CSV</h3>
-          <p className="text-xs text-slate-300 mb-6 leading-relaxed">
-            Export individual student roster detailing emails, contact phones, hosteller vs day scholar residence status, assigned team roles, and track details.
-          </p>
           <CSVLink
             data={participationData}
             headers={participationHeaders}
@@ -465,6 +542,28 @@ export const Export: React.FC = () => {
           >
             <Download className="w-4 h-4" />
             <span>Download Participation List (CSV)</span>
+          </CSVLink>
+        </div>
+
+        {/* Card 3: College Faculty Attendance Report */}
+        <div className="glass-card p-6 rounded-3xl border-emerald-500/30 hover:border-emerald-400 transition-all group relative overflow-hidden bg-gradient-to-b from-[#0F241C]/90 to-[#120F24]/90 flex flex-col justify-between">
+          <div>
+            <div className="w-12 h-12 rounded-2xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform shadow-neon-emerald">
+              <UserCheck className="w-6 h-6" />
+            </div>
+            <h3 className="font-extrabold text-white text-xl mb-1">Faculty Attendance CSV</h3>
+            <p className="text-xs text-slate-300 mb-6 leading-relaxed">
+              Generate 10-day structured attendance report for college faculty showing days present/absent for every individual member, residency, and compliance flags.
+            </p>
+          </div>
+          <CSVLink
+            data={attendanceData}
+            headers={attendanceHeaders}
+            filename="CWC_Season4_Faculty_Attendance_Report.csv"
+            className="w-full flex items-center justify-center gap-2 px-5 py-3.5 rounded-2xl bg-emerald-400 text-slate-950 font-black text-xs hover:brightness-110 transition-all shadow-neon-emerald"
+          >
+            <Download className="w-4 h-4" />
+            <span>Export Attendance (CSV)</span>
           </CSVLink>
         </div>
       </div>

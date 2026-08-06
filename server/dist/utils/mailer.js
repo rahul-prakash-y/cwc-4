@@ -24,6 +24,16 @@ function getTransporter() {
     return transporter;
 }
 /**
+ * Utility function to send a Carnival HTML Email
+ */
+export async function sendCarnivalEmail(to, subject, htmlBody) {
+    return sendEmail({
+        to,
+        subject,
+        html: htmlBody,
+    });
+}
+/**
  * Sends a transactional email asynchronously
  */
 export async function sendEmail(options) {

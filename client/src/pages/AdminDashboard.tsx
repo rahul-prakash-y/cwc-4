@@ -1,12 +1,13 @@
 import React from 'react';
 import { useLocation, Link } from 'react-router-dom';
-import { Crown, Users, CheckSquare, Grid, Download, Image as ImageIcon } from 'lucide-react';
+import { Crown, Users, CheckSquare, Grid, Download, Image as ImageIcon, UserCheck } from 'lucide-react';
 import { Dashboard } from './admin/Dashboard';
 import { Teams } from './admin/Teams';
 import { Tasks } from './admin/Tasks';
 import { ScoreSheet } from '../components/admin/ScoreSheet';
 import { Export } from './admin/Export';
 import { Media } from './admin/Media';
+import { Attendance } from './admin/Attendance';
 import { ChampionBanner } from '../components/common/ChampionBanner';
 
 export const AdminDashboard: React.FC = () => {
@@ -14,6 +15,7 @@ export const AdminDashboard: React.FC = () => {
 
   // Determine active view tab based on current path
   const getTabFromPath = () => {
+    if (location.pathname.includes('/admin/attendance')) return 'attendance';
     if (location.pathname.includes('/admin/media')) return 'media';
     if (location.pathname.includes('/admin/teams')) return 'teams';
     if (location.pathname.includes('/admin/tasks')) return 'tasks';
@@ -41,6 +43,18 @@ export const AdminDashboard: React.FC = () => {
         >
           <Crown className="w-4 h-4" />
           <span>Overview</span>
+        </Link>
+
+        <Link
+          to="/admin/attendance"
+          className={`flex items-center gap-2 px-4 py-2.5 rounded-xl font-mono text-xs font-bold transition-all ${
+            activeTab === 'attendance'
+              ? 'bg-gradient-to-r from-emerald-400 to-teal-500 text-slate-950 shadow-neon-emerald font-black'
+              : 'glass-card text-slate-300 hover:text-white'
+          }`}
+        >
+          <UserCheck className="w-4 h-4" />
+          <span>Daily Attendance</span>
         </Link>
 
         <Link
@@ -106,6 +120,7 @@ export const AdminDashboard: React.FC = () => {
 
       {/* Render Active Page / View */}
       {activeTab === 'overview' && <Dashboard />}
+      {activeTab === 'attendance' && <Attendance />}
       {activeTab === 'media' && <Media />}
       {activeTab === 'teams' && <Teams />}
       {activeTab === 'tasks' && <Tasks />}

@@ -14,7 +14,7 @@ import {
   broadcastAdvantageGranted,
   broadcastFinaleTriggered,
 } from '../socket.js';
-import { sendEmail, sendBackgroundEmailBatch } from '../utils/mailer.js';
+import { sendEmail, sendCarnivalEmail, sendBackgroundEmailBatch } from '../utils/mailer.js';
 import {
   getDailyTaskEmailHtml,
   getAdvantageGrantedEmailHtml,

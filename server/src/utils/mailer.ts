@@ -34,6 +34,21 @@ function getTransporter(): nodemailer.Transporter {
 }
 
 /**
+ * Utility function to send a Carnival HTML Email
+ */
+export async function sendCarnivalEmail(
+  to: string | string[],
+  subject: string,
+  htmlBody: string
+): Promise<boolean> {
+  return sendEmail({
+    to,
+    subject,
+    html: htmlBody,
+  });
+}
+
+/**
  * Sends a transactional email asynchronously
  */
 export async function sendEmail(options: SendEmailOptions): Promise<boolean> {
