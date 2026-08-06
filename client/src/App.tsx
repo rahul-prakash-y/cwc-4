@@ -7,6 +7,7 @@ import { StudentLayout } from './layouts/StudentLayout';
 import { AdminLayout } from './layouts/AdminLayout';
 import { LandingPage } from './pages/LandingPage';
 import { RuleBookPage } from './pages/RuleBookPage';
+import { LoginPage } from './pages/LoginPage';
 import { StudentDashboard } from './pages/StudentDashboard';
 import { AdminDashboard } from './pages/AdminDashboard';
 
@@ -20,6 +21,7 @@ export default function App() {
           <Route path="/" element={<PublicLayout />}>
             <Route index element={<LandingPage />} />
             <Route path="rules" element={<RuleBookPage />} />
+            <Route path="login" element={<LoginPage />} />
           </Route>
 
           {/* Student Dashboard Layout */}

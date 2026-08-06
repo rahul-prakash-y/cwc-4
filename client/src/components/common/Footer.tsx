@@ -4,7 +4,7 @@ import { Sparkles, Heart, Shield, Code2 } from 'lucide-react';
 
 export const Footer: React.FC = () => {
   return (
-    <footer className="bg-black/80 border-t border-white/10 relative overflow-hidden text-slate-400 text-sm">
+    <footer className="bg-black/90 border-t border-white/10 relative overflow-hidden text-slate-400 text-sm">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-12">
           {/* Brand Col */}
@@ -30,10 +30,13 @@ export const Footer: React.FC = () => {
           <div className="space-y-3">
             <h4 className="font-bold text-white text-sm uppercase tracking-wider font-mono">Carnival Arena</h4>
             <ul className="space-y-2 text-xs">
+              <li><a href="#about" className="hover:text-carnival-gold transition-colors">About CWC</a></li>
               <li><a href="#timeline" className="hover:text-carnival-gold transition-colors">10-Day Timeline</a></li>
+              <li><a href="#prizes" className="hover:text-carnival-gold transition-colors">Prize Pool & Honors</a></li>
               <li><a href="#teams" className="hover:text-carnival-gold transition-colors">Registered Teams</a></li>
-              <li><Link to="/rules" className="hover:text-carnival-gold transition-colors">Official Rule Codex</Link></li>
-              <li><Link to="/student" className="hover:text-carnival-gold transition-colors">Student Dashboard</Link></li>
+              <li><a href="#sponsors" className="hover:text-carnival-gold transition-colors">Official Sponsors</a></li>
+              <li><a href="#contact" className="hover:text-carnival-gold transition-colors">Contact & Venue</a></li>
+              <li><Link to="/login" className="hover:text-carnival-gold transition-colors text-carnival-cyan font-bold">Login Portal</Link></li>
             </ul>
           </div>
 
