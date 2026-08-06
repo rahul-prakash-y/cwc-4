@@ -1,0 +1,421 @@
+import React, { useState, useEffect } from 'react';
+import { useLocation, Link } from 'react-router-dom';
+import { motion, AnimatePresence } from 'framer-motion';
+import {
+  LayoutDashboard,
+  CheckSquare,
+  Zap,
+  Trophy,
+  Award,
+  Clock,
+  Flame,
+  Shield,
+  ShieldAlert,
+  Sparkles,
+  TrendingUp,
+  TrendingDown,
+  Bell,
+  CheckCircle2,
+  AlertCircle,
+  ArrowRight,
+  Gift,
+  Lock,
+} from 'lucide-react';
+
+import { DailyTaskView, TaskDetail } from '../../components/student/DailyTaskView';
+import { TeamProgress } from '../../components/student/TeamProgress';
+import { AdvantagesLocker } from '../../components/student/AdvantagesLocker';
+import { LiveLeaderboardTable, LeaderboardTeam } from '../../components/dashboard/LiveLeaderboardTable';
+import { ChampionBanner } from '../../components/common/ChampionBanner';
+import { MOCK_TEAMS, MOCK_TIMELINE } from '../../data/mockData';
+
+export const StudentDashboard: React.FC = () => {
+  const location = useLocation();
+
+  // Active Team state
+  const [teamName] = useState('Cyber Circus Kings');
+  const [rank, setRank] = useState(1);
+  const [totalScore, setTotalScore] = useState(1850);
+  const [streak] = useState(4);
+
+  // Survival Status state: Safe | Danger | Eliminated | Qualified
+  const [teamStatus, setTeamStatus] = useState<'Safe' | 'Danger' | 'Eliminated' | 'Qualified' | string>('Safe');
+
+  // Real-time backend status broadcast listener via SSE or WebSockets
+  useEffect(() => {
+    let eventSource: EventSource | null = null;
+    try {
+      eventSource = new EventSource('/api/v1/public/teams/events');
+      eventSource.onmessage = (event) => {
+        try {
+          const data = JSON.parse(event.data);
+          if (data.teamName === teamName || data.teamId === 'team-1') {
+            setTeamStatus(data.status);
+          }
+        } catch (e) {}
+      };
+    } catch (err) {}
+
+    return () => {
+      if (eventSource) eventSource.close();
+    };
+  }, [teamName]);
+
+  // Advantages / Immunity state
+  const [advantages, setAdvantages] = useState([
+    {
+      id: 'adv-1',
+      name: '2x Double Multiplier',
+      icon: '⚡',
+      type: 'Multiplier',
+      status: 'ready',
+      description: 'Doubles all points earned in today’s Arena Task.',
+    },
+    {
+      id: 'adv-2',
+      name: 'Immunity Shield',
+      icon: '🛡️',
+      type: 'Shield',
+      status: 'active',
+      description: 'Shields team against elimination on 1 missed sprint.',
+    },
+    {
+      id: 'adv-[#adv-3]',
+      name: 'Golden Hint Wheel',
+      icon: '🎡',
+      type: 'Hint',
+      status: 'used',
+      description: 'Revealed architectural clue for Day 3.',
+    },
+  ]);
+
+  const activeAdvantagesCount = advantages.filter((a) => a.status === 'active').length;
+  const immunityActive = advantages.some((a) => a.type === 'Shield' && a.status === 'active');
+
+  // Global Pinned Announcements ticker
+  const [announcements] = useState([
+    {
+      id: 'ann-1',
+      title: '🔊 Boss Fight Window Extended',
+      message: 'Day 5 Arena Boss Fight deadline extended by 30 mins IST!',
+      time: '10m ago',
+      type: 'urgent',
+    },
+    {
+      id: 'ann-2',
+      title: '⚡ 2x Multiplier Bonus Active',
+      message: 'Equip your 2x Double Multiplier before submitting today!',
+      time: '1h ago',
+    },
+    {
+      id: 'ann-3',
+      title: '🎁 Bonus Clue Released',
+      message: 'Check Discord #boss-fight channel for WebSocket tips.',
+      time: '2h ago',
+    },
+  ]);
+
+  // Today's Task Brief
+  const sampleTask: TaskDetail = {
+    id: 'task-day5',
+    dayNumber: 5,
+    title: 'Mid-Season Arena Boss Fight: Real-Time Multiplayer Arena',
+    category: 'Boss Fight',
+    points: 500,
+    duration: '4 Hours',
+    startTime: '02:00 PM',
+    endTime: '06:00 PM',
+    deadline: '03h 42m 18s',
+    description: `Build and deploy a real-time multiplayer mini-game application.
+Requirements include:
+**1.** Fastify WebSockets for synchronized state.
+**2.** Framer Motion UI effects & live carnival point tracking.
+**3.** Public GitHub repo URL & Cloudinary video demonstration.`,
+    constraints: ['Max 4 members per team submission', 'Fastify / Node.js backend requirement'],
+    requirements: [
+      'Provide a public GitHub repository link with clean commits and documentation.',
+      'Demonstrate real-time WebSocket communication between at least 2 clients.',
+      'Upload a Cloudinary video demonstration or architectural PDF report.',
+      'Ensure smooth CSS/Framer Motion animations for player score updates.',
+    ],
+  };
+
+  // Live Countdown Timer logic
+  const [timeLeft, setTimeLeft] = useState({ hours: 3, minutes: 42, seconds: 18 });
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setTimeLeft((prev) => {
+        if (prev.seconds > 0) return { ...prev, seconds: prev.seconds - 1 };
+        if (prev.minutes > 0) return { ...prev, minutes: 59, seconds: 59 };
+        if (prev.hours > 0) return { hours: prev.hours - 1, minutes: 59, seconds: 59 };
+        return { hours: 0, minutes: 0, seconds: 0 };
+      });
+    }, 1000);
+    return () => clearInterval(timer);
+  }, []);
+
+  // Leaderboard Teams setup
+  const initialLeaderboardTeams: LeaderboardTeam[] = MOCK_TEAMS.map((t) => ({
+    ...t,
+    trend: t.rank === 1 ? 'same' : t.rank === 2 ? 'up' : t.rank === 5 ? 'up' : 'down',
+    trendValue: t.rank === 2 ? 2 : t.rank === 5 ? 1 : 1,
+    played: 5,
+    wins: t.rank <= 2 ? 4 : t.rank <= 4 ? 3 : 2,
+  }));
+
+  const scrollToTask = () => {
+    const el = document.getElementById('daily-task-section');
+    if (el) el.scrollIntoView({ behavior: 'smooth' });
+  };
+
+  const currentPath = location.pathname;
+
+  return (
+    <div
+      className={`space-y-8 max-w-7xl mx-auto pb-12 transition-all duration-500 ${
+        teamStatus === 'Danger'
+          ? 'border-2 border-orange-500/80 rounded-3xl p-3 sm:p-6 animate-pulse bg-orange-950/10 shadow-[0_0_30px_rgba(249,115,22,0.3)]'
+          : teamStatus === 'Eliminated'
+          ? 'border-2 border-rose-500/50 rounded-3xl p-3 sm:p-6 bg-rose-950/15'
+          : ''
+      }`}
+    >
+      <ChampionBanner />
+
+      {/* TASK 1: Student Top Bar */}
+      <section id="overview-section">
+        <motion.div
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="p-6 sm:p-8 rounded-3xl glass-card border border-carnival-gold/30 shadow-2xl relative overflow-hidden bg-gradient-to-r from-[#1A1838]/90 via-[#15132B]/90 to-[#1F1735]/90 space-y-4"
+        >
+          <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-6 relative z-10">
+            <div className="space-y-3">
+              {/* Header Badges Pill Row */}
+              <div className="flex flex-wrap items-center gap-2">
+                {/* Current Rank Badge */}
+                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-carnival-gold/20 text-carnival-gold border border-carnival-gold/40 text-xs font-mono font-bold shadow-neon-gold">
+                  <Award className="w-3.5 h-3.5" />
+                  <span>RANK #{rank} BADGE</span>
+                </span>
+
+                {/* Total Points Badge */}
+                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-carnival-cyan/20 text-carnival-cyan border border-carnival-cyan/40 text-xs font-mono font-bold shadow-neon-cyan">
+                  <Zap className="w-3.5 h-3.5" />
+                  <span>{totalScore.toLocaleString()} TOTAL POINTS</span>
+                </span>
+
+                {/* Active Advantages Count */}
+                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-carnival-purple/20 text-carnival-purple border border-carnival-purple/40 text-xs font-mono font-bold">
+                  <Sparkles className="w-3.5 h-3.5" />
+                  <span>{activeAdvantagesCount} ADVANTAGES ACTIVE</span>
+                </span>
+
+                {/* Immunity Status Pill */}
+                <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-mono font-bold ${
+                  immunityActive
+                    ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 shadow-neon-gold animate-pulse'
+                    : 'bg-white/10 text-slate-400 border border-white/10'
+                }`}>
+                  <Shield className="w-3.5 h-3.5" />
+                  <span>IMMUNITY: {immunityActive ? 'PROTECTED 🛡️' : 'AVAILABLE ⚪'}</span>
+                </span>
+
+                {/* Status Simulator toggles */}
+                <div className="inline-flex items-center gap-1 p-1 rounded-full bg-black/60 border border-white/10 text-[10px] font-mono">
+                  <span className="text-slate-400 px-1 font-bold">Status:</span>
+                  <button
+                    onClick={() => setTeamStatus('Safe')}
+                    className={`px-2 py-0.5 rounded-full transition-all ${teamStatus === 'Safe' ? 'bg-emerald-500 text-slate-950 font-bold' : 'text-slate-300'}`}
+                  >
+                    Safe
+                  </button>
+                  <button
+                    onClick={() => setTeamStatus('Danger')}
+                    className={`px-2 py-0.5 rounded-full transition-all ${teamStatus === 'Danger' ? 'bg-orange-500 text-slate-950 font-bold' : 'text-slate-300'}`}
+                  >
+                    Danger
+                  </button>
+                  <button
+                    onClick={() => setTeamStatus('Eliminated')}
+                    className={`px-2 py-0.5 rounded-full transition-all ${teamStatus === 'Eliminated' ? 'bg-rose-500 text-white font-bold' : 'text-slate-300'}`}
+                  >
+                    Eliminated
+                  </button>
+                </div>
+              </div>
+
+              {/* Welcome Team Name Header */}
+              <h1 className="text-3xl sm:text-5xl font-black text-white tracking-tight flex flex-wrap items-center gap-3">
+                Welcome <span className="text-gradient-carnival">{teamName}</span> 🔥
+              </h1>
+              <p className="text-slate-300 text-sm sm:text-base max-w-2xl">
+                CWC Season 4 Student Command • Manage arena submissions, track 10-day carnival lights, and apply advantage power-ups.
+              </p>
+            </div>
+          </div>
+        </motion.div>
+      </section>
+
+      {/* TASK 1: Graceful Locked Screen when Eliminated */}
+      {teamStatus === 'Eliminated' && (
+        <motion.div
+          initial={{ scale: 0.95, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          className="p-8 sm:p-12 rounded-3xl bg-gradient-to-r from-rose-950/90 via-[#1C0F22] to-rose-950/90 border-2 border-rose-500/60 shadow-neon-crimson text-center space-y-4 relative overflow-hidden"
+        >
+          <div className="w-20 h-20 rounded-3xl bg-rose-500/20 text-rose-400 border border-rose-500/40 flex items-center justify-center mx-auto text-4xl shadow-lg">
+            🎪
+          </div>
+          <h2 className="text-3xl sm:text-5xl font-black text-white">
+            Thank You for Participating in CWC Season 4! 🎪
+          </h2>
+          <p className="text-slate-300 text-base sm:text-lg max-w-2xl mx-auto leading-relaxed">
+            Your team <strong className="text-rose-400 font-mono font-extrabold">{teamName}</strong> has completed its run in this season&apos;s coding arena. We sincerely thank you for your participation, passion, and code contributions!
+          </p>
+          <div className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-rose-500/20 text-rose-300 border border-rose-500/40 font-mono text-xs font-bold">
+            <Lock className="w-4 h-4" /> Task Submissions & Arena Controls Are Gracefully Locked
+          </div>
+        </motion.div>
+      )}
+
+      {/* TASK 1: 5 Grid Layout Cards */}
+      <div className={teamStatus === 'Eliminated' ? 'filter grayscale opacity-70 pointer-events-none' : ''}>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+          {/* Card 1: Today's Task Brief */}
+          <motion.div
+            whileHover={{ y: -4 }}
+            className="p-5 rounded-2xl glass-card border border-carnival-crimson/40 shadow-neon-crimson flex flex-col justify-between bg-gradient-to-b from-[#1C1226]/90 to-[#120F24]/90"
+          >
+            <div>
+              <div className="flex items-center justify-between text-xs font-mono font-bold text-carnival-crimson mb-2">
+                <span>DAY {sampleTask.dayNumber} TASK BRIEF</span>
+                <span className="text-carnival-gold">+{sampleTask.points} PTS</span>
+              </div>
+              <h3 className="text-base font-extrabold text-white line-clamp-2 mb-1">{sampleTask.title}</h3>
+              <p className="text-xs text-slate-300 line-clamp-2">Category: {sampleTask.category}</p>
+            </div>
+            <button
+              onClick={scrollToTask}
+              className="mt-4 w-full py-2 px-3 rounded-xl bg-carnival-crimson text-white text-xs font-bold flex items-center justify-center gap-1.5 hover:brightness-110"
+            >
+              <span>View Brief</span>
+              <ArrowRight className="w-3.5 h-3.5" />
+            </button>
+          </motion.div>
+
+          {/* Card 2: Live Countdown Timer */}
+          <motion.div
+            whileHover={{ y: -4 }}
+            className="p-5 rounded-2xl glass-card border border-carnival-cyan/40 shadow-neon-cyan flex flex-col justify-between bg-gradient-to-b from-[#101F30]/90 to-[#120F24]/90"
+          >
+            <div>
+              <div className="flex items-center justify-between text-xs font-mono font-bold text-carnival-cyan mb-2">
+                <span className="flex items-center gap-1"><Clock className="w-3.5 h-3.5" /> COUNTDOWN</span>
+                <span className="text-[10px] text-slate-400">Deadline</span>
+              </div>
+              <div className="flex items-center justify-center gap-1 my-2 font-mono font-black text-xl text-white">
+                <span className="p-1.5 bg-black/60 rounded-lg">{String(timeLeft.hours).padStart(2, '0')}h</span>
+                <span className="text-carnival-cyan">:</span>
+                <span className="p-1.5 bg-black/60 rounded-lg">{String(timeLeft.minutes).padStart(2, '0')}m</span>
+                <span className="text-carnival-cyan">:</span>
+                <span className="p-1.5 bg-black/60 rounded-lg text-carnival-cyan">{String(timeLeft.seconds).padStart(2, '0')}s</span>
+              </div>
+            </div>
+            <div className="text-[10px] text-slate-400 font-mono text-center">
+              Active Arena Deadline
+            </div>
+          </motion.div>
+
+          {/* Card 3: Leaderboard Position Summary & Trends */}
+          <motion.div
+            whileHover={{ y: -4 }}
+            className="p-5 rounded-2xl glass-card border border-carnival-gold/40 shadow-neon-gold flex flex-col justify-between bg-gradient-to-b from-[#241E11]/90 to-[#120F24]/90"
+          >
+            <div>
+              <div className="flex items-center justify-between text-xs font-mono font-bold text-carnival-gold mb-2">
+                <span>LEADERBOARD TREND</span>
+                <span className="px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 font-extrabold text-[10px] flex items-center gap-0.5">
+                  <TrendingUp className="w-3 h-3 text-emerald-400" /> ↑2
+                </span>
+              </div>
+              <div className="text-2xl font-black text-white font-mono flex items-center gap-2 my-1">
+                <span>Rank #{rank}</span>
+                <span className="text-sm text-carnival-gold font-normal">(Top 1%)</span>
+              </div>
+              <p className="text-[11px] text-slate-300">
+                Trends: <span className="text-emerald-400 font-bold font-mono">↑2 Up</span> from yesterday.
+              </p>
+            </div>
+            <div className="text-[10px] text-carnival-gold font-mono flex items-center gap-1">
+              <span>Trends: ↑2, ↓1, NEW supported</span>
+            </div>
+          </motion.div>
+
+          {/* Card 4: Active Advantages & Immunities Available */}
+          <motion.div
+            whileHover={{ y: -4 }}
+            className="p-5 rounded-2xl glass-card border border-carnival-purple/40 shadow-neon-purple flex flex-col justify-between bg-gradient-to-b from-[#1C1330]/90 to-[#120F24]/90"
+          >
+            <div>
+              <div className="flex items-center justify-between text-xs font-mono font-bold text-carnival-purple mb-2">
+                <span className="flex items-center gap-1"><Zap className="w-3.5 h-3.5 fill-carnival-purple" /> ADVANTAGES</span>
+                <span className="text-white bg-carnival-purple/30 px-2 py-0.5 rounded">{advantages.length} Total</span>
+              </div>
+              <div className="space-y-1 my-1 text-xs">
+                <div className="flex justify-between text-slate-200">
+                  <span>Active Perks:</span>
+                  <strong className="text-emerald-400 font-mono">{activeAdvantagesCount}</strong>
+                </div>
+                <div className="flex justify-between text-slate-200">
+                  <span>Immunity Status:</span>
+                  <strong className="text-carnival-gold font-mono">{immunityActive ? 'Shielded' : 'Available'}</strong>
+                </div>
+              </div>
+            </div>
+            <div className="text-[10px] text-carnival-purple font-mono">
+              Ready for immediate activation
+            </div>
+          </motion.div>
+
+          {/* Card 5: Global Pinned Announcements Ticker */}
+          <motion.div
+            whileHover={{ y: -4 }}
+            className="p-5 rounded-2xl glass-card border border-carnival-cyan/40 shadow-neon-cyan flex flex-col justify-between bg-gradient-to-b from-[#10192A]/90 to-[#120F24]/90"
+          >
+            <div>
+              <div className="flex items-center justify-between text-xs font-mono font-bold text-carnival-cyan mb-2">
+                <span className="flex items-center gap-1"><Bell className="w-3.5 h-3.5" /> BROADCAST TICKER</span>
+                <span className="text-[10px] text-carnival-cyan">PINNED</span>
+              </div>
+              <div className="space-y-1.5 max-h-[85px] overflow-y-auto">
+                {announcements.map((a) => (
+                  <div key={a.id} className="p-1.5 rounded bg-black/40 text-[11px] text-slate-200">
+                    <span className="font-bold text-white block truncate">{a.title}</span>
+                    <span className="text-slate-400 text-[10px] block truncate">{a.message}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+            <div className="text-[10px] text-slate-400 font-mono">
+              Real-time websocket feed
+            </div>
+          </motion.div>
+        </div>
+
+        {/* Dynamic Main Dashboard Views */}
+        <div className="space-y-10 mt-8">
+          <section id="daily-task-section">
+            <DailyTaskView task={sampleTask} status={teamStatus} onTaskSubmitted={() => setTotalScore((prev) => prev + 500)} />
+          </section>
+
+          <TeamProgress timeline={MOCK_TIMELINE as any} currentDayNumber={5} />
+
+          <AdvantagesLocker onApplyAdvantage={(id, type) => console.log('Applied', id, type)} />
+
+          <LiveLeaderboardTable teams={initialLeaderboardTeams} currentTeamId="team-1" />
+        </div>
+      </div>
+    </div>
+  );
+};
