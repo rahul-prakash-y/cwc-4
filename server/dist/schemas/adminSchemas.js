@@ -38,7 +38,7 @@ export const grantAdvantageSchema = {
         type: 'object',
         required: ['teamId'],
         properties: {
-            teamId: { type: 'string', pattern: objectIdPattern },
+            teamId: { type: 'string', minLength: 1 },
         },
     },
     body: {

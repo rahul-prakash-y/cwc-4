@@ -1,6 +1,6 @@
-import { getStudentDashboard, getActiveTasks, submitTask, uploadTaskFile, } from '../controllers/studentController.js';
+import { getStudentDashboard, getActiveTasks, submitTask, uploadTaskFile, useAdvantage, } from '../controllers/studentController.js';
 import { authenticate, isStudent } from '../middleware/auth.js';
-import { submitTaskSchema } from '../schemas/studentSchemas.js';
+import { submitTaskSchema, useAdvantageSchema } from '../schemas/studentSchemas.js';
 export async function studentRoutes(fastify) {
     // All student routes require authentication and student role
     fastify.addHook('preHandler', authenticate);
@@ -11,6 +11,8 @@ export async function studentRoutes(fastify) {
     fastify.get('/tasks', getActiveTasks);
     // Submit Task (GitHub link or Cloudinary upload URL)
     fastify.post('/tasks/:taskId/submit', { schema: submitTaskSchema }, submitTask);
+    // Use / Deduct Advantage
+    fastify.post('/advantages/use', { schema: useAdvantageSchema }, useAdvantage);
     // Direct File Upload to Cloudinary (PDF / Image)
     fastify.post('/upload', uploadTaskFile);
 }

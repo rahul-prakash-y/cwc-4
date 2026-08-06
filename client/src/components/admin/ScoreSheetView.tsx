@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Grid, Shield, AlertTriangle, Zap, Save, RefreshCw, Sparkles, CheckCircle2, XCircle, Award } from 'lucide-react';
+import { Grid, Shield, AlertTriangle, Zap, Save, RefreshCw, Sparkles, CheckCircle2, XCircle, Award, Gift } from 'lucide-react';
 import { MOCK_TEAMS } from '../../data/mockData';
 import { triggerCarnivalConfetti } from '../hero/ConfettiEffect';
+import { GrantAdvantageModal } from './GrantAdvantageModal';
 
 export interface ScoreRowItem {
   teamId: string;
@@ -19,6 +20,7 @@ export interface ScoreRowItem {
 }
 
 export const ScoreSheetView: React.FC = () => {
+  const [isGrantModalOpen, setIsGrantModalOpen] = useState(false);
   const [rows, setRows] = useState<ScoreRowItem[]>([
     {
       teamId: 'team-1',
@@ -149,6 +151,23 @@ export const ScoreSheetView: React.FC = () => {
     setRows(updated);
   };
 
+  const handleAdvantageGranted = (teamId: string, advantage: string) => {
+    setRows((prev) =>
+      prev.map((r) => {
+        if (r.teamId === teamId) {
+          const isImmunity = advantage.toLowerCase().includes('immunity');
+          return {
+            ...r,
+            advantage: advantage,
+            immunity: isImmunity ? true : r.immunity,
+            totalScore: calculateTotal(r.mainTaskScore, r.specialTaskScore, advantage),
+          };
+        }
+        return r;
+      })
+    );
+  };
+
   // Fastify Backend Submission
   const handleSubmitPayload = async () => {
     setIsSubmitting(true);
@@ -213,6 +232,14 @@ export const ScoreSheetView: React.FC = () => {
 
         <div className="flex flex-wrap items-center gap-3">
           <button
+            onClick={() => setIsGrantModalOpen(true)}
+            className="px-4 py-3 rounded-xl bg-gradient-to-r from-purple-600 via-pink-600 to-carnival-gold text-white font-black text-xs uppercase tracking-wider shadow-neon-purple hover:scale-105 transition-all flex items-center gap-2 cursor-pointer"
+          >
+            <Gift className="w-4 h-4 text-white fill-white" />
+            <span>Grant Advantage 🎁</span>
+          </button>
+
+          <button
             onClick={handleSubmitPayload}
             disabled={isSubmitting}
             className="px-6 py-3 rounded-xl bg-gradient-to-r from-carnival-gold via-carnival-amber to-carnival-crimson text-slate-950 font-black text-xs shadow-neon-gold hover:scale-105 transition-all flex items-center gap-2 disabled:opacity-50"
@@ -226,6 +253,7 @@ export const ScoreSheetView: React.FC = () => {
           </button>
         </div>
       </div>
+
 
       {/* Toast Notification */}
       {successMessage && (
@@ -387,6 +415,14 @@ export const ScoreSheetView: React.FC = () => {
           </table>
         </div>
       </div>
+
+      {/* Grant Advantage Modal */}
+      <GrantAdvantageModal
+        isOpen={isGrantModalOpen}
+        onClose={() => setIsGrantModalOpen(false)}
+        teams={rows.map((r) => ({ id: r.teamId, name: r.teamName }))}
+        onAdvantageGranted={handleAdvantageGranted}
+      />
     </div>
   );
 };

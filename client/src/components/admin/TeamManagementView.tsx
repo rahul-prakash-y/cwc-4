@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Users, CheckCircle2, XCircle, Edit3, Shield, AlertTriangle, Search, Filter, Plus, Save, Trash2, X, Ticket, LayoutGrid, List } from 'lucide-react';
+import { Users, CheckCircle2, XCircle, Edit3, Shield, AlertTriangle, Search, Filter, Plus, Save, Trash2, X, Ticket, LayoutGrid, List, Gift } from 'lucide-react';
 import { MOCK_TEAMS } from '../../data/mockData';
 import { TicketTeamCard } from '../common/TicketTeamCard';
+import { GrantAdvantageModal } from './GrantAdvantageModal';
 
 export interface ExtendedTeam {
   id: string;
@@ -21,6 +22,7 @@ export interface ExtendedTeam {
 
 export const TeamManagementView: React.FC = () => {
   const [viewMode, setViewMode] = useState<'tickets' | 'table'>('tickets');
+  const [isGrantModalOpen, setIsGrantModalOpen] = useState(false);
   const [teams, setTeams] = useState<ExtendedTeam[]>([
     ...MOCK_TEAMS.map((t, idx) => ({
       id: t.id,
@@ -102,33 +104,45 @@ export const TeamManagementView: React.FC = () => {
           </p>
         </div>
 
-        {/* View Mode Toggle Switch */}
-        <div className="flex items-center gap-2 p-1 rounded-xl glass-card border-white/10">
+        {/* Header Action Buttons */}
+        <div className="flex items-center gap-3">
           <button
-            onClick={() => setViewMode('tickets')}
-            className={`px-3 py-1.5 rounded-lg text-xs font-bold font-mono flex items-center gap-1.5 transition-all ${
-              viewMode === 'tickets'
-                ? 'bg-carnival-gold text-slate-950 shadow-neon-gold'
-                : 'text-slate-400 hover:text-white'
-            }`}
+            onClick={() => setIsGrantModalOpen(true)}
+            className="px-4 py-2.5 rounded-xl bg-gradient-to-r from-carnival-gold via-amber-400 to-carnival-crimson text-slate-950 font-black text-xs uppercase tracking-wider shadow-neon-gold hover:scale-105 transition-all flex items-center gap-2 cursor-pointer"
           >
-            <Ticket className="w-3.5 h-3.5" />
-            <span>3D Ticket Cards</span>
+            <Gift className="w-4 h-4 text-slate-950 fill-slate-950" />
+            <span>Grant Advantage 🎁</span>
           </button>
 
-          <button
-            onClick={() => setViewMode('table')}
-            className={`px-3 py-1.5 rounded-lg text-xs font-bold font-mono flex items-center gap-1.5 transition-all ${
-              viewMode === 'table'
-                ? 'bg-carnival-cyan text-slate-950 shadow-neon-cyan'
-                : 'text-slate-400 hover:text-white'
-            }`}
-          >
-            <List className="w-3.5 h-3.5" />
-            <span>Table View</span>
-          </button>
+          {/* View Mode Toggle Switch */}
+          <div className="flex items-center gap-2 p-1 rounded-xl glass-card border-white/10">
+            <button
+              onClick={() => setViewMode('tickets')}
+              className={`px-3 py-1.5 rounded-lg text-xs font-bold font-mono flex items-center gap-1.5 transition-all ${
+                viewMode === 'tickets'
+                  ? 'bg-carnival-gold text-slate-950 shadow-neon-gold'
+                  : 'text-slate-400 hover:text-white'
+              }`}
+            >
+              <Ticket className="w-3.5 h-3.5" />
+              <span>3D Tickets</span>
+            </button>
+
+            <button
+              onClick={() => setViewMode('table')}
+              className={`px-3 py-1.5 rounded-lg text-xs font-bold font-mono flex items-center gap-1.5 transition-all ${
+                viewMode === 'table'
+                  ? 'bg-carnival-cyan text-slate-950 shadow-neon-cyan'
+                  : 'text-slate-400 hover:text-white'
+              }`}
+            >
+              <List className="w-3.5 h-3.5" />
+              <span>Table</span>
+            </button>
+          </div>
         </div>
       </div>
+
 
       {/* Filter and Search Bar */}
       <div className="flex flex-col md:flex-row gap-4 items-center justify-between">
@@ -437,6 +451,14 @@ export const TeamManagementView: React.FC = () => {
           </div>
         )}
       </AnimatePresence>
+
+      {/* Grant Advantage Modal */}
+      <GrantAdvantageModal
+        isOpen={isGrantModalOpen}
+        onClose={() => setIsGrantModalOpen(false)}
+        teams={teams.map((t) => ({ id: t.id, name: t.name }))}
+      />
     </div>
   );
 };
+

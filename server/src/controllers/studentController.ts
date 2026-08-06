@@ -67,6 +67,25 @@ export async function getStudentDashboard(request: FastifyRequest, reply: Fastif
   const rank = rankIndex !== -1 ? rankIndex + 1 : teamScoresList.length + 1;
 
   // Submissions for this team
+  // Helper to format inventory object
+  const getAdvQty = (advNameKey: string) => {
+    const item = (team.advantages || []).find((a) =>
+      a.advantage.toLowerCase().includes(advNameKey.toLowerCase())
+    );
+    return item ? item.quantity : 0;
+  };
+
+  const inventory = {
+    doublePoints: getAdvQty('double'),
+    extraTime: getAdvQty('time'),
+    skipQuestion: getAdvQty('skip'),
+    goldenCoin: getAdvQty('coin'),
+    hintCard: getAdvQty('hint'),
+    bonusQuestion: getAdvQty('bonus'),
+    immunity: team.immunity ? 1 : 0,
+  };
+
+  // Submissions for this team
   const submissions = await Submission.find({ team: team._id }).populate('task', 'title type points');
 
   return reply.send({
@@ -79,6 +98,7 @@ export async function getStudentDashboard(request: FastifyRequest, reply: Fastif
       leader: team.leader,
       members: team.members,
       advantages: team.advantages || [],
+      inventory,
       immunity: team.immunity || false,
       currentScore,
       rank,
@@ -148,10 +168,11 @@ interface SubmitTaskBody {
   fileUrl?: string;
   fileType?: SubmissionFileType;
   notes?: string;
+  advantageUsed?: string;
 }
 
 /**
- * Task 4: Submit a task (GitHub links, PDF/Image Cloudinary URLs)
+ * Task 4: Submit a task (GitHub links, PDF/Image Cloudinary URLs) & deduct advantage
  */
 export async function submitTask(
   request: FastifyRequest<{
@@ -165,7 +186,7 @@ export async function submitTask(
   }
 
   const { taskId } = request.params;
-  const { githubUrl, fileUrl, fileType, notes } = request.body || {};
+  const { githubUrl, fileUrl, fileType, notes, advantageUsed } = request.body || {};
 
   if (!githubUrl && !fileUrl) {
     return reply.status(400).send({
@@ -216,6 +237,24 @@ export async function submitTask(
     });
   }
 
+  // Handle Advantage Deduction if advantageUsed is provided
+  if (advantageUsed) {
+    const advIndex = team.advantages.findIndex(
+      (a) => a.advantage.toLowerCase() === advantageUsed.toLowerCase() ||
+             a.advantage.toLowerCase().includes(advantageUsed.toLowerCase())
+    );
+
+    if (advIndex === -1 || team.advantages[advIndex].quantity <= 0) {
+      return reply.status(400).send({
+        error: 'Bad Request',
+        message: `Advantage '${advantageUsed}' is not available in your team inventory or is exhausted.`,
+      });
+    }
+
+    // Deduct quantity by 1
+    team.advantages[advIndex].quantity -= 1;
+  }
+
   // Create or update submission using MongoDB session transaction for data consistency
   const session = await mongoose.startSession();
   let transactionStarted = false;
@@ -229,6 +268,11 @@ export async function submitTask(
 
     const sessionOption = transactionStarted ? { session } : {};
 
+    // Save team advantage update
+    if (advantageUsed) {
+      await team.save(sessionOption);
+    }
+
     const existingSubmission = await Submission.findOne(
       { team: team._id, task: task._id },
       null,
@@ -240,7 +284,7 @@ export async function submitTask(
       existingSubmission.githubUrl = githubUrl || existingSubmission.githubUrl;
       existingSubmission.fileUrl = fileUrl || existingSubmission.fileUrl;
       existingSubmission.fileType = fileType || existingSubmission.fileType || 'github';
-      existingSubmission.notes = notes || existingSubmission.notes;
+      existingSubmission.notes = notes ? `${notes} [Advantage Used: ${advantageUsed || 'None'}]` : existingSubmission.notes;
       existingSubmission.submittedAt = new Date();
       existingSubmission.status = 'Submitted';
       submission = await existingSubmission.save(sessionOption);
@@ -252,7 +296,7 @@ export async function submitTask(
         githubUrl: githubUrl || '',
         fileUrl: fileUrl || '',
         fileType: fileType || (fileUrl ? (fileUrl.endsWith('.pdf') ? 'pdf' : 'image') : 'github'),
-        notes: notes || '',
+        notes: notes ? `${notes} [Advantage Used: ${advantageUsed || 'None'}]` : (advantageUsed ? `[Advantage Used: ${advantageUsed}]` : ''),
         status: 'Submitted' as const,
         submittedAt: new Date(),
       };
@@ -265,6 +309,15 @@ export async function submitTask(
       }
     }
 
+    // Update Score record with advantagesUsed
+    if (advantageUsed) {
+      await Score.findOneAndUpdate(
+        { team: team._id, task: task._id },
+        { $addToSet: { advantagesUsed: advantageUsed } },
+        { upsert: true, new: true, session: transactionStarted ? session : undefined }
+      );
+    }
+
     if (transactionStarted) {
       await session.commitTransaction();
     }
@@ -273,8 +326,9 @@ export async function submitTask(
     await delCache('cwc:leaderboard');
 
     return reply.status(201).send({
-      message: 'Task submitted successfully! 🎉',
+      message: `Task submitted successfully! ${advantageUsed ? `(Advantage '${advantageUsed}' applied & deducted ⚡)` : '🎉'}`,
       submission,
+      advantagesRemaining: team.advantages,
     });
   } catch (error) {
     if (transactionStarted) {
@@ -285,6 +339,70 @@ export async function submitTask(
     session.endSession();
   }
 }
+
+/**
+ * Explicit route to use/deduct an advantage from team inventory
+ */
+export async function useAdvantage(
+  request: FastifyRequest<{ Body: { advantage: string; taskId?: string } }>,
+  reply: FastifyReply
+) {
+  if (!request.user) {
+    return reply.status(401).send({ error: 'Unauthorized', message: 'Not authenticated' });
+  }
+
+  const { advantage, taskId } = request.body;
+
+  const user = await User.findById(request.user.userId);
+  if (!user) {
+    return reply.status(404).send({ error: 'Not Found', message: 'User not found' });
+  }
+
+  const team = await Team.findOne({
+    $or: [
+      { 'leader.userId': user._id },
+      { 'leader.email': user.email },
+      { 'members.email': user.email },
+    ],
+  });
+
+  if (!team) {
+    return reply.status(404).send({ error: 'Not Found', message: 'Team not found' });
+  }
+
+  const advIndex = team.advantages.findIndex(
+    (a) => a.advantage.toLowerCase() === advantage.toLowerCase() ||
+           a.advantage.toLowerCase().includes(advantage.toLowerCase())
+  );
+
+  if (advIndex === -1 || team.advantages[advIndex].quantity <= 0) {
+    return reply.status(400).send({
+      error: 'Bad Request',
+      message: `Advantage '${advantage}' is not available in team inventory or is exhausted.`,
+    });
+  }
+
+  // Deduct 1 unit
+  team.advantages[advIndex].quantity -= 1;
+  await team.save();
+
+  if (taskId && mongoose.Types.ObjectId.isValid(taskId)) {
+    await Score.findOneAndUpdate(
+      { team: team._id, task: taskId },
+      { $addToSet: { advantagesUsed: advantage } },
+      { upsert: true }
+    );
+  }
+
+  await delCache('cwc:leaderboard');
+
+  return reply.send({
+    message: `Advantage '${advantage}' deployed successfully! ⚡`,
+    teamName: team.teamName,
+    advantages: team.advantages,
+  });
+}
+
 
 /**
  * Task 4: Upload file directly to Cloudinary for task submission

@@ -194,11 +194,25 @@ export async function grantAdvantage(request, reply) {
             // Standalone MongoDB fallback without replica set
         }
         const sessionOption = transactionStarted ? { session } : {};
-        const team = await Team.findById(teamId, null, sessionOption);
+        let team = null;
+        if (mongoose.Types.ObjectId.isValid(teamId)) {
+            team = await Team.findById(teamId, null, sessionOption);
+        }
+        if (!team) {
+            team = await Team.findOne({
+                $or: [
+                    { teamName: teamId },
+                    { teamName: { $regex: new RegExp(teamId.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, '\\$&'), 'i') } },
+                ],
+            }, null, sessionOption);
+        }
         if (!team) {
             if (transactionStarted)
                 await session.abortTransaction();
-            return reply.status(404).send({ error: 'Not Found', message: 'Team not found' });
+            return reply.status(404).send({ error: 'Not Found', message: `Team '${teamId}' not found` });
+        }
+        if (advantage.toLowerCase().includes('immunity')) {
+            team.immunity = true;
         }
         const existingAdv = team.advantages.find((a) => a.advantage.toLowerCase() === advantage.toLowerCase());
         if (existingAdv) {
