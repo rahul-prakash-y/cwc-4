@@ -3,6 +3,7 @@ import { HeroSection } from '../components/hero/HeroSection';
 import { AboutCWC } from '../components/about/AboutCWC';
 import { SeasonTimeline } from '../components/timeline/SeasonTimeline';
 import { PrizeSection } from '../components/prizes/PrizeSection';
+import { GallerySection } from '../components/gallery/GallerySection';
 import { RegisteredTeams } from '../components/teams/RegisteredTeams';
 import { RuleBook } from '../components/rules/RuleBook';
 import { SponsorMarquee } from '../components/sponsors/SponsorMarquee';
@@ -23,17 +24,21 @@ export const LandingPage: React.FC = () => {
       {/* 4. Task 2: Prize Section */}
       <PrizeSection />
 
-      {/* 5. Registered Teams */}
+      {/* 5. Task 4: Media Gallery Section */}
+      <GallerySection />
+
+      {/* 6. Registered Teams */}
       <RegisteredTeams />
 
-      {/* 6. Rule Book */}
+      {/* 7. Rule Book */}
       <RuleBook />
 
-      {/* 7. Task 3: Sponsors Component */}
+      {/* 8. Task 3: Sponsors Component */}
       <SponsorMarquee />
 
-      {/* 8. Task 4: Contact & Venue Section */}
+      {/* 9. Task 4: Contact & Venue Section */}
       <ContactSection />
     </div>
   );
 };
+

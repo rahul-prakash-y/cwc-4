@@ -53,3 +53,17 @@ export async function uploadToCloudinary(
     format,
   };
 }
+
+export async function deleteFromCloudinary(publicId: string): Promise<boolean> {
+  if (!publicId) return false;
+  if (env.CLOUDINARY_CLOUD_NAME && env.CLOUDINARY_API_KEY && env.CLOUDINARY_API_SECRET) {
+    try {
+      await cloudinary.uploader.destroy(publicId, { resource_type: 'auto' });
+      return true;
+    } catch {
+      return false;
+    }
+  }
+  return true;
+}
+

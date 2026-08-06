@@ -10,12 +10,14 @@ export const Navbar: React.FC = () => {
   const navLinks = [
     { label: 'Home', path: '/' },
     { label: 'About', path: '/#about' },
+    { label: 'Gallery', path: '/#gallery' },
     { label: 'Prizes', path: '/#prizes' },
     { label: 'Teams', path: '/#teams' },
     { label: 'Sponsors', path: '/#sponsors' },
     { label: 'Contact', path: '/#contact' },
     { label: 'Rule Book', path: '/rules' },
   ];
+
 
   return (
     <header className="fixed top-0 left-0 right-0 z-50 bg-[#0B0A16]/85 backdrop-blur-xl border-b border-white/10 shadow-2xl">

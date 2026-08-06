@@ -1,11 +1,12 @@
 import React from 'react';
 import { useLocation, Link } from 'react-router-dom';
-import { Crown, Users, CheckSquare, Grid, Download } from 'lucide-react';
+import { Crown, Users, CheckSquare, Grid, Download, Image as ImageIcon } from 'lucide-react';
 import { OverviewDashboard } from '../components/admin/OverviewDashboard';
 import { TeamManagementView } from '../components/admin/TeamManagementView';
 import { TaskManagementView } from '../components/admin/TaskManagementView';
 import { ScoreSheetView } from '../components/admin/ScoreSheetView';
 import { ExportModuleView } from '../components/admin/ExportModuleView';
+import { MediaDashboardView } from '../components/admin/MediaDashboardView';
 import { ChampionBanner } from '../components/common/ChampionBanner';
 
 export const AdminDashboard: React.FC = () => {
@@ -13,6 +14,7 @@ export const AdminDashboard: React.FC = () => {
 
   // Determine active view tab based on current path
   const getTabFromPath = () => {
+    if (location.pathname.includes('/admin/media')) return 'media';
     if (location.pathname.includes('/admin/teams')) return 'teams';
     if (location.pathname.includes('/admin/tasks')) return 'tasks';
     if (location.pathname.includes('/admin/scores') || location.pathname.includes('/admin/advantages')) return 'scores';
@@ -39,6 +41,18 @@ export const AdminDashboard: React.FC = () => {
         >
           <Crown className="w-4 h-4" />
           <span>Overview</span>
+        </Link>
+
+        <Link
+          to="/admin/media"
+          className={`flex items-center gap-2 px-4 py-2.5 rounded-xl font-mono text-xs font-bold transition-all ${
+            activeTab === 'media'
+              ? 'bg-gradient-to-r from-carnival-gold to-carnival-amber text-slate-950 shadow-neon-gold font-black'
+              : 'glass-card text-slate-300 hover:text-white'
+          }`}
+        >
+          <ImageIcon className="w-4 h-4" />
+          <span>Media Dashboard</span>
         </Link>
 
         <Link
@@ -92,6 +106,7 @@ export const AdminDashboard: React.FC = () => {
 
       {/* Render Active View */}
       {activeTab === 'overview' && <OverviewDashboard />}
+      {activeTab === 'media' && <MediaDashboardView />}
       {activeTab === 'teams' && <TeamManagementView />}
       {activeTab === 'tasks' && <TaskManagementView />}
       {activeTab === 'scores' && <ScoreSheetView />}
@@ -99,3 +114,4 @@ export const AdminDashboard: React.FC = () => {
     </div>
   );
 };
+

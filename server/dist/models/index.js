@@ -5,3 +5,4 @@ export * from './Score.js';
 export * from './Announcement.js';
 export * from './Submission.js';
 export * from './Setting.js';
+export * from './Gallery.js';

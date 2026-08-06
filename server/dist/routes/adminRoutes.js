@@ -1,6 +1,8 @@
 import { getAllTeams, updateTeamStatus, eliminateTeam, createTask, getAllTasksAdmin, updateTask, deleteTask, createAnnouncement, getAllAnnouncementsAdmin, deleteAnnouncement, grantAdvantage, setTeamImmunity, updateScoresBatch, getGrandFinale, toggleGrandFinale, } from '../controllers/adminController.js';
+import { getGalleryItems, createGalleryItem, deleteGalleryItem, } from '../controllers/galleryController.js';
 import { authenticate, isAdmin } from '../middleware/auth.js';
 import { toggleGrandFinaleSchema, updateTeamStatusSchema, eliminateTeamSchema, grantAdvantageSchema, setTeamImmunitySchema, updateScoresBatchSchema, createTaskSchema, updateTaskSchema, deleteTaskSchema, createAnnouncementSchema, deleteAnnouncementSchema, } from '../schemas/adminSchemas.js';
+import { deleteGallerySchema } from '../schemas/gallerySchemas.js';
 export async function adminRoutes(fastify) {
     // All admin routes require authentication and admin role
     fastify.addHook('preHandler', authenticate);
@@ -25,4 +27,8 @@ export async function adminRoutes(fastify) {
     fastify.post('/announcements', { schema: createAnnouncementSchema }, createAnnouncement);
     fastify.get('/announcements', getAllAnnouncementsAdmin);
     fastify.delete('/announcements/:announcementId', { schema: deleteAnnouncementSchema }, deleteAnnouncement);
+    // Gallery & Media Management
+    fastify.get('/gallery', getGalleryItems);
+    fastify.post('/gallery', createGalleryItem);
+    fastify.delete('/gallery/:id', { schema: deleteGallerySchema }, deleteGalleryItem);
 }

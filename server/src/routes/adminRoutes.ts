@@ -16,6 +16,11 @@ import {
   getGrandFinale,
   toggleGrandFinale,
 } from '../controllers/adminController.js';
+import {
+  getGalleryItems,
+  createGalleryItem,
+  deleteGalleryItem,
+} from '../controllers/galleryController.js';
 import { authenticate, isAdmin } from '../middleware/auth.js';
 import {
   toggleGrandFinaleSchema,
@@ -30,6 +35,8 @@ import {
   createAnnouncementSchema,
   deleteAnnouncementSchema,
 } from '../schemas/adminSchemas.js';
+import { deleteGallerySchema } from '../schemas/gallerySchemas.js';
+
 
 export async function adminRoutes(fastify: FastifyInstance) {
   // All admin routes require authentication and admin role
@@ -60,4 +67,10 @@ export async function adminRoutes(fastify: FastifyInstance) {
   fastify.post('/announcements', { schema: createAnnouncementSchema }, createAnnouncement);
   fastify.get('/announcements', getAllAnnouncementsAdmin);
   fastify.delete('/announcements/:announcementId', { schema: deleteAnnouncementSchema }, deleteAnnouncement);
+
+  // Gallery & Media Management
+  fastify.get('/gallery', getGalleryItems);
+  fastify.post('/gallery', createGalleryItem);
+  fastify.delete('/gallery/:id', { schema: deleteGallerySchema }, deleteGalleryItem);
 }
+

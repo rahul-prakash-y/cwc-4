@@ -35,6 +35,7 @@ export default function App() {
           {/* Admin Command Layout */}
           <Route path="/admin" element={<AdminLayout />}>
             <Route index element={<AdminDashboard />} />
+            <Route path="media" element={<AdminDashboard />} />
             <Route path="teams" element={<AdminDashboard />} />
             <Route path="tasks" element={<AdminDashboard />} />
             <Route path="scores" element={<AdminDashboard />} />
@@ -42,6 +43,7 @@ export default function App() {
             <Route path="advantages" element={<AdminDashboard />} />
             <Route path="broadcasts" element={<AdminDashboard />} />
           </Route>
+
 
           {/* Catch-all fallback */}
           <Route path="*" element={<Navigate to="/" replace />} />
