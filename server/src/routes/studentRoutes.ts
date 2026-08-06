@@ -3,6 +3,7 @@ import {
   getStudentDashboard,
   getActiveTasks,
   submitTask,
+  submitInteractiveTask,
   uploadTaskFile,
   useAdvantage,
 } from '../controllers/studentController.js';
@@ -22,6 +23,10 @@ export async function studentRoutes(fastify: FastifyInstance) {
 
   // Submit Task (GitHub link or Cloudinary upload URL)
   fastify.post('/tasks/:taskId/submit', { schema: submitTaskSchema }, submitTask);
+
+  // Task 3: Interactive Task Auto-Grading Routes
+  fastify.post('/tasks/:taskId/submit-interactive', submitInteractiveTask);
+  fastify.post('/tasks/:id/submit-interactive', submitInteractiveTask);
 
   // Use / Deduct Advantage
   fastify.post('/advantages/use', { schema: useAdvantageSchema }, useAdvantage);

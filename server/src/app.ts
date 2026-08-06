@@ -183,6 +183,8 @@ export function buildApp(): FastifyInstance {
   fastify.register(adminRoutes, { prefix: '/api/admin' });
   fastify.register(studentRoutes, { prefix: '/api/v1/student' });
   fastify.register(studentRoutes, { prefix: '/api/student' });
+  fastify.register(studentRoutes, { prefix: '/api' });
+  fastify.register(studentRoutes, { prefix: '/api/v1' });
 
   // Serve Frontend Static Files in Production (Render)
   const clientDistPath = path.resolve(__dirname, '../../client/dist');

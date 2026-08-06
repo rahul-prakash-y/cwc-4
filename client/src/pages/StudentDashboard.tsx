@@ -5,6 +5,7 @@ import { LayoutDashboard, CheckSquare, Zap, Trophy } from 'lucide-react';
 import { TopBarBanner, AdvantageItem } from '../components/dashboard/TopBarBanner';
 import { DashboardCardsGrid, AnnouncementItem } from '../components/dashboard/DashboardCardsGrid';
 import { DailyTaskView, TaskDetail } from '../components/dashboard/DailyTaskView';
+import { InteractiveTaskEngine, InteractiveTaskItem } from '../components/dashboard/InteractiveTaskEngine';
 import { TeamProgressTracker } from '../components/dashboard/TeamProgressTracker';
 import { LiveLeaderboardTable, LeaderboardTeam } from '../components/dashboard/LiveLeaderboardTable';
 import { PowerUpVaultView } from '../components/dashboard/PowerUpVaultView';
@@ -103,25 +104,70 @@ export const StudentDashboard: React.FC = () => {
     },
   ]);
 
-  // Today's Task Details
-  const activeTask: TaskDetail = {
-    id: 'task-day5',
-    dayNumber: 5,
-    title: 'Mid-Season Arena Boss Fight: Real-Time Multiplayer Arena',
-    category: 'Boss Fight',
-    points: 500,
-    duration: '4 Hours',
-    deadline: '03h 42m 18s',
-    description:
-      'Build and deploy a real-time multiplayer mini-game application incorporating Fastify WebSockets for synchronized state, Framer Motion UI effects, and dynamic team leaderboard score tracking.',
-    requirements: [
-      'Provide a public GitHub repository link with clean commits and documentation.',
-      'Demonstrate real-time WebSocket communication between at least 2 clients.',
-      'Upload a Cloudinary video demonstration or architectural PDF report.',
-      'Ensure smooth CSS/Framer Motion animations for player score updates.',
-    ],
-    submissionTypesAllowed: ['github', 'cloudinary', 'pdf'],
-  };
+  // Interactive Carnival Tasks
+  const sampleInteractiveTasks: InteractiveTaskItem[] = [
+    {
+      id: 'task-mcq-1',
+      dayNumber: 5,
+      title: 'Rapid Fire Sprint: Fastify Plugin Architecture & Lifecycles',
+      type: 'Rapid Fire',
+      points: 250,
+      timeLimitSeconds: 30,
+      description: 'Which Fastify lifecycle hook is executed immediately after the request payload is parsed into JSON body?',
+      mcqOptions: [
+        'Option A: onRequest',
+        'Option B: preHandler',
+        'Option C: preValidation',
+        'Option D: onResponse',
+      ],
+      correctAnswer: 'Option B: preHandler',
+    },
+    {
+      id: 'task-code-1',
+      dayNumber: 5,
+      title: 'Code Completion: Array Pipeline Optimization',
+      type: 'Code Completion',
+      points: 400,
+      description: 'Write a JavaScript function solveChallenge(arr) that filters out negative numbers and returns the sum of the remaining elements.',
+      testCases: [
+        { input: '[1, -2, 3, -4, 5]', expectedOutput: '9', isHidden: false },
+        { input: '[-10, -20, 0, 15]', expectedOutput: '15', isHidden: false },
+        { input: '[100, 200, 300]', expectedOutput: '600', isHidden: true },
+      ],
+    },
+    {
+      id: 'task-puzzle-1',
+      dayNumber: 5,
+      title: 'Treasure Hunt: The Cryptographic Carnival Vault Cipher',
+      type: 'Treasure Hunt',
+      points: 500,
+      description: 'I speak without a mouth and hear without ears. I have no body, but I come alive with wind. What am I? (Type your solution cipher below)',
+      correctAnswer: 'echo',
+      hintText: 'It bounces off stadium walls when the crowd cheers!',
+    },
+    {
+      id: 'task-day5',
+      dayNumber: 5,
+      title: 'Mid-Season Arena Boss Fight: Real-Time Multiplayer Arena',
+      type: 'Main',
+      category: 'Boss Fight',
+      points: 500,
+      duration: '4 Hours',
+      deadline: '03h 42m 18s',
+      description:
+        'Build and deploy a real-time multiplayer mini-game application incorporating Fastify WebSockets for synchronized state, Framer Motion UI effects, and dynamic team leaderboard score tracking.',
+      requirements: [
+        'Provide a public GitHub repository link with clean commits and documentation.',
+        'Demonstrate real-time WebSocket communication between at least 2 clients.',
+        'Upload a Cloudinary video demonstration or architectural PDF report.',
+        'Ensure smooth CSS/Framer Motion animations for player score updates.',
+      ],
+      submissionTypesAllowed: ['github', 'cloudinary', 'pdf'],
+    },
+  ];
+
+  const [selectedTaskIndex, setSelectedTaskIndex] = useState(0);
+  const activeTask = sampleInteractiveTasks[selectedTaskIndex];
 
   // Leaderboard Teams setup with IPL fields & trends
   const initialLeaderboardTeams: LeaderboardTeam[] = MOCK_TEAMS.map((t) => ({
@@ -132,8 +178,9 @@ export const StudentDashboard: React.FC = () => {
     wins: t.rank <= 2 ? 4 : t.rank <= 4 ? 3 : 2,
   }));
 
-  const handleTaskSubmitted = () => {
-    setTotalScore((prev) => prev + 500);
+  const handleTaskSubmitted = (data?: any) => {
+    const earned = data?.pointsEarned || activeTask.points || 500;
+    setTotalScore((prev) => prev + earned);
   };
 
   const scrollToTask = () => {
@@ -239,19 +286,42 @@ export const StudentDashboard: React.FC = () => {
               className="space-y-10"
             >
               <DashboardCardsGrid
-                currentDay={activeTask.dayNumber}
+                currentDay={activeTask.dayNumber || 5}
                 taskTitle={activeTask.title}
-                taskCategory={activeTask.category}
+                taskCategory={activeTask.type}
                 taskPoints={activeTask.points}
                 announcements={announcements}
                 onSelectTaskCard={scrollToTask}
               />
 
-              <section id="daily-task-section">
-                <DailyTaskView task={activeTask} status={teamStatus} onTaskSubmitted={handleTaskSubmitted} />
+              <section id="daily-task-section" className="space-y-4">
+                {/* Interactive Task Type Selector Pills */}
+                <div className="flex items-center gap-2 p-2 rounded-2xl bg-[#141126] border border-white/10 overflow-x-auto">
+                  <span className="text-xs font-mono font-bold text-carnival-gold px-3 uppercase">Interactive Arena Tasks:</span>
+                  {sampleInteractiveTasks.map((t, idx) => (
+                    <button
+                      key={t.id}
+                      onClick={() => setSelectedTaskIndex(idx)}
+                      className={`px-4 py-2 rounded-xl text-xs font-bold font-mono transition-all whitespace-nowrap flex items-center gap-2 ${
+                        selectedTaskIndex === idx
+                          ? 'bg-gradient-to-r from-carnival-gold to-amber-500 text-slate-950 shadow-neon-gold'
+                          : 'bg-white/5 text-slate-300 hover:bg-white/10 hover:text-white'
+                      }`}
+                    >
+                      <span>{t.type === 'Rapid Fire' ? '⚡ Rapid Fire MCQ' : t.type === 'Code Completion' ? '💻 Code Editor' : t.type === 'Treasure Hunt' ? '🔑 Treasure Hunt' : '🎪 Boss Fight'}</span>
+                      <span className="text-[10px] opacity-80">(+{t.points} PTS)</span>
+                    </button>
+                  ))}
+                </div>
+
+                <InteractiveTaskEngine
+                  task={activeTask}
+                  status={teamStatus}
+                  onTaskSubmitted={handleTaskSubmitted}
+                />
               </section>
 
-              <TeamProgressTracker timeline={MOCK_TIMELINE} currentDayNumber={activeTask.dayNumber} />
+              <TeamProgressTracker timeline={MOCK_TIMELINE} currentDayNumber={activeTask.dayNumber || 5} />
 
               <LiveLeaderboardTable teams={initialLeaderboardTeams} currentTeamId="team-1" />
             </motion.div>
@@ -266,8 +336,30 @@ export const StudentDashboard: React.FC = () => {
               exit={{ opacity: 0, y: -15 }}
               className="space-y-10"
             >
-              <DailyTaskView task={activeTask} status={teamStatus} onTaskSubmitted={handleTaskSubmitted} />
-              <TeamProgressTracker timeline={MOCK_TIMELINE} currentDayNumber={activeTask.dayNumber} />
+              <div className="flex items-center gap-2 p-2 rounded-2xl bg-[#141126] border border-white/10 overflow-x-auto">
+                <span className="text-xs font-mono font-bold text-carnival-gold px-3 uppercase">Select Interactive Challenge:</span>
+                {sampleInteractiveTasks.map((t, idx) => (
+                  <button
+                    key={t.id}
+                    onClick={() => setSelectedTaskIndex(idx)}
+                    className={`px-4 py-2 rounded-xl text-xs font-bold font-mono transition-all whitespace-nowrap flex items-center gap-2 ${
+                      selectedTaskIndex === idx
+                        ? 'bg-gradient-to-r from-carnival-gold to-amber-500 text-slate-950 shadow-neon-gold'
+                        : 'bg-white/5 text-slate-300 hover:bg-white/10 hover:text-white'
+                    }`}
+                  >
+                    <span>{t.type === 'Rapid Fire' ? '⚡ Rapid Fire MCQ' : t.type === 'Code Completion' ? '💻 Code Editor' : t.type === 'Treasure Hunt' ? '🔑 Treasure Hunt' : '🎪 Boss Fight'}</span>
+                    <span className="text-[10px] opacity-80">(+{t.points} PTS)</span>
+                  </button>
+                ))}
+              </div>
+
+              <InteractiveTaskEngine
+                task={activeTask}
+                status={teamStatus}
+                onTaskSubmitted={handleTaskSubmitted}
+              />
+              <TeamProgressTracker timeline={MOCK_TIMELINE} currentDayNumber={activeTask.dayNumber || 5} />
             </motion.div>
           )}
 
