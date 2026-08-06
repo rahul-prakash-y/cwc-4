@@ -298,10 +298,21 @@ export async function submitTask(
     });
   }
 
-  if (team.status !== 'Approved') {
+  // Task 1: Block Eliminated teams from submitting — respectful 403 Forbidden
+  if (team.status === 'Eliminated') {
     return reply.status(403).send({
       error: 'Forbidden',
-      message: `Your team status is '${team.status}'. Only 'Approved' teams can submit tasks.`,
+      message:
+        `🎪 Team '${team.teamName}', your carnival journey has come to a close. ` +
+        `Submissions are no longer accepted for eliminated teams. ` +
+        `Thank you for your passion and contributions to CWC Season 4! 🙏`,
+    });
+  }
+
+  if (team.status !== 'Approved' && team.status !== 'Safe' && team.status !== 'Danger' && team.status !== 'Qualified') {
+    return reply.status(403).send({
+      error: 'Forbidden',
+      message: `Your team status is '${team.status}'. Only active carnival teams can submit tasks.`,
     });
   }
 

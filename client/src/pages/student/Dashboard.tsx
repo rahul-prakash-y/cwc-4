@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useLocation, Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
@@ -20,6 +20,7 @@ import {
   ArrowRight,
   Gift,
   Lock,
+  AlertTriangle,
 } from 'lucide-react';
 
 import { DailyTaskView, TaskDetail } from '../../components/student/DailyTaskView';
@@ -28,39 +29,57 @@ import { AdvantagesLocker } from '../../components/student/AdvantagesLocker';
 import { LiveLeaderboardTable, LeaderboardTeam } from '../../components/dashboard/LiveLeaderboardTable';
 import { ChampionBanner } from '../../components/common/ChampionBanner';
 import { AdvantageGrantedToast, AdvantageGrantedPayload } from '../../components/common/AdvantageGrantedToast';
+import { triggerCarnivalConfetti } from '../../components/hero/ConfettiEffect';
+import { useSocket } from '../../context/SocketContext';
 import { MOCK_TEAMS, MOCK_TIMELINE } from '../../data/mockData';
 
 export const StudentDashboard: React.FC = () => {
   const location = useLocation();
+  const { socket } = useSocket();
 
   // Active Team state
   const [teamName] = useState('Cyber Circus Kings');
+  const [teamId] = useState('team-1');
   const [rank, setRank] = useState(1);
   const [totalScore, setTotalScore] = useState(1850);
   const [streak] = useState(4);
 
   // Survival Status state: Safe | Danger | Eliminated | Qualified
   const [teamStatus, setTeamStatus] = useState<'Safe' | 'Danger' | 'Eliminated' | 'Qualified' | string>('Safe');
+  const [qualifiedConfettiFired, setQualifiedConfettiFired] = useState(false);
 
-  // Real-time backend status broadcast listener via SSE or WebSockets
+  // Task 4: Real-time Socket.io listener for STATUS_CHANGED event
   useEffect(() => {
-    let eventSource: EventSource | null = null;
-    try {
-      eventSource = new EventSource('/api/v1/public/teams/events');
-      eventSource.onmessage = (event) => {
-        try {
-          const data = JSON.parse(event.data);
-          if (data.teamName === teamName || data.teamId === 'team-1') {
-            setTeamStatus(data.status);
-          }
-        } catch (e) {}
-      };
-    } catch (err) {}
+    if (!socket) return;
+
+    const handleStatusChanged = (payload: any) => {
+      // Match against team ID or team name
+      if (payload.teamId === teamId || payload.teamName === teamName) {
+        if (payload.status) {
+          setTeamStatus(payload.status);
+        }
+      }
+    };
+
+    socket.on('STATUS_CHANGED', handleStatusChanged);
 
     return () => {
-      if (eventSource) eventSource.close();
+      socket.off('STATUS_CHANGED', handleStatusChanged);
     };
-  }, [teamName]);
+  }, [socket, teamId, teamName]);
+
+  // Task 3: Fire confetti when status transitions to Qualified
+  useEffect(() => {
+    if (teamStatus === 'Qualified' && !qualifiedConfettiFired) {
+      setQualifiedConfettiFired(true);
+      triggerCarnivalConfetti();
+      // Fire again after a short delay for extra celebration
+      setTimeout(() => triggerCarnivalConfetti(), 1200);
+    }
+    if (teamStatus !== 'Qualified') {
+      setQualifiedConfettiFired(false);
+    }
+  }, [teamStatus, qualifiedConfettiFired]);
 
   // Advantages / Immunity state
   const [advantages, setAdvantages] = useState([
@@ -201,16 +220,74 @@ Requirements include:
 
   return (
     <div
-      className={`space-y-8 max-w-7xl mx-auto pb-12 transition-all duration-500 ${
+      className={`space-y-8 max-w-7xl mx-auto pb-12 transition-all duration-500 relative ${
         teamStatus === 'Danger'
-          ? 'border-2 border-orange-500/80 rounded-3xl p-3 sm:p-6 animate-pulse bg-orange-950/10 shadow-[0_0_30px_rgba(249,115,22,0.3)]'
+          ? 'border-2 border-orange-500/80 rounded-3xl p-3 sm:p-6 animate-pulse-orange bg-orange-950/10'
           : teamStatus === 'Eliminated'
-          ? 'border-2 border-rose-500/50 rounded-3xl p-3 sm:p-6 bg-rose-950/15'
+          ? 'rounded-3xl p-3 sm:p-6'
+          : teamStatus === 'Qualified'
+          ? 'border-2 border-amber-400/60 rounded-3xl p-3 sm:p-6 shadow-[0_0_40px_rgba(255,215,0,0.3)]'
           : ''
       }`}
     >
       <ChampionBanner />
       <AdvantageGrantedToast onAdvantageReceived={handleRealtimeAdvantage} />
+
+      {/* Task 3: Danger Zone Alert Banner */}
+      <AnimatePresence>
+        {teamStatus === 'Danger' && (
+          <motion.div
+            initial={{ opacity: 0, y: -20, scale: 0.95 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: -20, scale: 0.95 }}
+            className="p-4 sm:p-5 rounded-2xl bg-gradient-to-r from-orange-950/80 via-amber-950/60 to-orange-950/80 border-2 border-orange-500/60 shadow-[0_0_30px_rgba(249,115,22,0.4)] flex items-center gap-4"
+          >
+            <div className="w-14 h-14 shrink-0 rounded-2xl bg-orange-500/20 border border-orange-500/50 flex items-center justify-center text-3xl animate-pulse">
+              ⚠️
+            </div>
+            <div className="flex-1">
+              <h3 className="text-lg sm:text-xl font-black text-orange-300 flex items-center gap-2">
+                <AlertTriangle className="w-5 h-5" />
+                You are in the Danger Zone
+              </h3>
+              <p className="text-sm text-orange-200/80 mt-0.5">
+                Score high today to survive. Your team is at risk of elimination — give it your best shot! 🔥
+              </p>
+            </div>
+            <div className="hidden sm:block px-4 py-2 rounded-xl bg-orange-500/20 border border-orange-500/40 text-orange-300 font-mono text-xs font-bold animate-pulse">
+              AT RISK
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Task 3: Qualified Celebration Banner */}
+      <AnimatePresence>
+        {teamStatus === 'Qualified' && (
+          <motion.div
+            initial={{ opacity: 0, y: -20, scale: 0.95 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: -20, scale: 0.95 }}
+            className="p-4 sm:p-5 rounded-2xl bg-gradient-to-r from-amber-950/80 via-yellow-950/60 to-amber-950/80 border-2 border-amber-400/60 shadow-[0_0_30px_rgba(255,215,0,0.4)] flex items-center gap-4"
+          >
+            <div className="w-14 h-14 shrink-0 rounded-2xl bg-amber-400/20 border border-amber-400/50 flex items-center justify-center text-3xl">
+              🏆
+            </div>
+            <div className="flex-1">
+              <h3 className="text-lg sm:text-xl font-black text-amber-300 flex items-center gap-2">
+                <Trophy className="w-5 h-5 text-amber-400" />
+                Congratulations! You&apos;ve Qualified! 🎉
+              </h3>
+              <p className="text-sm text-amber-200/80 mt-0.5">
+                Your team has secured its place in the next stage. Keep the momentum going!
+              </p>
+            </div>
+            <div className="hidden sm:block px-4 py-2 rounded-xl bg-amber-400/20 border border-amber-400/50 text-amber-300 font-mono text-xs font-bold shadow-[0_0_15px_rgba(255,215,0,0.3)]">
+              QUALIFIED ✨
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* TASK 1: Student Top Bar */}
       <section id="overview-section">
@@ -272,6 +349,12 @@ Requirements include:
                   >
                     Eliminated
                   </button>
+                  <button
+                    onClick={() => setTeamStatus('Qualified')}
+                    className={`px-2 py-0.5 rounded-full transition-all ${teamStatus === 'Qualified' ? 'bg-amber-400 text-slate-950 font-bold' : 'text-slate-300'}`}
+                  >
+                    Qualified
+                  </button>
                 </div>
               </div>
 
@@ -287,30 +370,53 @@ Requirements include:
         </motion.div>
       </section>
 
-      {/* TASK 1: Graceful Locked Screen when Eliminated */}
-      {teamStatus === 'Eliminated' && (
-        <motion.div
-          initial={{ scale: 0.95, opacity: 0 }}
-          animate={{ scale: 1, opacity: 1 }}
-          className="p-8 sm:p-12 rounded-3xl bg-gradient-to-r from-rose-950/90 via-[#1C0F22] to-rose-950/90 border-2 border-rose-500/60 shadow-neon-crimson text-center space-y-4 relative overflow-hidden"
-        >
-          <div className="w-20 h-20 rounded-3xl bg-rose-500/20 text-rose-400 border border-rose-500/40 flex items-center justify-center mx-auto text-4xl shadow-lg">
-            🎪
-          </div>
-          <h2 className="text-3xl sm:text-5xl font-black text-white">
-            Thank You for Participating in CWC Season 4! 🎪
-          </h2>
-          <p className="text-slate-300 text-base sm:text-lg max-w-2xl mx-auto leading-relaxed">
-            Your team <strong className="text-rose-400 font-mono font-extrabold">{teamName}</strong> has completed its run in this season&apos;s coding arena. We sincerely thank you for your participation, passion, and code contributions!
-          </p>
-          <div className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-rose-500/20 text-rose-300 border border-rose-500/40 font-mono text-xs font-bold">
-            <Lock className="w-4 h-4" /> Task Submissions & Arena Controls Are Gracefully Locked
-          </div>
-        </motion.div>
-      )}
+      {/* Task 3: Full-screen Eliminated Overlay Lock Screen */}
+      <AnimatePresence>
+        {teamStatus === 'Eliminated' && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.6 }}
+            className="fixed inset-0 z-[999] bg-black/85 backdrop-blur-sm flex items-center justify-center p-6"
+          >
+            <motion.div
+              initial={{ scale: 0.85, opacity: 0, y: 40 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              transition={{ type: 'spring', stiffness: 200, damping: 22, delay: 0.2 }}
+              className="p-10 sm:p-14 rounded-3xl bg-gradient-to-br from-rose-950/95 via-[#1C0F22] to-[#12081A] border-2 border-rose-500/50 shadow-[0_0_60px_rgba(220,38,38,0.35)] text-center space-y-6 max-w-2xl w-full relative overflow-hidden"
+            >
+              {/* Decorative background glow */}
+              <div className="absolute inset-0 opacity-20 pointer-events-none">
+                <div className="absolute top-0 left-1/2 -translate-x-1/2 w-96 h-96 rounded-full bg-rose-600 blur-[120px]" />
+              </div>
 
-      {/* TASK 1: 5 Grid Layout Cards */}
-      <div className={teamStatus === 'Eliminated' ? 'filter grayscale opacity-70 pointer-events-none' : ''}>
+              <div className="relative z-10 space-y-6">
+                <div className="w-24 h-24 rounded-3xl bg-rose-500/15 text-rose-400 border-2 border-rose-500/40 flex items-center justify-center mx-auto text-5xl shadow-[0_0_30px_rgba(220,38,38,0.25)]">
+                  🎪
+                </div>
+                <h2 className="text-3xl sm:text-5xl font-black text-white leading-tight">
+                  Thank You for Participating<br />in CWC Season 4! 🎪
+                </h2>
+                <p className="text-slate-300 text-base sm:text-lg max-w-xl mx-auto leading-relaxed">
+                  Your team <strong className="text-rose-400 font-mono font-extrabold">{teamName}</strong> has completed its run in this season&apos;s coding arena. We sincerely appreciate your dedication, creativity, and code contributions!
+                </p>
+                <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
+                  <div className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-rose-500/20 text-rose-300 border border-rose-500/40 font-mono text-xs font-bold">
+                    <Lock className="w-4 h-4" /> All Submissions & Controls Locked
+                  </div>
+                  <div className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-white/5 text-slate-400 border border-white/10 font-mono text-xs font-bold">
+                    <Shield className="w-4 h-4" /> Season 4 Participant
+                  </div>
+                </div>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Dashboard Grid Cards — grayscale disabled when Eliminated */}
+      <div className={teamStatus === 'Eliminated' ? 'filter grayscale opacity-50 pointer-events-none select-none' : ''}>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
           {/* Card 1: Today's Task Brief */}
           <motion.div

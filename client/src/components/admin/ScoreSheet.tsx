@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Grid, Shield, Save, RefreshCw, CheckCircle2, XCircle, Gift, Sparkles, Trophy } from 'lucide-react';
+import { Grid, Shield, Save, RefreshCw, CheckCircle2, Gift, Sparkles, Trophy } from 'lucide-react';
 import { triggerCarnivalConfetti } from '../hero/ConfettiEffect';
 import { GrantAdvantageModal } from './GrantAdvantageModal';
+import { EliminationControls } from './EliminationControls';
 
 export interface ScoreRowItem {
   teamId: string;
@@ -298,7 +299,7 @@ export const ScoreSheet: React.FC = () => {
                 <th className="p-3.5 border-r border-white/10 text-center min-w-[120px]">Main Task Score</th>
                 <th className="p-3.5 border-r border-white/10 text-center min-w-[120px]">Special Task Score</th>
                 <th className="p-3.5 border-r border-white/10 text-center min-w-[120px]">Total Points</th>
-                <th className="p-3.5 border-r border-white/10 text-center min-w-[130px]">Elimination Status</th>
+                <th className="p-3.5 border-r border-white/10 text-center min-w-[230px]">Status Controls</th>
                 <th className="p-3.5 text-center min-w-[120px]">Immunity Status</th>
               </tr>
             </thead>
@@ -385,26 +386,27 @@ export const ScoreSheet: React.FC = () => {
                     </span>
                   </td>
 
-                  {/* Column 7: Elimination Status Dropdown */}
+                  {/* Status Controls: Full EliminationControls (compact) with modal gate for Eliminated */}
                   <td className="p-3.5 border-r border-white/5 text-center">
-                    <button
-                      type="button"
-                      onClick={() => updateRow(idx, 'elimination', !row.elimination)}
-                      className={`px-3 py-1 rounded-lg font-bold text-[10px] transition-all flex items-center justify-center gap-1 mx-auto cursor-pointer ${
-                        row.elimination
-                          ? 'bg-rose-500 text-white shadow-neon-crimson'
-                          : 'bg-white/5 text-slate-400 hover:text-rose-400 hover:bg-rose-500/10'
-                      }`}
-                    >
-                      {row.elimination ? (
-                        <>
-                          <XCircle className="w-3.5 h-3.5" />
-                          <span>ELIMINATED</span>
-                        </>
-                      ) : (
-                        <span>Active</span>
-                      )}
-                    </button>
+                    <EliminationControls
+                      teamId={row.teamId}
+                      teamName={row.teamName}
+                      currentStatus={row.status}
+                      compact
+                      onStatusChange={(tid, newStatus) => {
+                        const updated = rows.map((r) => {
+                          if (r.teamId === tid) {
+                            return {
+                              ...r,
+                              status: newStatus,
+                              elimination: newStatus === 'Eliminated',
+                            };
+                          }
+                          return r;
+                        });
+                        setRows(recalculateRanks(updated));
+                      }}
+                    />
                   </td>
 
                   {/* Column 8: Immunity Status Toggle */}

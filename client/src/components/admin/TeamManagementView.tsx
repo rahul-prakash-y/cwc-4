@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Users, CheckCircle2, XCircle, Edit3, Shield, AlertTriangle, Search, Filter, Plus, Save, Trash2, X, Ticket, LayoutGrid, List, Gift, Calendar } from 'lucide-react';
+import { Users, Edit3, Search, Filter, Save, Trash2, X, Ticket, List, Gift, Calendar } from 'lucide-react';
 import { MOCK_TEAMS } from '../../data/mockData';
 import { TicketTeamCard } from '../common/TicketTeamCard';
 import { GrantAdvantageModal } from './GrantAdvantageModal';
 import { DailyAttendanceView } from './DailyAttendanceView';
+import { EliminationControls } from './EliminationControls';
 
 export interface ExtendedTeam {
   id: string;
@@ -289,54 +290,15 @@ export const TeamManagementView: React.FC = () => {
                     </span>
                   </td>
 
-                  {/* Quick Status Mark Buttons: Safe (Green), Danger (Orange), Eliminated (Red), Qualified (Blue) */}
+                  {/* Quick Status Controls — EliminationControls with built-in Elimination confirmation modal */}
                   <td className="p-4 text-center">
-                    <div className="inline-flex items-center gap-1.5 p-1 rounded-xl bg-black/40 border border-white/5">
-                      <button
-                        onClick={() => handleUpdateStatus(team.id, 'Safe')}
-                        title="Mark Safe"
-                        className={`px-2.5 py-1 rounded text-[10px] font-bold transition-all ${
-                          team.status === 'Safe'
-                            ? 'bg-emerald-500 text-slate-950 shadow-sm'
-                            : 'text-slate-400 hover:text-emerald-400 hover:bg-emerald-500/10'
-                        }`}
-                      >
-                        Safe
-                      </button>
-                      <button
-                        onClick={() => handleUpdateStatus(team.id, 'Danger')}
-                        title="Mark Danger"
-                        className={`px-2.5 py-1 rounded text-[10px] font-bold transition-all ${
-                          team.status === 'Danger'
-                            ? 'bg-orange-500 text-slate-950 shadow-sm'
-                            : 'text-slate-400 hover:text-orange-400 hover:bg-orange-500/10'
-                        }`}
-                      >
-                        Danger
-                      </button>
-                      <button
-                        onClick={() => handleUpdateStatus(team.id, 'Eliminated')}
-                        title="Mark Eliminated"
-                        className={`px-2.5 py-1 rounded text-[10px] font-bold transition-all ${
-                          team.status === 'Eliminated'
-                            ? 'bg-rose-500 text-white shadow-sm'
-                            : 'text-slate-400 hover:text-rose-400 hover:bg-rose-500/10'
-                        }`}
-                      >
-                        Eliminated
-                      </button>
-                      <button
-                        onClick={() => handleUpdateStatus(team.id, 'Qualified')}
-                        title="Mark Qualified"
-                        className={`px-2.5 py-1 rounded text-[10px] font-bold transition-all ${
-                          team.status === 'Qualified'
-                            ? 'bg-blue-500 text-white shadow-sm'
-                            : 'text-slate-400 hover:text-blue-400 hover:bg-blue-500/10'
-                        }`}
-                      >
-                        Qualified
-                      </button>
-                    </div>
+                    <EliminationControls
+                      teamId={team.id}
+                      teamName={team.name}
+                      currentStatus={team.status}
+                      onStatusChange={(id, status) => handleUpdateStatus(id, status as ExtendedTeam['status'])}
+                      compact
+                    />
                   </td>
 
                   {/* Action Buttons: Edit, Reject */}
