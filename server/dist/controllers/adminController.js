@@ -34,8 +34,26 @@ export async function toggleGrandFinale(request, reply) {
 /* ==========================================================================
    TEAM MANAGEMENT CONTROLLERS
    ========================================================================== */
-export async function getAllTeams(_request, reply) {
-    const teams = await Team.find().lean();
+export async function getAllTeams(request, reply) {
+    const { search, status, residenceType } = request.query || {};
+    const query = {};
+    if (status) {
+        query.status = status;
+    }
+    if (residenceType) {
+        query.residenceType = residenceType;
+    }
+    if (search) {
+        const searchRegex = new RegExp(search.trim().replace(/[-[\]{}()*+?.,\\^$|#\s]/g, '\\$&'), 'i');
+        query.$or = [
+            { teamName: searchRegex },
+            { 'leader.name': searchRegex },
+            { 'leader.email': searchRegex },
+            { 'members.name': searchRegex },
+            { 'members.email': searchRegex },
+        ];
+    }
+    const teams = await Team.find(query).lean();
     // Aggregate scores for each team
     const teamsWithScores = await Promise.all(teams.map(async (team) => {
         const scores = await Score.find({ team: team._id });
@@ -67,9 +85,12 @@ export async function streamTeamStatusEvents(_request, reply) {
     });
 }
 export async function updateTeamStatus(request, reply) {
-    const { teamId } = request.params;
+    const teamId = request.params.teamId || request.params.id;
     const { status } = request.body;
-    const validStatuses = ['Pending', 'Approved', 'Eliminated', 'Safe', 'Danger', 'Qualified'];
+    if (!teamId) {
+        return reply.status(400).send({ error: 'Bad Request', message: 'Team ID parameter is required' });
+    }
+    const validStatuses = ['Pending', 'Approved', 'Rejected', 'Eliminated', 'Safe', 'Danger', 'Qualified'];
     if (!validStatuses.includes(status)) {
         return reply.status(400).send({
             error: 'Bad Request',
@@ -317,14 +338,21 @@ export async function deleteAnnouncement(request, reply) {
     });
 }
 export async function grantAdvantage(request, reply) {
-    const { teamId } = request.params;
-    const { advantage, quantity = 1 } = request.body;
-    if (!advantage) {
+    const teamId = request.params.teamId || request.params.id || request.body?.teamId;
+    const { advantage, quantity = 1, immunity } = request.body || {};
+    if (!teamId) {
         return reply.status(400).send({
             error: 'Bad Request',
-            message: 'Advantage name is required (e.g. Double Points, Extra Time, Skip, Golden Coin, Hint)',
+            message: 'Team ID is required in URL parameter or request body',
         });
     }
+    if (!advantage && immunity === undefined) {
+        return reply.status(400).send({
+            error: 'Bad Request',
+            message: 'Advantage name or immunity setting is required (e.g. Double Points, Extra Time, Skip, Golden Coin, Hint)',
+        });
+    }
+    const effectiveAdvantage = advantage || (immunity ? 'Immunity' : 'Double Points');
     const session = await mongoose.startSession();
     let transactionStarted = false;
     try {
@@ -353,19 +381,24 @@ export async function grantAdvantage(request, reply) {
                 await session.abortTransaction();
             return reply.status(404).send({ error: 'Not Found', message: `Team '${teamId}' not found` });
         }
-        if (advantage.toLowerCase().includes('immunity')) {
+        if (immunity !== undefined) {
+            team.immunity = Boolean(immunity);
+        }
+        if (effectiveAdvantage.toLowerCase().includes('immunity')) {
             team.immunity = true;
         }
-        const existingAdv = team.advantages.find((a) => a.advantage.toLowerCase() === advantage.toLowerCase());
-        if (existingAdv) {
-            existingAdv.quantity += quantity;
-        }
-        else {
-            team.advantages.push({
-                advantage,
-                quantity,
-                grantedAt: new Date(),
-            });
+        if (advantage || !immunity) {
+            const existingAdv = team.advantages.find((a) => a.advantage.toLowerCase() === effectiveAdvantage.toLowerCase());
+            if (existingAdv) {
+                existingAdv.quantity += quantity;
+            }
+            else {
+                team.advantages.push({
+                    advantage: effectiveAdvantage,
+                    quantity,
+                    grantedAt: new Date(),
+                });
+            }
         }
         await team.save(sessionOption);
         if (transactionStarted) {
@@ -394,19 +427,19 @@ export async function grantAdvantage(request, reply) {
             setImmediate(() => {
                 const html = getAdvantageGrantedEmailHtml({
                     teamName,
-                    advantage,
+                    advantage: effectiveAdvantage,
                     quantity,
                     immunity,
                 });
                 sendEmail({
                     to: leaderEmail,
-                    subject: `🎁 Power-Up Granted: ${advantage} - Team ${teamName}`,
+                    subject: `🎁 Power-Up Granted: ${effectiveAdvantage} - Team ${teamName}`,
                     html,
                 });
             });
         }
         return reply.send({
-            message: `Granted advantage '${advantage}' (+${quantity}) to team '${team.teamName}'! 🎁`,
+            message: `Granted advantage '${effectiveAdvantage}' (+${quantity}) to team '${team.teamName}'! 🎁`,
             team,
         });
     }

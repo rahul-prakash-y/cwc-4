@@ -4,10 +4,12 @@ import { Team } from '../models/Team.js';
 import { Task } from '../models/Task.js';
 import { Score } from '../models/Score.js';
 import { Submission, SubmissionFileType } from '../models/Submission.js';
+import { Draft } from '../models/Draft.js';
 import { User } from '../models/User.js';
 import { uploadToCloudinary } from '../utils/cloudinary.js';
 import { delCache } from '../utils/redis.js';
 import { broadcastScoreUpdated } from '../socket.js';
+
 
 /**
  * Task 4: Fetch logged-in student's team dashboard data
@@ -165,6 +167,8 @@ export async function getActiveTasks(request: FastifyRequest, reply: FastifyRepl
 }
 
 interface SubmitTaskBody {
+  textAnswer?: string;
+  content?: string;
   githubUrl?: string;
   fileUrl?: string;
   fileType?: SubmissionFileType;
@@ -172,12 +176,83 @@ interface SubmitTaskBody {
   advantageUsed?: string;
 }
 
+interface SaveDraftBody {
+  content?: string;
+  code?: string;
+  textAnswer?: string;
+  githubUrl?: string;
+  fileUrl?: string;
+  notes?: string;
+}
+
 /**
- * Task 4: Submit a task (GitHub links, PDF/Image Cloudinary URLs) & deduct advantage
+ * Task 4: Save or update temporary task answer draft in MongoDB
+ */
+export async function saveTaskDraft(
+  request: FastifyRequest<{
+    Params: { id?: string; taskId?: string };
+    Body: SaveDraftBody;
+  }>,
+  reply: FastifyReply
+) {
+  if (!request.user) {
+    return reply.status(401).send({ error: 'Unauthorized', message: 'Not authenticated' });
+  }
+
+  const taskId = request.params.id || request.params.taskId;
+  if (!taskId) {
+    return reply.status(400).send({ error: 'Bad Request', message: 'Task ID is required' });
+  }
+
+  const user = await User.findById(request.user.userId);
+  if (!user) {
+    return reply.status(404).send({ error: 'Not Found', message: 'User not found' });
+  }
+
+  const team = await Team.findOne({
+    $or: [
+      { 'leader.userId': user._id },
+      { 'leader.email': user.email },
+      { 'members.email': user.email },
+    ],
+  });
+
+  if (!team) {
+    return reply.status(404).send({ error: 'Not Found', message: 'Team not found' });
+  }
+
+  const body = request.body || {};
+  const draftContent = body.content || body.code || body.textAnswer || '';
+
+  const draft = await Draft.findOneAndUpdate(
+    { studentId: user._id.toString(), testId: taskId },
+    {
+      studentId: user._id.toString(),
+      testId: taskId,
+      codeDraft: draftContent,
+      state: {
+        githubUrl: body.githubUrl || '',
+        fileUrl: body.fileUrl || '',
+        notes: body.notes || '',
+        teamId: team._id.toString(),
+      },
+      lastSavedAt: new Date(),
+    },
+    { upsert: true, new: true }
+  );
+
+  return reply.send({
+    message: 'Task draft saved successfully! 📝',
+    draft,
+  });
+}
+
+/**
+ * Task 4: Submit a task (text answer, GitHub links, PDF/Image Cloudinary URLs) & deduct advantage
  */
 export async function submitTask(
   request: FastifyRequest<{
-    Params: { taskId: string };
+    Params: { taskId?: string; id?: string };
     Body: SubmitTaskBody;
   }>,
   reply: FastifyReply
@@ -186,15 +261,21 @@ export async function submitTask(
     return reply.status(401).send({ error: 'Unauthorized', message: 'Not authenticated' });
   }
 
-  const { taskId } = request.params;
-  const { githubUrl, fileUrl, fileType, notes, advantageUsed } = request.body || {};
+  const taskId = request.params.taskId || request.params.id;
+  if (!taskId) {
+    return reply.status(400).send({ error: 'Bad Request', message: 'Task ID parameter is required' });
+  }
 
-  if (!githubUrl && !fileUrl) {
+  const { textAnswer, content, githubUrl, fileUrl, fileType, notes, advantageUsed } = request.body || {};
+  const combinedText = (textAnswer || content || '').trim();
+
+  if (!githubUrl && !fileUrl && !combinedText) {
     return reply.status(400).send({
       error: 'Bad Request',
-      message: 'Please provide either a GitHub link or a uploaded file URL (PDF/Image)',
+      message: 'Please provide either a text answer, GitHub link, or an uploaded Cloudinary file payload.',
     });
   }
+
 
   // Find student's team
   const user = await User.findById(request.user.userId);

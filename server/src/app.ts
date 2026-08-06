@@ -11,6 +11,7 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import fs from 'fs';
 
+import fastifyJwt from '@fastify/jwt';
 import { env } from './config/env.js';
 import { setupErrorHandler } from './plugins/errorHandler.js';
 import { sanitizeNoSQLInject } from './middleware/nosqlSanitize.js';
@@ -79,6 +80,11 @@ export function buildApp(): FastifyInstance {
   // Register Helmet for Secure HTTP Headers
   fastify.register(helmet, {
     contentSecurityPolicy: env.NODE_ENV === 'production' ? undefined : false,
+  });
+
+  // Register Fastify JWT plugin
+  fastify.register(fastifyJwt, {
+    secret: env.JWT_SECRET,
   });
 
   // Global Rate Limit (100 requests / minute)
@@ -179,6 +185,7 @@ export function buildApp(): FastifyInstance {
   fastify.register(publicRoutes, { prefix: '/api/v1/public' });
   fastify.register(publicRoutes, { prefix: '/api/v1' });
   fastify.register(authRoutes, { prefix: '/api/v1/auth' });
+  fastify.register(authRoutes, { prefix: '/api/auth' });
   fastify.register(adminRoutes, { prefix: '/api/v1/admin' });
   fastify.register(adminRoutes, { prefix: '/api/admin' });
   fastify.register(studentRoutes, { prefix: '/api/v1/student' });

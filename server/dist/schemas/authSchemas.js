@@ -7,6 +7,7 @@ export const registerTeamSchema = {
             teamName: { type: 'string', minLength: 2, maxLength: 100 },
             themeColor: { type: 'string' },
             logoUrl: { type: 'string' },
+            residenceType: { type: 'string', enum: ['Hosteller', 'Day Scholar'] },
             leader: {
                 type: 'object',
                 required: ['name', 'email', 'password'],

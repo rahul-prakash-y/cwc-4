@@ -10,6 +10,7 @@ interface RegisterTeamBody {
   teamName: string;
   themeColor?: string;
   logoUrl?: string;
+  residenceType?: 'Hosteller' | 'Day Scholar';
   leader: {
     name: string;
     email: string;
@@ -40,7 +41,7 @@ interface RegisterAdminBody {
  * Creates the leader user account and sets Team status to 'Pending'
  */
 export async function registerTeam(request: FastifyRequest<{ Body: RegisterTeamBody }>, reply: FastifyReply) {
-  const { teamName, themeColor, logoUrl, leader, members = [] } = request.body;
+  const { teamName, themeColor, logoUrl, residenceType, leader, members = [] } = request.body;
 
   // Validation
   if (!teamName || !leader || !leader.name || !leader.email || !leader.password) {
@@ -70,7 +71,7 @@ export async function registerTeam(request: FastifyRequest<{ Body: RegisterTeamB
     });
   }
 
-  // Hash password
+  // Hash password with bcrypt
   const passwordHash = await bcrypt.hash(leader.password, 10);
 
   // Create Leader User account
@@ -86,6 +87,7 @@ export async function registerTeam(request: FastifyRequest<{ Body: RegisterTeamB
     teamName: normalizedTeamName,
     themeColor: themeColor || '#FF0055',
     logoUrl: logoUrl || '',
+    residenceType: residenceType || 'Hosteller',
     status: 'Pending',
     leader: {
       name: leader.name.trim(),

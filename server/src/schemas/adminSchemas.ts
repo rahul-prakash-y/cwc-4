@@ -12,19 +12,12 @@ export const toggleGrandFinaleSchema: FastifySchema = {
 };
 
 export const updateTeamStatusSchema: FastifySchema = {
-  params: {
-    type: 'object',
-    required: ['teamId'],
-    properties: {
-      teamId: { type: 'string' },
-    },
-  },
   body: {
     type: 'object',
     required: ['status'],
     additionalProperties: false,
     properties: {
-      status: { type: 'string', enum: ['Pending', 'Approved', 'Eliminated', 'Safe', 'Danger', 'Qualified'] },
+      status: { type: 'string', enum: ['Pending', 'Approved', 'Rejected', 'Eliminated', 'Safe', 'Danger', 'Qualified'] },
     },
   },
 };
@@ -32,31 +25,26 @@ export const updateTeamStatusSchema: FastifySchema = {
 export const eliminateTeamSchema: FastifySchema = {
   params: {
     type: 'object',
-    required: ['teamId'],
     properties: {
-      teamId: { type: 'string', pattern: objectIdPattern },
+      teamId: { type: 'string' },
+      id: { type: 'string' },
     },
   },
 };
 
 export const grantAdvantageSchema: FastifySchema = {
-  params: {
-    type: 'object',
-    required: ['teamId'],
-    properties: {
-      teamId: { type: 'string', minLength: 1 },
-    },
-  },
   body: {
     type: 'object',
-    required: ['advantage'],
     additionalProperties: false,
     properties: {
+      teamId: { type: 'string' },
       advantage: { type: 'string', minLength: 1, maxLength: 100 },
       quantity: { type: 'integer', minimum: 1, default: 1 },
+      immunity: { type: 'boolean' },
     },
   },
 };
+
 
 export const setTeamImmunitySchema: FastifySchema = {
   params: {

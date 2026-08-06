@@ -27,7 +27,7 @@ import {
   saveAttendance,
   runAttendanceAutoChecker,
 } from '../controllers/attendanceController.js';
-import { authenticate, isAdmin } from '../middleware/auth.js';
+import { verifyJWT, isAdmin } from '../middleware/auth.js';
 import {
   toggleGrandFinaleSchema,
   updateTeamStatusSchema,
@@ -46,7 +46,7 @@ import { deleteGallerySchema } from '../schemas/gallerySchemas.js';
 
 export async function adminRoutes(fastify: FastifyInstance) {
   // All admin routes require authentication and admin role
-  fastify.addHook('preHandler', authenticate);
+  fastify.addHook('preHandler', verifyJWT);
   fastify.addHook('preHandler', isAdmin);
 
   // Grand Finale State Toggle
@@ -56,8 +56,8 @@ export async function adminRoutes(fastify: FastifyInstance) {
   // Teams Management
   fastify.get('/teams', getAllTeams);
   fastify.get('/teams/events', streamTeamStatusEvents);
-  fastify.patch('/teams/:teamId/status', { schema: updateTeamStatusSchema }, updateTeamStatus);
-  fastify.patch('/teams/:teamId/eliminate', { schema: eliminateTeamSchema }, eliminateTeam);
+  fastify.patch('/teams/:id/status', { schema: updateTeamStatusSchema }, updateTeamStatus);
+  fastify.patch('/teams/:id/eliminate', { schema: eliminateTeamSchema }, eliminateTeam);
 
   // Attendance Management & Auto-Checker
   fastify.get('/attendance', getAttendance);
@@ -65,24 +65,28 @@ export async function adminRoutes(fastify: FastifyInstance) {
   fastify.post('/attendance/auto-check', runAttendanceAutoChecker);
 
   // Advantages & Immunities & Score Batch
-  fastify.post('/teams/:teamId/advantages', { schema: grantAdvantageSchema }, grantAdvantage);
-  fastify.post('/teams/:teamId/immunity', { schema: setTeamImmunitySchema }, setTeamImmunity);
+  fastify.post('/grant-advantage', { schema: grantAdvantageSchema }, grantAdvantage);
+  fastify.post('/grant-advantage/:id', { schema: grantAdvantageSchema }, grantAdvantage);
+  fastify.post('/teams/:id/advantages', { schema: grantAdvantageSchema }, grantAdvantage);
+  fastify.post('/teams/:id/immunity', { schema: setTeamImmunitySchema }, setTeamImmunity);
   fastify.post('/scores/batch', { schema: updateScoresBatchSchema }, updateScoresBatch);
 
   // Daily Tasks Management
   fastify.post('/tasks', { schema: createTaskSchema }, createTask);
   fastify.get('/tasks', getAllTasksAdmin);
-  fastify.put('/tasks/:taskId', { schema: updateTaskSchema }, updateTask);
-  fastify.delete('/tasks/:taskId', { schema: deleteTaskSchema }, deleteTask);
+  fastify.put('/tasks/:id', { schema: updateTaskSchema }, updateTask);
+  fastify.delete('/tasks/:id', { schema: deleteTaskSchema }, deleteTask);
 
   // Global Announcements
   fastify.post('/announcements', { schema: createAnnouncementSchema }, createAnnouncement);
   fastify.get('/announcements', getAllAnnouncementsAdmin);
-  fastify.delete('/announcements/:announcementId', { schema: deleteAnnouncementSchema }, deleteAnnouncement);
+  fastify.delete('/announcements/:id', { schema: deleteAnnouncementSchema }, deleteAnnouncement);
 
   // Gallery & Media Management
   fastify.get('/gallery', getGalleryItems);
   fastify.post('/gallery', createGalleryItem);
   fastify.delete('/gallery/:id', { schema: deleteGallerySchema }, deleteGalleryItem);
 }
+
+
 

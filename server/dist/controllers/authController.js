@@ -9,7 +9,7 @@ import { getRegistrationEmailHtml } from '../utils/emailTemplates.js';
  * Creates the leader user account and sets Team status to 'Pending'
  */
 export async function registerTeam(request, reply) {
-    const { teamName, themeColor, logoUrl, leader, members = [] } = request.body;
+    const { teamName, themeColor, logoUrl, residenceType, leader, members = [] } = request.body;
     // Validation
     if (!teamName || !leader || !leader.name || !leader.email || !leader.password) {
         return reply.status(400).send({
@@ -34,7 +34,7 @@ export async function registerTeam(request, reply) {
             message: 'A team with this carnival team name already exists.',
         });
     }
-    // Hash password
+    // Hash password with bcrypt
     const passwordHash = await bcrypt.hash(leader.password, 10);
     // Create Leader User account
     const newUser = await User.create({
@@ -48,6 +48,7 @@ export async function registerTeam(request, reply) {
         teamName: normalizedTeamName,
         themeColor: themeColor || '#FF0055',
         logoUrl: logoUrl || '',
+        residenceType: residenceType || 'Hosteller',
         status: 'Pending',
         leader: {
             name: leader.name.trim(),

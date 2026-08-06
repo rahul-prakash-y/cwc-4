@@ -2,30 +2,34 @@ import { FastifyInstance } from 'fastify';
 import {
   getStudentDashboard,
   getActiveTasks,
+  saveTaskDraft,
   submitTask,
   submitInteractiveTask,
   uploadTaskFile,
   useAdvantage,
 } from '../controllers/studentController.js';
-import { authenticate, isStudent } from '../middleware/auth.js';
-import { submitTaskSchema, useAdvantageSchema } from '../schemas/studentSchemas.js';
+import { verifyJWT, isStudent } from '../middleware/auth.js';
+import { submitTaskSchema, saveDraftSchema, useAdvantageSchema } from '../schemas/studentSchemas.js';
 
 export async function studentRoutes(fastify: FastifyInstance) {
   // All student routes require authentication and student role
-  fastify.addHook('preHandler', authenticate);
+  fastify.addHook('preHandler', verifyJWT);
   fastify.addHook('preHandler', isStudent);
 
   // Student Dashboard
   fastify.get('/dashboard', getStudentDashboard);
 
   // Active Tasks
+  fastify.get('/tasks/active', getActiveTasks);
   fastify.get('/tasks', getActiveTasks);
 
-  // Submit Task (GitHub link or Cloudinary upload URL)
-  fastify.post('/tasks/:taskId/submit', { schema: submitTaskSchema }, submitTask);
+  // Save Task Answer Draft (MongoDB)
+  fastify.post('/tasks/:id/draft', { schema: saveDraftSchema }, saveTaskDraft);
 
-  // Task 3: Interactive Task Auto-Grading Routes
-  fastify.post('/tasks/:taskId/submit-interactive', submitInteractiveTask);
+  // Final Submit Task (Text answer, GitHub link, Cloudinary upload payload)
+  fastify.post('/tasks/:id/submit', { schema: submitTaskSchema }, submitTask);
+
+  // Interactive Task Auto-Grading Routes
   fastify.post('/tasks/:id/submit-interactive', submitInteractiveTask);
 
   // Use / Deduct Advantage
@@ -34,4 +38,6 @@ export async function studentRoutes(fastify: FastifyInstance) {
   // Direct File Upload to Cloudinary (PDF / Image)
   fastify.post('/upload', uploadTaskFile);
 }
+
+
 

@@ -60,8 +60,35 @@ export async function toggleGrandFinale(
    ========================================================================== */
 
 
-export async function getAllTeams(_request: FastifyRequest, reply: FastifyReply) {
-  const teams = await Team.find().lean();
+export async function getAllTeams(
+  request: FastifyRequest<{
+    Querystring: { search?: string; status?: string; residenceType?: string };
+  }>,
+  reply: FastifyReply
+) {
+  const { search, status, residenceType } = request.query || {};
+  const query: any = {};
+
+  if (status) {
+    query.status = status;
+  }
+
+  if (residenceType) {
+    query.residenceType = residenceType;
+  }
+
+  if (search) {
+    const searchRegex = new RegExp(search.trim().replace(/[-[\]{}()*+?.,\\^$|#\s]/g, '\\$&'), 'i');
+    query.$or = [
+      { teamName: searchRegex },
+      { 'leader.name': searchRegex },
+      { 'leader.email': searchRegex },
+      { 'members.name': searchRegex },
+      { 'members.email': searchRegex },
+    ];
+  }
+
+  const teams = await Team.find(query).lean();
 
   // Aggregate scores for each team
   const teamsWithScores = await Promise.all(
@@ -80,6 +107,7 @@ export async function getAllTeams(_request: FastifyRequest, reply: FastifyReply)
     count: teamsWithScores.length,
   });
 }
+
 
 import { EventEmitter } from 'events';
 
@@ -105,15 +133,19 @@ export async function streamTeamStatusEvents(_request: FastifyRequest, reply: Fa
 
 export async function updateTeamStatus(
   request: FastifyRequest<{
-    Params: { teamId: string };
-    Body: { status: 'Pending' | 'Approved' | 'Eliminated' | 'Safe' | 'Danger' | 'Qualified' };
+    Params: { teamId?: string; id?: string };
+    Body: { status: 'Pending' | 'Approved' | 'Rejected' | 'Eliminated' | 'Safe' | 'Danger' | 'Qualified' };
   }>,
   reply: FastifyReply
 ) {
-  const { teamId } = request.params;
+  const teamId = request.params.teamId || request.params.id;
   const { status } = request.body;
 
-  const validStatuses = ['Pending', 'Approved', 'Eliminated', 'Safe', 'Danger', 'Qualified'];
+  if (!teamId) {
+    return reply.status(400).send({ error: 'Bad Request', message: 'Team ID parameter is required' });
+  }
+
+  const validStatuses = ['Pending', 'Approved', 'Rejected', 'Eliminated', 'Safe', 'Danger', 'Qualified'];
   if (!validStatuses.includes(status)) {
     return reply.status(400).send({
       error: 'Bad Request',
@@ -128,6 +160,7 @@ export async function updateTeamStatus(
   if (!team) {
     team = await Team.findOneAndUpdate({ teamName: teamId }, { status }, { new: true, runValidators: true });
   }
+
 
   if (!team) {
     return reply.status(404).send({ error: 'Not Found', message: 'Team not found' });
@@ -451,26 +484,37 @@ export async function deleteAnnouncement(
    ========================================================================== */
 
 interface GrantAdvantageBody {
-  advantage: 'Double Points' | 'Extra Time' | 'Skip' | 'Golden Coin' | 'Hint' | string;
+  teamId?: string;
+  advantage?: 'Double Points' | 'Extra Time' | 'Skip' | 'Golden Coin' | 'Hint' | string;
   quantity?: number;
+  immunity?: boolean;
 }
 
 export async function grantAdvantage(
   request: FastifyRequest<{
-    Params: { teamId: string };
+    Params: { teamId?: string; id?: string };
     Body: GrantAdvantageBody;
   }>,
   reply: FastifyReply
 ) {
-  const { teamId } = request.params;
-  const { advantage, quantity = 1 } = request.body;
+  const teamId = request.params.teamId || request.params.id || request.body?.teamId;
+  const { advantage, quantity = 1, immunity } = request.body || {};
 
-  if (!advantage) {
+  if (!teamId) {
     return reply.status(400).send({
       error: 'Bad Request',
-      message: 'Advantage name is required (e.g. Double Points, Extra Time, Skip, Golden Coin, Hint)',
+      message: 'Team ID is required in URL parameter or request body',
     });
   }
+
+  if (!advantage && immunity === undefined) {
+    return reply.status(400).send({
+      error: 'Bad Request',
+      message: 'Advantage name or immunity setting is required (e.g. Double Points, Extra Time, Skip, Golden Coin, Hint)',
+    });
+  }
+
+  const effectiveAdvantage = advantage || (immunity ? 'Immunity' : 'Double Points');
 
   const session = await mongoose.startSession();
   let transactionStarted = false;
@@ -502,23 +546,29 @@ export async function grantAdvantage(
       return reply.status(404).send({ error: 'Not Found', message: `Team '${teamId}' not found` });
     }
 
-    if (advantage.toLowerCase().includes('immunity')) {
+    if (immunity !== undefined) {
+      team.immunity = Boolean(immunity);
+    }
+    if (effectiveAdvantage.toLowerCase().includes('immunity')) {
       team.immunity = true;
     }
 
-    const existingAdv = team.advantages.find(
-      (a) => a.advantage.toLowerCase() === advantage.toLowerCase()
-    );
+    if (advantage || !immunity) {
+      const existingAdv = team.advantages.find(
+        (a) => a.advantage.toLowerCase() === effectiveAdvantage.toLowerCase()
+      );
 
-    if (existingAdv) {
-      existingAdv.quantity += quantity;
-    } else {
-      team.advantages.push({
-        advantage,
-        quantity,
-        grantedAt: new Date(),
-      });
+      if (existingAdv) {
+        existingAdv.quantity += quantity;
+      } else {
+        team.advantages.push({
+          advantage: effectiveAdvantage,
+          quantity,
+          grantedAt: new Date(),
+        });
+      }
     }
+
 
     await team.save(sessionOption);
 
@@ -551,22 +601,24 @@ export async function grantAdvantage(
       setImmediate(() => {
         const html = getAdvantageGrantedEmailHtml({
           teamName,
-          advantage,
+          advantage: effectiveAdvantage,
           quantity,
           immunity,
         });
         sendEmail({
           to: leaderEmail,
-          subject: `🎁 Power-Up Granted: ${advantage} - Team ${teamName}`,
+          subject: `🎁 Power-Up Granted: ${effectiveAdvantage} - Team ${teamName}`,
           html,
         });
+
       });
     }
 
     return reply.send({
-      message: `Granted advantage '${advantage}' (+${quantity}) to team '${team.teamName}'! 🎁`,
+      message: `Granted advantage '${effectiveAdvantage}' (+${quantity}) to team '${team.teamName}'! 🎁`,
       team,
     });
+
   } catch (error) {
     if (transactionStarted) {
       await session.abortTransaction();

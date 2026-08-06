@@ -9,7 +9,7 @@ export function generateToken(payload, expiresIn = '7d') {
 /**
  * PreHandler Middleware to verify JWT token
  */
-export async function authenticate(request, reply) {
+export async function verifyJWT(request, reply) {
     try {
         const authHeader = request.headers.authorization;
         if (!authHeader || !authHeader.startsWith('Bearer ')) {
@@ -17,6 +17,16 @@ export async function authenticate(request, reply) {
                 error: 'Unauthorized',
                 message: 'Authentication token missing or malformed',
             });
+        }
+        if (typeof request.jwtVerify === 'function') {
+            try {
+                const decoded = await request.jwtVerify();
+                request.user = decoded;
+                return;
+            }
+            catch {
+                // Fallback to jsonwebtoken verification
+            }
         }
         const token = authHeader.split(' ')[1];
         const decoded = jwt.verify(token, env.JWT_SECRET);
@@ -29,6 +39,7 @@ export async function authenticate(request, reply) {
         });
     }
 }
+export const authenticate = verifyJWT;
 /**
  * PreHandler Middleware to check for Admin role
  */

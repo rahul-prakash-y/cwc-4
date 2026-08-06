@@ -9,11 +9,13 @@ export interface UserPayload {
   teamId?: string;
 }
 
-declare module 'fastify' {
-  interface FastifyRequest {
-    user?: UserPayload;
+declare module '@fastify/jwt' {
+  interface FastifyJWT {
+    payload: UserPayload;
+    user: UserPayload;
   }
 }
+
 
 /**
  * Helper to generate JWT token for authenticated users
@@ -25,7 +27,7 @@ export function generateToken(payload: UserPayload, expiresIn: SignOptions['expi
 /**
  * PreHandler Middleware to verify JWT token
  */
-export async function authenticate(request: FastifyRequest, reply: FastifyReply) {
+export async function verifyJWT(request: FastifyRequest, reply: FastifyReply) {
   try {
     const authHeader = request.headers.authorization;
 
@@ -36,9 +38,18 @@ export async function authenticate(request: FastifyRequest, reply: FastifyReply)
       });
     }
 
+    if (typeof request.jwtVerify === 'function') {
+      try {
+        const decoded = await request.jwtVerify<UserPayload>();
+        request.user = decoded;
+        return;
+      } catch {
+        // Fallback to jsonwebtoken verification
+      }
+    }
+
     const token = authHeader.split(' ')[1];
     const decoded = jwt.verify(token, env.JWT_SECRET) as UserPayload;
-
     request.user = decoded;
   } catch (err) {
     return reply.status(401).send({
@@ -47,6 +58,8 @@ export async function authenticate(request: FastifyRequest, reply: FastifyReply)
     });
   }
 }
+
+export const authenticate = verifyJWT;
 
 /**
  * PreHandler Middleware to check for Admin role
