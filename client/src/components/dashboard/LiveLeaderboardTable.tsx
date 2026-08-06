@@ -14,6 +14,7 @@ import {
   Award,
 } from 'lucide-react';
 import { Team } from '../../types';
+import { useSocket } from '../../context/SocketContext';
 
 export interface LeaderboardTeam extends Team {
   trend: 'up' | 'down' | 'same' | 'new';
@@ -35,6 +36,78 @@ export const LiveLeaderboardTable: React.FC<LiveLeaderboardTableProps> = ({
   const [teams, setTeams] = useState<LeaderboardTeam[]>(initialTeams);
   const [searchQuery, setSearchQuery] = useState('');
   const [filterMode, setFilterMode] = useState<'all' | 'top3'>('all');
+  const { socket } = useSocket();
+
+  // Task 4: Real-time Socket.io listener for SCORE_UPDATED & STATUS_CHANGED events
+  React.useEffect(() => {
+    if (!socket) return;
+
+    const handleScoreUpdated = (data: any) => {
+      console.log('⚡ [Socket.io] SCORE_UPDATED Event received:', data);
+      setTeams((prevTeams) => {
+        let updated = [...prevTeams];
+        if (Array.isArray(data.scores)) {
+          updated = updated.map((team) => {
+            const match = data.scores.find((s: any) => s.teamId === team.id || s.teamName === team.name);
+            if (match) {
+              return {
+                ...team,
+                points: match.totalPoints !== undefined ? match.totalPoints : team.points + (match.mainTaskScore || 0),
+                status: match.status || team.status,
+              };
+            }
+            return team;
+          });
+        } else {
+          updated = updated.map((team) => {
+            if (data.teamId === team.id || data.teamName === team.name) {
+              return {
+                ...team,
+                points: team.points + (data.bonusPoints || 100),
+              };
+            }
+            return team;
+          });
+        }
+
+        const sorted = [...updated].sort((a, b) => b.points - a.points);
+
+        return sorted.map((team, idx) => {
+          const newRank = idx + 1;
+          const oldRank = team.rank;
+          const rankDiff = oldRank - newRank;
+
+          let trend: 'up' | 'down' | 'same' | 'new' = 'same';
+          if (rankDiff > 0) trend = 'up';
+          else if (rankDiff < 0) trend = 'down';
+
+          return {
+            ...team,
+            rank: newRank,
+            trend,
+            trendValue: Math.abs(rankDiff),
+          };
+        });
+      });
+    };
+
+    const handleStatusChanged = (data: any) => {
+      console.log('⚡ [Socket.io] STATUS_CHANGED Event received:', data);
+      if (data.teamId || data.teamName) {
+        setTeams((prev) =>
+          prev.map((t) => (t.id === data.teamId || t.name === data.teamName ? { ...t, status: data.status || t.status } : t))
+        );
+      }
+    };
+
+    socket.on('SCORE_UPDATED', handleScoreUpdated);
+    socket.on('STATUS_CHANGED', handleStatusChanged);
+
+    return () => {
+      socket.off('SCORE_UPDATED', handleScoreUpdated);
+      socket.off('STATUS_CHANGED', handleStatusChanged);
+    };
+  }, [socket]);
 
   // Interactive Live Simulation: randomize points to showcase Framer Motion row re-ordering
   const handleSimulateUpdate = () => {

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Outlet, Link, useLocation } from 'react-router-dom';
 import { Shield, LayoutDashboard, CheckSquare, Trophy, Zap, Ticket, ArrowLeft, Menu, X, Bell } from 'lucide-react';
+import { AnnouncementToast } from '../components/common/AnnouncementToast';
 
 export const StudentLayout: React.FC = () => {
   const location = useLocation();
@@ -116,7 +117,8 @@ export const StudentLayout: React.FC = () => {
         </header>
 
         {/* Page Body */}
-        <main className="p-4 sm:p-6 lg:p-8 flex-1">
+        <main className="p-4 sm:p-6 lg:p-8 flex-1 relative">
+          <AnnouncementToast />
           <Outlet />
         </main>
       </div>

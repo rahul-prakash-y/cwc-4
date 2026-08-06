@@ -6,6 +6,11 @@ import { Announcement } from '../models/Announcement.js';
 import { Score } from '../models/Score.js';
 import { Setting } from '../models/Setting.js';
 import { delCache } from '../utils/redis.js';
+import {
+  broadcastScoreUpdated,
+  broadcastNewAnnouncement,
+  broadcastStatusChanged,
+} from '../socket.js';
 
 /* ==========================================================================
    GRAND FINALE GLOBAL TOGGLE CONTROLLERS
@@ -128,6 +133,12 @@ export async function updateTeamStatus(
     status: team.status,
     timestamp: new Date().toISOString(),
   });
+  broadcastStatusChanged({
+    teamId: team._id.toString(),
+    teamName: team.teamName,
+    status: team.status,
+    timestamp: new Date().toISOString(),
+  });
 
   await delCache('cwc:leaderboard');
 
@@ -156,6 +167,12 @@ export async function eliminateTeam(
   }
 
   teamBroadcaster.emit('status-changed', {
+    teamId: team._id.toString(),
+    teamName: team.teamName,
+    status: 'Eliminated',
+    timestamp: new Date().toISOString(),
+  });
+  broadcastStatusChanged({
     teamId: team._id.toString(),
     teamName: team.teamName,
     status: 'Eliminated',
@@ -292,6 +309,15 @@ export async function createAnnouncement(
 
   await delCache('cwc:announcements');
 
+  // Broadcast WebSocket event for NEW_ANNOUNCEMENT
+  broadcastNewAnnouncement({
+    announcement,
+    message: announcement.message,
+    pinned: announcement.pinned,
+    author: announcement.author,
+    timestamp: announcement.timestamp,
+  });
+
   return reply.status(201).send({
     message: 'Global announcement posted! 📢',
     announcement,
@@ -404,6 +430,21 @@ export async function grantAdvantage(
 
     await delCache('cwc:leaderboard');
 
+    // Broadcast WebSocket event for advantage grant
+    broadcastStatusChanged({
+      teamId: team._id.toString(),
+      teamName: team.teamName,
+      advantage,
+      quantity,
+      advantages: team.advantages,
+      immunity: team.immunity,
+    });
+    broadcastScoreUpdated({
+      teamId: team._id.toString(),
+      teamName: team.teamName,
+      type: 'ADVANTAGE_GRANTED',
+    });
+
     return reply.send({
       message: `Granted advantage '${advantage}' (+${quantity}) to team '${team.teamName}'! 🎁`,
       team,
@@ -448,6 +489,18 @@ export async function setTeamImmunity(
   if (!team) {
     return reply.status(404).send({ error: 'Not Found', message: 'Team not found' });
   }
+
+  // Broadcast WebSocket event for immunity change
+  broadcastStatusChanged({
+    teamId: team._id.toString(),
+    teamName: team.teamName,
+    immunity: team.immunity,
+  });
+  broadcastScoreUpdated({
+    teamId: team._id.toString(),
+    teamName: team.teamName,
+    type: 'IMMUNITY_CHANGED',
+  });
 
   return reply.send({
     message: `Immunity status for team '${team.teamName}' set to: ${immunity ? '🛡️ PROTECTED' : '❌ NONE'}`,
@@ -517,6 +570,12 @@ export async function updateScoresBatch(
   );
 
   await delCache('cwc:leaderboard');
+
+  // Broadcast WebSocket event for SCORE_UPDATED
+  broadcastScoreUpdated({
+    scores: results,
+    updatedCount: results.length,
+  });
 
   return reply.send({
     message: 'Batch score sheet updated successfully! 📊',

@@ -3,62 +3,76 @@ import { FastifyInstance } from 'fastify';
 import { env } from './config/env.js';
 import { Draft } from './models/Draft.js';
 
-/**
- * Constant identifier for the primary live coding test room.
- */
 export const TEST_ROOM = 'test-room-season4';
+export const GLOBAL_ROOM = 'global';
+export const STUDENT_ROOM = 'student-dashboard';
+export const ADMIN_ROOM = 'admin-panel';
 
 /**
  * Lean In-Memory Maps for connection management & memory protection.
  * Optimized for Render's 512MB RAM Free Tier (handling 200 concurrent students).
- * 
- * activeStudents: Maps studentId -> socketId
- * socketToStudent: Maps socketId -> studentId
  */
-export const activeStudents = new Map<string, string>();
-export const socketToStudent = new Map<string, string>();
-
-/**
- * In-Memory cache storing latest unsaved student draft state.
- * Flushed asynchronously to MongoDB upon client disconnect.
- */
+export const activeStudents = new Map<string, string>(); // studentId -> socketId
+export const socketToStudent = new Map<string, string>(); // socketId -> studentId
 const activeDrafts = new Map<string, { codeDraft?: string; state?: any; testId?: string }>();
 
 let ioInstance: Server | null = null;
 let timeSyncInterval: NodeJS.Timeout | null = null;
 
 /**
- * Live Test Broadcast Engine utility function.
- * Sends event & payload to all connected clients in the live test room.
+ * Broadcast utility to send events to specific rooms or multiple rooms.
  */
-export function broadcastToTest(event: string, payload: any): void {
+export function emitToRoom(room: string, event: string, payload: any): void {
   if (ioInstance) {
-    ioInstance.to(TEST_ROOM).emit(event, payload);
+    ioInstance.to(room).emit(event, payload);
   }
 }
 
+export function broadcastToTest(event: string, payload: any): void {
+  emitToRoom(TEST_ROOM, event, payload);
+}
+
 /**
- * Returns the current active student socket count for health metrics & monitoring.
+ * Task 2 Broadcast Helpers for Real-Time Backend Events
  */
+export function broadcastScoreUpdated(payload: any): void {
+  if (ioInstance) {
+    ioInstance.to(GLOBAL_ROOM).to(STUDENT_ROOM).to(ADMIN_ROOM).emit('SCORE_UPDATED', {
+      timestamp: new Date().toISOString(),
+      ...payload,
+    });
+  }
+}
+
+export function broadcastNewAnnouncement(payload: any): void {
+  if (ioInstance) {
+    ioInstance.to(GLOBAL_ROOM).to(STUDENT_ROOM).to(ADMIN_ROOM).emit('NEW_ANNOUNCEMENT', {
+      timestamp: new Date().toISOString(),
+      ...payload,
+    });
+  }
+}
+
+export function broadcastStatusChanged(payload: any): void {
+  if (ioInstance) {
+    ioInstance.to(GLOBAL_ROOM).to(STUDENT_ROOM).to(ADMIN_ROOM).emit('STATUS_CHANGED', {
+      timestamp: new Date().toISOString(),
+      ...payload,
+    });
+  }
+}
+
 export function getActiveSocketsCount(): number {
   return activeStudents.size;
 }
 
-/**
- * Returns the underlying Socket.io server instance.
- */
 export function getSocketIoInstance(): Server | null {
   return ioInstance;
 }
 
 /**
- * Configures and attaches Socket.io to the Fastify server instance.
- * Production-ready memory & network optimizations for Render Free Tier (512MB RAM, shared CPU):
- * 
- * 1. perMessageDeflate: false -> Disables WS compression to prevent memory inflation on 512MB RAM.
- * 2. pingTimeout: 20000ms & pingInterval: 10000ms -> Keeps connections alive through Render reverse proxies.
- * 3. Lean In-Memory Map connection tracking and instant disconnect memory cleanup.
- * 4. Asynchronous MongoDB draft auto-save on disconnect without blocking the main event loop.
+ * Configures and attaches Socket.io to Fastify server.
+ * Handles room joining for 'global', 'student-dashboard', and 'admin-panel'.
  */
 export function setupSocketIO(app: FastifyInstance): Server {
   const allowedOrigins = env.CLIENT_ORIGIN
@@ -71,23 +85,16 @@ export function setupSocketIO(app: FastifyInstance): Server {
       methods: ['GET', 'POST'],
       credentials: true,
     },
-    // Disable perMessageDeflate to save memory overhead per student connection
-    perMessageDeflate: false,
-    // Render proxy keep-alive ping configuration
-    pingTimeout: 20000,
+    perMessageDeflate: false, // Disables compression to save memory on 512MB RAM limit
+    pingTimeout: 20000,      // Keeps Render proxy WebSocket connections alive
     pingInterval: 10000,
-    maxHttpBufferSize: 1e6, // 1MB payload ceiling
+    maxHttpBufferSize: 1e6,  // 1MB max payload limit
   });
 
   ioInstance = io;
 
-  // -------------------------------------------------------------
-  // Live Test Broadcast Engine: Time Sync Every 10 Seconds
-  // -------------------------------------------------------------
-  if (timeSyncInterval) {
-    clearInterval(timeSyncInterval);
-  }
-
+  // Broadcast time sync every 10 seconds
+  if (timeSyncInterval) clearInterval(timeSyncInterval);
   timeSyncInterval = setInterval(() => {
     broadcastToTest('time-sync', {
       serverTime: Date.now(),
@@ -95,51 +102,48 @@ export function setupSocketIO(app: FastifyInstance): Server {
       activeSockets: activeStudents.size,
     });
   }, 10000);
-
-  // Allow NodeJS to exit cleanly without waiting for sync interval
   timeSyncInterval.unref();
 
-  // -------------------------------------------------------------
-  // Connection Management & Event Listeners
-  // -------------------------------------------------------------
   io.on('connection', (socket: Socket) => {
-    app.log.info({ socketId: socket.id }, '🔌 Socket client connected');
+    app.log.info({ socketId: socket.id }, '🔌 Client connected to Socket.io');
 
-    // Automatically join live test room
-    socket.join(TEST_ROOM);
+    // Auto-join global room on connection
+    socket.join(GLOBAL_ROOM);
 
-    // 1. Room Joining & Connection Identification
+    // Task 1: Room joining handler for 'global', 'student-dashboard', 'admin-panel'
+    socket.on('join-room', (roomName: string) => {
+      const allowedRooms = [GLOBAL_ROOM, STUDENT_ROOM, ADMIN_ROOM, TEST_ROOM];
+      if (allowedRooms.includes(roomName) || roomName.startsWith('team-')) {
+        socket.join(roomName);
+        app.log.info({ socketId: socket.id, room: roomName }, `Socket joined room: ${roomName}`);
+      }
+    });
+
+    // Student identification & live test room joining
     socket.on('join-test-room', ({ studentId, testId }: { studentId?: string; testId?: string }) => {
       const targetRoom = testId || TEST_ROOM;
       socket.join(targetRoom);
+      socket.join(STUDENT_ROOM);
 
       if (studentId) {
-        // Disassociate stale socket mapping if student reconnected
         const previousSocketId = activeStudents.get(studentId);
         if (previousSocketId && previousSocketId !== socket.id) {
           socketToStudent.delete(previousSocketId);
         }
-
         activeStudents.set(studentId, socket.id);
         socketToStudent.set(socket.id, studentId);
-
-        app.log.info(
-          { studentId, socketId: socket.id, room: targetRoom, activeSockets: activeStudents.size },
-          `🎯 Student ${studentId} joined live test room (${targetRoom})`
-        );
       }
     });
 
-    // Alias handler for standard room registration
-    socket.on('register', ({ studentId }: { studentId: string }) => {
+    socket.on('register', ({ studentId, role }: { studentId: string; role?: string }) => {
       if (studentId) {
         activeStudents.set(studentId, socket.id);
         socketToStudent.set(socket.id, studentId);
-        socket.join(TEST_ROOM);
+        socket.join(role === 'admin' ? ADMIN_ROOM : STUDENT_ROOM);
       }
     });
 
-    // 2. Code Draft Synchronization
+    // Code draft sync
     socket.on('draft-update', (payload: { studentId?: string; codeDraft?: string; state?: any; testId?: string }) => {
       const studentId = payload.studentId || socketToStudent.get(socket.id);
       if (studentId) {
@@ -151,34 +155,23 @@ export function setupSocketIO(app: FastifyInstance): Server {
       }
     });
 
-    // 3. Heart-Beat Listener for Connection & Memory Protection
+    // Heartbeat
     socket.on('heartbeat', (payload?: any) => {
-      socket.emit('heartbeat-ack', {
-        serverTime: Date.now(),
-        payload: payload || null,
-      });
+      socket.emit('heartbeat-ack', { serverTime: Date.now(), payload: payload || null });
     });
 
     socket.on('ping', () => {
       socket.emit('pong', { timestamp: Date.now() });
     });
 
-    // 4. Connection Drop Cleanup & Asynchronous MongoDB Fallback
-    socket.on('disconnect', (reason: string) => {
+    // Disconnect cleanup & async Mongo fallback
+    socket.on('disconnect', () => {
       const studentId = socketToStudent.get(socket.id);
-
-      // Clean up lean In-Memory Maps immediately to save RAM
       if (studentId) {
         activeStudents.delete(studentId);
       }
       socketToStudent.delete(socket.id);
 
-      app.log.info(
-        { socketId: socket.id, studentId, reason, activeSockets: activeStudents.size },
-        '🔌 Socket client disconnected & memory map purged'
-      );
-
-      // Asynchronous Error Fallback: Auto-save draft to MongoDB without blocking event loop
       if (studentId && activeDrafts.has(studentId)) {
         const draftData = activeDrafts.get(studentId);
         activeDrafts.delete(studentId);
@@ -197,10 +190,9 @@ export function setupSocketIO(app: FastifyInstance): Server {
                 },
                 { upsert: true, new: true }
               );
-              app.log.info({ studentId }, '💾 Auto-saved student draft to MongoDB asynchronously');
             }
           } catch (err) {
-            app.log.error({ err, studentId }, '❌ Failed async draft auto-save to MongoDB on disconnect');
+            app.log.error({ err, studentId }, 'Draft auto-save error on disconnect');
           }
         });
       }
