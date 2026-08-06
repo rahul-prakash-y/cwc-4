@@ -1,4 +1,5 @@
 import { FastifyRequest, FastifyReply } from 'fastify';
+import mongoose from 'mongoose';
 import { Team } from '../models/Team.js';
 import { Task, TaskType } from '../models/Task.js';
 import { Announcement } from '../models/Announcement.js';
@@ -77,6 +78,10 @@ export async function updateTeamStatus(
   const { teamId } = request.params;
   const { status } = request.body;
 
+  if (!mongoose.Types.ObjectId.isValid(teamId)) {
+    return reply.status(400).send({ error: 'Bad Request', message: 'Invalid Team ID' });
+  }
+
   if (!['Pending', 'Approved', 'Eliminated'].includes(status)) {
     return reply.status(400).send({
       error: 'Bad Request',
@@ -105,6 +110,10 @@ export async function eliminateTeam(
   reply: FastifyReply
 ) {
   const { teamId } = request.params;
+
+  if (!mongoose.Types.ObjectId.isValid(teamId)) {
+    return reply.status(400).send({ error: 'Bad Request', message: 'Invalid Team ID' });
+  }
 
   const team = await Team.findByIdAndUpdate(
     teamId,

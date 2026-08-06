@@ -1,8 +1,12 @@
 import Fastify from 'fastify';
 import cors from '@fastify/cors';
 import multipart from '@fastify/multipart';
+import helmet from '@fastify/helmet';
+import rateLimit from '@fastify/rate-limit';
+import fastifyEnv from '@fastify/env';
 import { env } from './config/env.js';
 import { setupErrorHandler } from './plugins/errorHandler.js';
+import { sanitizeNoSQLInject } from './middleware/nosqlSanitize.js';
 import { authRoutes } from './routes/authRoutes.js';
 import { adminRoutes } from './routes/adminRoutes.js';
 import { studentRoutes } from './routes/studentRoutes.js';
@@ -26,6 +30,41 @@ export function buildApp() {
             }
             : true,
     });
+    // Task 3: Fastify Env validation plugin
+    fastify.register(fastifyEnv, {
+        confKey: 'config',
+        schema: {
+            type: 'object',
+            required: ['PORT', 'JWT_SECRET', 'MONGO_URI'],
+            properties: {
+                PORT: { type: 'number' },
+                HOST: { type: 'string' },
+                NODE_ENV: { type: 'string' },
+                MONGO_URI: { type: 'string' },
+                MONGODB_URI: { type: 'string' },
+                JWT_SECRET: { type: 'string' },
+                CLIENT_ORIGIN: { type: 'string' },
+            },
+        },
+        data: env,
+    });
+    // Task 1: Register Helmet for Secure HTTP Headers
+    fastify.register(helmet, {
+        contentSecurityPolicy: env.NODE_ENV === 'production' ? undefined : false,
+    });
+    // Task 2: Global Rate Limit (100 requests / minute)
+    fastify.register(rateLimit, {
+        max: 100,
+        timeWindow: '1 minute',
+        errorResponseBuilder: (_request, context) => ({
+            statusCode: 429,
+            error: 'Too Many Requests',
+            message: `Rate limit exceeded. Maximum ${context.max} requests per ${context.after} allowed.`,
+            date: new Date().toISOString(),
+        }),
+    });
+    // Task 4: Global NoSQL Injection Sanitization preHandler hook
+    fastify.addHook('preHandler', sanitizeNoSQLInject);
     // Register CORS
     fastify.register(cors, {
         origin: env.CLIENT_ORIGIN || '*',

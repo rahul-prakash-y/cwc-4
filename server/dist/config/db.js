@@ -1,8 +1,10 @@
 import mongoose from 'mongoose';
 import { env } from './env.js';
+// Global Mongoose hardening against NoSQL injection
+mongoose.set('sanitizeFilter', true);
 export const connectDB = async () => {
     try {
-        const conn = await mongoose.connect(env.MONGODB_URI);
+        const conn = await mongoose.connect(env.MONGO_URI);
         console.log(`🎪 [CWC Season 4] MongoDB Connected: ${conn.connection.host}`);
     }
     catch (error) {

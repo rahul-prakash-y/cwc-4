@@ -1,3 +1,4 @@
+import mongoose from 'mongoose';
 import { Team } from '../models/Team.js';
 import { Task } from '../models/Task.js';
 import { Announcement } from '../models/Announcement.js';
@@ -48,6 +49,9 @@ export async function getAllTeams(_request, reply) {
 export async function updateTeamStatus(request, reply) {
     const { teamId } = request.params;
     const { status } = request.body;
+    if (!mongoose.Types.ObjectId.isValid(teamId)) {
+        return reply.status(400).send({ error: 'Bad Request', message: 'Invalid Team ID' });
+    }
     if (!['Pending', 'Approved', 'Eliminated'].includes(status)) {
         return reply.status(400).send({
             error: 'Bad Request',
@@ -65,6 +69,9 @@ export async function updateTeamStatus(request, reply) {
 }
 export async function eliminateTeam(request, reply) {
     const { teamId } = request.params;
+    if (!mongoose.Types.ObjectId.isValid(teamId)) {
+        return reply.status(400).send({ error: 'Bad Request', message: 'Invalid Team ID' });
+    }
     const team = await Team.findByIdAndUpdate(teamId, { status: 'Eliminated' }, { new: true });
     if (!team) {
         return reply.status(404).send({ error: 'Not Found', message: 'Team not found' });

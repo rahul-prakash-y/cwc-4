@@ -17,6 +17,19 @@ import {
   toggleGrandFinale,
 } from '../controllers/adminController.js';
 import { authenticate, isAdmin } from '../middleware/auth.js';
+import {
+  toggleGrandFinaleSchema,
+  updateTeamStatusSchema,
+  eliminateTeamSchema,
+  grantAdvantageSchema,
+  setTeamImmunitySchema,
+  updateScoresBatchSchema,
+  createTaskSchema,
+  updateTaskSchema,
+  deleteTaskSchema,
+  createAnnouncementSchema,
+  deleteAnnouncementSchema,
+} from '../schemas/adminSchemas.js';
 
 export async function adminRoutes(fastify: FastifyInstance) {
   // All admin routes require authentication and admin role
@@ -25,28 +38,26 @@ export async function adminRoutes(fastify: FastifyInstance) {
 
   // Grand Finale State Toggle
   fastify.get('/grand-finale', getGrandFinale);
-  fastify.post('/grand-finale', toggleGrandFinale);
+  fastify.post('/grand-finale', { schema: toggleGrandFinaleSchema }, toggleGrandFinale);
 
   // Teams Management
   fastify.get('/teams', getAllTeams);
-  fastify.patch('/teams/:teamId/status', updateTeamStatus);
-  fastify.patch('/teams/:teamId/eliminate', eliminateTeam);
+  fastify.patch('/teams/:teamId/status', { schema: updateTeamStatusSchema }, updateTeamStatus);
+  fastify.patch('/teams/:teamId/eliminate', { schema: eliminateTeamSchema }, eliminateTeam);
 
   // Advantages & Immunities & Score Batch
-  fastify.post('/teams/:teamId/advantages', grantAdvantage);
-  fastify.post('/teams/:teamId/immunity', setTeamImmunity);
-  fastify.post('/scores/batch', updateScoresBatch);
+  fastify.post('/teams/:teamId/advantages', { schema: grantAdvantageSchema }, grantAdvantage);
+  fastify.post('/teams/:teamId/immunity', { schema: setTeamImmunitySchema }, setTeamImmunity);
+  fastify.post('/scores/batch', { schema: updateScoresBatchSchema }, updateScoresBatch);
 
   // Daily Tasks Management
-  fastify.post('/tasks', createTask);
+  fastify.post('/tasks', { schema: createTaskSchema }, createTask);
   fastify.get('/tasks', getAllTasksAdmin);
-  fastify.put('/tasks/:taskId', updateTask);
-  fastify.delete('/tasks/:taskId', deleteTask);
+  fastify.put('/tasks/:taskId', { schema: updateTaskSchema }, updateTask);
+  fastify.delete('/tasks/:taskId', { schema: deleteTaskSchema }, deleteTask);
 
   // Global Announcements
-  fastify.post('/announcements', createAnnouncement);
+  fastify.post('/announcements', { schema: createAnnouncementSchema }, createAnnouncement);
   fastify.get('/announcements', getAllAnnouncementsAdmin);
-  fastify.delete('/announcements/:announcementId', deleteAnnouncement);
+  fastify.delete('/announcements/:announcementId', { schema: deleteAnnouncementSchema }, deleteAnnouncement);
 }
-
-

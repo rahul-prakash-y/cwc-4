@@ -5,23 +5,56 @@ import { z } from 'zod';
 // Load environment variables from .env file
 dotenv.config({ path: path.resolve(process.cwd(), '.env') });
 
+// Populate fallback aliases so either MONGO_URI or MONGODB_URI satisfies the requirement
+const mongoUri = process.env.MONGO_URI || process.env.MONGODB_URI;
+
+const rawEnv = {
+  ...process.env,
+  MONGO_URI: mongoUri,
+  MONGODB_URI: mongoUri,
+};
+
 const envSchema = z.object({
-  PORT: z.coerce.number().default(5000),
+  PORT: z.preprocess(
+    (val) => (val === undefined || val === '' ? undefined : Number(val)),
+    z
+      .number({
+        required_error: 'PORT environment variable is required and missing',
+        invalid_type_error: 'PORT must be a valid number',
+      })
+      .min(1)
+      .max(65535)
+  ),
   HOST: z.string().default('0.0.0.0'),
   NODE_ENV: z.enum(['development', 'production', 'test']).default('development'),
-  MONGODB_URI: z.string().default('mongodb://localhost:27017/cwc-season-4'),
-  JWT_SECRET: z.string().min(1, 'JWT_SECRET is required'),
+  MONGO_URI: z
+    .string({
+      required_error: 'MONGO_URI (or MONGODB_URI) environment variable is required and missing',
+    })
+    .min(1, 'MONGO_URI (or MONGODB_URI) cannot be empty'),
+  MONGODB_URI: z
+    .string({
+      required_error: 'MONGODB_URI (or MONGO_URI) environment variable is required and missing',
+    })
+    .min(1, 'MONGODB_URI (or MONGO_URI) cannot be empty'),
+  JWT_SECRET: z
+    .string({
+      required_error: 'JWT_SECRET environment variable is required and missing',
+    })
+    .min(1, 'JWT_SECRET environment variable cannot be empty'),
   CLIENT_ORIGIN: z.string().default('http://localhost:5173'),
   CLOUDINARY_CLOUD_NAME: z.string().optional().default(''),
   CLOUDINARY_API_KEY: z.string().optional().default(''),
   CLOUDINARY_API_SECRET: z.string().optional().default(''),
 });
 
-const _env = envSchema.safeParse(process.env);
+const _env = envSchema.safeParse(rawEnv);
 
 if (!_env.success) {
-  console.error('❌ Invalid environment variables:', _env.error.format());
-  throw new Error('Invalid environment variables');
+  console.error('❌ FATAL: Environment Variable Validation Failed!');
+  console.error(JSON.stringify(_env.error.format(), null, 2));
+  // Crash server process immediately on startup if missing required env vars
+  process.exit(1);
 }
 
 export const env = _env.data;
