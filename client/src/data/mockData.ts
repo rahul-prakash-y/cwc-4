@@ -107,6 +107,24 @@ export const MOCK_TEAMS: Team[] = [
 
 export const MOCK_TIMELINE: TimelineDay[] = [
   {
+    dayNumber: 0,
+    date: 'Aug 01 - Aug 08',
+    title: 'Registration Phase',
+    description: 'Teams register online, receive digital carnival tickets, and verify student credentials.',
+    type: 'Registration',
+    points: 0,
+    status: 'Completed',
+  },
+  {
+    dayNumber: 0.5 as any,
+    date: 'Aug 09',
+    title: 'Team Selection',
+    description: 'Admin roster verification, seed assignments, and bracket generation.',
+    type: 'Selection',
+    points: 0,
+    status: 'Completed',
+  },
+  {
     dayNumber: 1,
     date: 'Aug 10',
     title: 'The Grand Opening Parade',
@@ -204,112 +222,184 @@ export const MOCK_TIMELINE: TimelineDay[] = [
 
 export const MOCK_RULES: RuleCategory[] = [
   {
-    id: 'general',
-    title: 'Carnival General Regulations',
-    iconName: '🎪',
-    description: 'Core rules governing participation, team size, and sportsmanship during CWC Season 4.',
+    id: 'eligibility',
+    title: '1. Eligibility & Team Setup',
+    iconName: '🎓',
+    description: 'Participation guidelines, student verification, and team formation rules.',
     badgeText: 'Mandatory',
     rules: [
       {
-        title: 'Team Composition & Eligibility',
-        content: 'Each team must consist of exactly 2 to 3 registered students. Team composition cannot be modified after Day 1 once the carnival grounds open.',
-        tag: 'Team Setup',
+        title: 'Student Status & ID Verification',
+        content: 'Open to all currently enrolled undergraduate and graduate students. A valid student ID card must be verified during registration.',
+        tag: 'Verification',
       },
       {
-        title: 'Fair Play & Code Integrity',
-        content: 'All submitted code must be original work created during the designated challenge windows. Plagiarism or using unapproved AI solver scripts will result in immediate arena eviction.',
-        tag: 'Strict Policy',
+        title: 'Team Size Constraint',
+        content: 'Teams must consist of 2 to 3 registered members. Solo entries or squads larger than 3 members are strictly prohibited.',
+        tag: '2-3 Members',
       },
       {
-        title: 'Daily Check-in & Arena Presence',
-        content: 'Team leaders must submit daily task check-ins via the Student Portal before midnight 23:59 IST.',
-        tag: 'Deadlines',
-      },
-    ],
-  },
-  {
-    id: 'battles',
-    title: 'Arena Battles & Task Submissions',
-    iconName: '⚔️',
-    description: 'Guidelines on how daily tasks, sprint relays, and hackathons are evaluated.',
-    badgeText: 'Scoring',
-    rules: [
-      {
-        title: 'Submission Formats',
-        content: 'Tasks require a public GitHub repository link and a deployed live URL (or Cloudinary video demonstration for UI tasks).',
-        tag: 'Submission',
-      },
-      {
-        title: 'Time Penalty Factor',
-        content: 'Submissions within the first hour receive a +15% Speed Bonus. Submissions made after the 3-hour mark lose 10% per hour late.',
-        tag: 'Speed Bonus',
-      },
-    ],
-  },
-  {
-    id: 'advantages',
-    title: 'Power-Up Advantages & Cards',
-    iconName: '⚡',
-    description: 'How to earn and deploy special carnival power-ups earned through streaks.',
-    badgeText: 'Carnival Feature',
-    rules: [
-      {
-        title: 'Double Point Multiplier Card',
-        content: 'Can be activated once per season before any Daily Code Battle to double all earned points for that day.',
-        tag: 'Power-Up',
-      },
-      {
-        title: 'Immunity Ticket',
-        content: 'Shields a team from points deduction during 1 missed daily sprint quiz.',
-        tag: 'Shield',
-      },
-      {
-        title: 'Golden Hint Wheel',
-        content: 'Grants access to 1 direct architectural clue during Boss Fight challenges.',
-        tag: 'Hint',
-      },
-    ],
-  },
-  {
-    id: 'scoring',
-    title: 'Leaderboard & Tie-Breaker Mechanics',
-    iconName: '🏆',
-    description: 'How points are aggregated and how final rank ties are broken.',
-    badgeText: 'Leaderboard',
-    rules: [
-      {
-        title: 'Point Aggregation',
-        content: 'Points are cumulative across all 10 Days. Bonus points from daily streaks (3+ days) are automatically calculated.',
-        tag: 'Points',
-      },
-      {
-        title: 'Tie-Breaker Rule',
-        content: 'In the event of a tie on Day 10, the team with the lowest average submission timestamp across all rounds wins the tie-breaker.',
-        tag: 'Tie-Breaker',
+        title: 'Roster Lock Date',
+        content: 'Team rosters are locked after Team Selection day. No substitution of members is allowed during the 10 days of competition.',
+        tag: 'Strict Lock',
       },
     ],
   },
   {
     id: 'attendance',
-    title: 'Attendance & Mandatory Presence Codex',
+    title: '2. Attendance & Mandatory Presence',
     iconName: '📋',
-    description: 'Attendance thresholds and automatic danger flag policies for hostellers and day scholars.',
+    description: 'Attendance thresholds and danger flag policies for hostellers and day scholars.',
     badgeText: 'Faculty Rule',
     rules: [
       {
-        title: 'Daily Minimum Member Presence Threshold',
-        content: 'Each team must have at least 50% of its registered members present for each daily arena session. Teams with less than 50% member presence on any single day are flagged for warning.',
+        title: 'Daily Minimum Presence',
+        content: 'Each team must have at least 50% of its registered members present for each daily arena session. Falling below triggers a warning flag.',
         tag: '50% Minimum',
       },
       {
-        title: 'Cumulative 60% Attendance Requirement',
-        content: 'Teams must maintain at least 60% overall member attendance across all 10 days of CWC Season 4. Teams dropping below 60% cumulative attendance are automatically flagged as "In Danger".',
+        title: '60% Cumulative Attendance Rule',
+        content: 'Teams must maintain at least 60% overall attendance across the 10 days of CWC Season 4 to qualify for prize podium distribution.',
         tag: 'Danger Flag',
       },
       {
-        title: 'Hosteller & Day Scholar Verification Protocol',
-        content: 'Hostellers must complete physical lab check-in, while Day Scholars complete virtual daily presence check-in before 23:59 IST. Unexcused consecutive absences lead to status escalation.',
-        tag: 'Residency Check',
+        title: 'Hosteller & Day Scholar Protocols',
+        content: 'Hostellers must check in physically at the lab arena; Day Scholars verify presence digitally before 23:59 IST daily.',
+        tag: 'Check-in',
+      },
+    ],
+  },
+  {
+    id: 'scoring',
+    title: '3. Scoring & Point System',
+    iconName: '🏆',
+    description: 'How points are aggregated, speed multipliers, and leaderboard ranks.',
+    badgeText: 'Scoring',
+    rules: [
+      {
+        title: 'Point Distribution',
+        content: 'Daily tasks yield between 150 to 1000 points based on difficulty (Quiz: 150-250 PTS, Code Battle: 250-350 PTS, Boss Fight: 500-1000 PTS).',
+        tag: 'Points Table',
+      },
+      {
+        title: 'Speed Bonus Multiplier',
+        content: 'Submissions within the first 60 minutes of task announcement earn a +15% Speed Bonus added to total points.',
+        tag: '+15% Bonus',
+      },
+      {
+        title: 'Tie-Breaker Metric',
+        content: 'In case of equal points on Day 10, total time to completion across all rounds breaks the tie.',
+        tag: 'Tie-Breaker',
+      },
+    ],
+  },
+  {
+    id: 'elimination',
+    title: '4. Elimination & Danger Status',
+    iconName: '💀',
+    description: 'Criteria for team status degradation, danger flags, and elimination.',
+    badgeText: 'Elimination',
+    rules: [
+      {
+        title: 'Danger Zone Trigger',
+        content: 'Failing to submit 2 consecutive daily tasks or dropping below attendance thresholds places the team in "Danger Zone" status.',
+        tag: 'Danger Warning',
+      },
+      {
+        title: 'Permanent Elimination',
+        content: 'Accumulating 3 unexcused missed tasks or severe plagiarism results in permanent elimination from the tournament ladder.',
+        tag: 'Knockout',
+      },
+      {
+        title: 'Re-entry Redemption Task',
+        content: 'Teams in Danger Zone may attempt a 12-hour emergency bug fix to clear danger status if awarded by Ringmaster Admin.',
+        tag: 'Redemption',
+      },
+    ],
+  },
+  {
+    id: 'immunity',
+    title: '5. Immunity Shield Regulations',
+    iconName: '🛡️',
+    description: 'How to acquire and activate Immunity Shields to protect against score deductions.',
+    badgeText: 'Protection',
+    rules: [
+      {
+        title: 'Immunity Shield Activation',
+        content: 'An Immunity Shield prevents point loss from 1 failed or missed daily quiz. Must be activated prior to task deadline.',
+        tag: 'Shield Active',
+      },
+      {
+        title: 'Earning Immunity',
+        content: 'Immunity Shields are awarded by achieving a 3-day consecutive flawless score streak or winning special bonus rounds.',
+        tag: 'Streak Reward',
+      },
+    ],
+  },
+  {
+    id: 'advantages',
+    title: '6. Advantages & Power-Up Vault',
+    iconName: '⚡',
+    description: 'Carnival special cards: Double Points, Golden Hint Wheel, and Time Extension.',
+    badgeText: 'Carnival Feature',
+    rules: [
+      {
+        title: '2x Double Point Multiplier Card',
+        content: 'Doubles all points earned in a selected daily task. Limit: 1 use per team per season.',
+        tag: '2x Multiplier',
+      },
+      {
+        title: 'Golden Hint Wheel',
+        content: 'Reveals 1 architectural solution clue during Boss Fight tasks without point deduction.',
+        tag: 'Golden Hint',
+      },
+      {
+        title: '30-Minute Time Extension',
+        content: 'Extends submission window by 30 minutes without incurring late submission penalties.',
+        tag: 'Time Extend',
+      },
+    ],
+  },
+  {
+    id: 'bonus',
+    title: '7. Bonus Challenges & Speed Relays',
+    iconName: '🎁',
+    description: 'Flash challenges, bug hunts, and extra point opportunities.',
+    badgeText: 'Extra Points',
+    rules: [
+      {
+        title: 'Flash Bug Hunt',
+        content: 'Surprise 1-hour bug finding sprints announced via live WebSocket alerts yield up to +200 instant bonus points.',
+        tag: 'Flash Sprint',
+      },
+      {
+        title: 'Community Choice Award',
+        content: 'Peer voting on UI/UX presentation during Hackathon days yields a +100 point spectator bonus.',
+        tag: 'Community',
+      },
+    ],
+  },
+  {
+    id: 'finale',
+    title: '8. Grand Finale & Champion Coronation',
+    iconName: '👑',
+    description: 'Finale presentation, live judge panel scoring, and trophy distribution.',
+    badgeText: 'Grand Finale',
+    rules: [
+      {
+        title: 'Live Pitching & Code Defense',
+        content: 'Top 3 teams pitch their Day 10 full-stack project live to a panel of senior engineers and faculty judges.',
+        tag: 'Live Pitch',
+      },
+      {
+        title: 'Final Score Calculation',
+        content: 'Final Rank = (Cumulative 10-Day Points * 70%) + (Grand Finale Judge Score * 30%).',
+        tag: 'Crown Metric',
+      },
+      {
+        title: 'Trophy & Prize Distribution',
+        content: 'Winner claims the CWC Season 4 Golden Trophy, cash prize pool, and verified digital certificates.',
+        tag: 'Champion Glory',
       },
     ],
   },

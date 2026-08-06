@@ -1,12 +1,19 @@
 import React, { useState } from 'react';
-import { Outlet, Link, useLocation } from 'react-router-dom';
-import { Crown, Users, CheckSquare, Grid, Download, ArrowLeft, Menu, X, ShieldAlert, Sparkles, Flame, Trophy } from 'lucide-react';
+import { Outlet, Link, useLocation, Navigate } from 'react-router-dom';
+import { Crown, Users, CheckSquare, Grid, Download, ArrowLeft, Menu, X, ShieldAlert, Sparkles, Flame, Trophy, LogOut } from 'lucide-react';
 import { useGrandFinale } from '../context/GrandFinaleContext';
+import { useAuth } from '../context/AuthContext';
 
 export const AdminLayout: React.FC = () => {
   const location = useLocation();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const { isGrandFinale, toggleGrandFinale, loading: toggleLoading } = useGrandFinale();
+  const { user, isAuthenticated, isAdmin, isLoading, logout } = useAuth();
+
+  // Route protection for Admin area
+  if (!isLoading && (!isAuthenticated || !isAdmin)) {
+    return <Navigate to="/login" replace />;
+  }
 
   const adminNavItems = [
     { label: 'Overview Dashboard', path: '/admin', icon: Crown },
@@ -87,6 +94,13 @@ export const AdminLayout: React.FC = () => {
 
         {/* Footer info & Exit */}
         <div className="pt-4 border-t border-white/10 space-y-2">
+          <button
+            onClick={logout}
+            className="w-full flex items-center gap-2 px-4 py-2.5 rounded-xl glass-card text-xs font-semibold text-rose-400 hover:text-rose-300 hover:bg-rose-500/10 transition-all"
+          >
+            <LogOut className="w-4 h-4" />
+            <span>Logout Admin</span>
+          </button>
           <Link
             to="/"
             className="flex items-center gap-2 px-4 py-2.5 rounded-xl glass-card text-xs font-semibold text-slate-300 hover:text-white transition-all"
@@ -150,7 +164,7 @@ export const AdminLayout: React.FC = () => {
 
             <div className="hidden sm:flex items-center gap-2 p-1.5 rounded-xl glass-card border-carnival-gold/30">
               <ShieldAlert className="w-4 h-4 text-carnival-gold" />
-              <span className="text-xs font-bold text-white font-mono">Ringmaster Admin</span>
+              <span className="text-xs font-bold text-white font-mono">{user?.name || 'Ringmaster Admin'}</span>
             </div>
           </div>
         </header>

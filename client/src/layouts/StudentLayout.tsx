@@ -1,11 +1,18 @@
 import React, { useState } from 'react';
-import { Outlet, Link, useLocation } from 'react-router-dom';
-import { Shield, LayoutDashboard, CheckSquare, Trophy, Zap, Ticket, ArrowLeft, Menu, X, Bell } from 'lucide-react';
+import { Outlet, Link, useLocation, Navigate } from 'react-router-dom';
+import { Shield, LayoutDashboard, CheckSquare, Trophy, Zap, Ticket, ArrowLeft, Menu, X, Bell, LogOut } from 'lucide-react';
 import { AnnouncementToast } from '../components/common/AnnouncementToast';
+import { useAuth } from '../context/AuthContext';
 
 export const StudentLayout: React.FC = () => {
   const location = useLocation();
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const { user, isAuthenticated, isLoading, logout } = useAuth();
+
+  // If token check is complete and user is not logged in, redirect to login
+  if (!isLoading && !isAuthenticated) {
+    return <Navigate to="/login" replace />;
+  }
 
   const studentNavItems = [
     { label: 'Overview', path: '/student', icon: LayoutDashboard },
@@ -34,7 +41,7 @@ export const StudentLayout: React.FC = () => {
               <div className="font-extrabold text-white text-base">Student Portal</div>
               <div className="text-[10px] text-carnival-gold font-mono flex items-center gap-1">
                 <Ticket className="w-3 h-3" />
-                <span>Ticket #CWC4-8842</span>
+                <span>Ticket #{user?.ticketId || 'CWC4-8842'}</span>
               </div>
             </div>
           </div>
@@ -44,7 +51,7 @@ export const StudentLayout: React.FC = () => {
             <div className="text-[10px] uppercase font-mono text-carnival-crimson font-bold">Assigned Team</div>
             <div className="font-extrabold text-sm text-white flex items-center gap-1.5 mt-0.5">
               <Shield className="w-4 h-4 text-carnival-gold" />
-              <span>Cyber Circus Kings</span>
+              <span>{user?.teamName || 'Cyber Circus Kings'}</span>
             </div>
           </div>
 
@@ -73,6 +80,13 @@ export const StudentLayout: React.FC = () => {
 
         {/* Footer info & Exit */}
         <div className="pt-4 border-t border-white/10 space-y-2">
+          <button
+            onClick={logout}
+            className="w-full flex items-center gap-2 px-4 py-2.5 rounded-xl glass-card text-xs font-semibold text-rose-400 hover:text-rose-300 hover:bg-rose-500/10 transition-all"
+          >
+            <LogOut className="w-4 h-4" />
+            <span>Logout</span>
+          </button>
           <Link
             to="/"
             className="flex items-center gap-2 px-4 py-2.5 rounded-xl glass-card text-xs font-semibold text-slate-300 hover:text-white transition-all"
@@ -109,9 +123,9 @@ export const StudentLayout: React.FC = () => {
             </button>
             <div className="flex items-center gap-2 p-1.5 rounded-xl glass-card border-white/10">
               <div className="w-7 h-7 rounded-lg bg-carnival-gold/20 text-carnival-gold flex items-center justify-center font-bold text-xs">
-                AS
+                {user?.name ? user.name.slice(0, 2).toUpperCase() : 'AS'}
               </div>
-              <span className="text-xs font-bold text-white hidden sm:inline">Aarav Sharma</span>
+              <span className="text-xs font-bold text-white hidden sm:inline">{user?.name || 'Aarav Sharma'}</span>
             </div>
           </div>
         </header>

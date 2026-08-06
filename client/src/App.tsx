@@ -1,5 +1,6 @@
 import React from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { AuthProvider } from './context/AuthContext';
 import { GrandFinaleProvider } from './context/GrandFinaleContext';
 import { SocketProvider } from './context/SocketContext';
 import { GrandFinaleFX } from './components/common/GrandFinaleFX';
@@ -14,43 +15,45 @@ import { AdminDashboard } from './pages/AdminDashboard';
 
 export default function App() {
   return (
-    <SocketProvider>
-      <GrandFinaleProvider>
-        <GrandFinaleFX />
-        <BrowserRouter>
-          <Routes>
-            {/* Public Carnival Layout */}
-            <Route path="/" element={<PublicLayout />}>
-              <Route index element={<LandingPage />} />
-              <Route path="rules" element={<RuleBookPage />} />
-              <Route path="login" element={<LoginPage />} />
-            </Route>
+    <AuthProvider>
+      <SocketProvider>
+        <GrandFinaleProvider>
+          <GrandFinaleFX />
+          <BrowserRouter>
+            <Routes>
+              {/* Public Carnival Layout */}
+              <Route path="/" element={<PublicLayout />}>
+                <Route index element={<LandingPage />} />
+                <Route path="rules" element={<RuleBookPage />} />
+                <Route path="login" element={<LoginPage />} />
+              </Route>
 
-            {/* Student Dashboard Layout */}
-            <Route path="/student" element={<StudentLayout />}>
-              <Route index element={<StudentDashboard />} />
-              <Route path="tasks" element={<StudentDashboard />} />
-              <Route path="advantages" element={<StudentDashboard />} />
-              <Route path="leaderboard" element={<StudentDashboard />} />
-            </Route>
+              {/* Student Dashboard Layout (Protected) */}
+              <Route path="/student" element={<StudentLayout />}>
+                <Route index element={<StudentDashboard />} />
+                <Route path="tasks" element={<StudentDashboard />} />
+                <Route path="advantages" element={<StudentDashboard />} />
+                <Route path="leaderboard" element={<StudentDashboard />} />
+              </Route>
 
-            {/* Admin Command Layout */}
-            <Route path="/admin" element={<AdminLayout />}>
-              <Route index element={<AdminDashboard />} />
-              <Route path="media" element={<AdminDashboard />} />
-              <Route path="teams" element={<AdminDashboard />} />
-              <Route path="tasks" element={<AdminDashboard />} />
-              <Route path="scores" element={<AdminDashboard />} />
-              <Route path="export" element={<AdminDashboard />} />
-              <Route path="advantages" element={<AdminDashboard />} />
-              <Route path="broadcasts" element={<AdminDashboard />} />
-            </Route>
+              {/* Admin Command Layout (Protected) */}
+              <Route path="/admin" element={<AdminLayout />}>
+                <Route index element={<AdminDashboard />} />
+                <Route path="media" element={<AdminDashboard />} />
+                <Route path="teams" element={<AdminDashboard />} />
+                <Route path="tasks" element={<AdminDashboard />} />
+                <Route path="scores" element={<AdminDashboard />} />
+                <Route path="export" element={<AdminDashboard />} />
+                <Route path="advantages" element={<AdminDashboard />} />
+                <Route path="broadcasts" element={<AdminDashboard />} />
+              </Route>
 
-            {/* Catch-all fallback */}
-            <Route path="*" element={<Navigate to="/" replace />} />
-          </Routes>
-        </BrowserRouter>
-      </GrandFinaleProvider>
-    </SocketProvider>
+              {/* Catch-all fallback */}
+              <Route path="*" element={<Navigate to="/" replace />} />
+            </Routes>
+          </BrowserRouter>
+        </GrandFinaleProvider>
+      </SocketProvider>
+    </AuthProvider>
   );
 }
