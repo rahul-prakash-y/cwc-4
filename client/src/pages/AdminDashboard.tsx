@@ -6,7 +6,7 @@ import { Teams } from './admin/Teams';
 import { Tasks } from './admin/Tasks';
 import { ScoreSheet } from '../components/admin/ScoreSheet';
 import { Export } from './admin/Export';
-import { MediaDashboardView } from '../components/admin/MediaDashboardView';
+import { Media } from './admin/Media';
 import { ChampionBanner } from '../components/common/ChampionBanner';
 
 export const AdminDashboard: React.FC = () => {
@@ -106,7 +106,7 @@ export const AdminDashboard: React.FC = () => {
 
       {/* Render Active Page / View */}
       {activeTab === 'overview' && <Dashboard />}
-      {activeTab === 'media' && <MediaDashboardView />}
+      {activeTab === 'media' && <Media />}
       {activeTab === 'teams' && <Teams />}
       {activeTab === 'tasks' && <Tasks />}
       {activeTab === 'scores' && <ScoreSheet />}

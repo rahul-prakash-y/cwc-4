@@ -19,6 +19,7 @@ import { authRoutes } from './routes/authRoutes.js';
 import { adminRoutes } from './routes/adminRoutes.js';
 import { studentRoutes } from './routes/studentRoutes.js';
 import { publicRoutes } from './routes/publicRoutes.js';
+import { galleryRoutes } from './routes/galleryRoutes.js';
 import { getActiveSocketsCount } from './socket.js';
 
 
@@ -184,6 +185,8 @@ export function buildApp(): FastifyInstance {
   // Register Route Plugins
   fastify.register(publicRoutes, { prefix: '/api/v1/public' });
   fastify.register(publicRoutes, { prefix: '/api/v1' });
+  fastify.register(galleryRoutes, { prefix: '/api' });
+  fastify.register(galleryRoutes, { prefix: '/api/v1' });
   fastify.register(authRoutes, { prefix: '/api/v1/auth' });
   fastify.register(authRoutes, { prefix: '/api/auth' });
   fastify.register(adminRoutes, { prefix: '/api/v1/admin' });

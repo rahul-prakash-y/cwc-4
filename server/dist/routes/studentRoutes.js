@@ -1,6 +1,6 @@
-import { getStudentDashboard, getActiveTasks, saveTaskDraft, submitTask, submitInteractiveTask, uploadTaskFile, useAdvantage, } from '../controllers/studentController.js';
+import { getStudentDashboard, getActiveTasks, saveTaskDraft, submitTask, submitInteractiveTask, uploadTaskFile, useAdvantage, applyAdvantage, } from '../controllers/studentController.js';
 import { verifyJWT, isStudent } from '../middleware/auth.js';
-import { submitTaskSchema, saveDraftSchema, useAdvantageSchema } from '../schemas/studentSchemas.js';
+import { submitTaskSchema, saveDraftSchema, useAdvantageSchema, submitInteractiveTaskSchema } from '../schemas/studentSchemas.js';
 export async function studentRoutes(fastify) {
     // All student routes require authentication and student role
     fastify.addHook('preHandler', verifyJWT);
@@ -15,7 +15,9 @@ export async function studentRoutes(fastify) {
     // Final Submit Task (Text answer, GitHub link, Cloudinary upload payload)
     fastify.post('/tasks/:id/submit', { schema: submitTaskSchema }, submitTask);
     // Interactive Task Auto-Grading Routes
-    fastify.post('/tasks/:id/submit-interactive', submitInteractiveTask);
+    fastify.post('/tasks/:id/submit-interactive', { schema: submitInteractiveTaskSchema }, submitInteractiveTask);
+    // Apply Advantage to specific task
+    fastify.post('/tasks/:id/apply-advantage', applyAdvantage);
     // Use / Deduct Advantage
     fastify.post('/advantages/use', { schema: useAdvantageSchema }, useAdvantage);
     // Direct File Upload to Cloudinary (PDF / Image)

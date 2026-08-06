@@ -3,7 +3,7 @@ import { HeroSection } from '../components/hero/HeroSection';
 import { About } from '../components/landing/About';
 import { SeasonTimeline } from '../components/timeline/SeasonTimeline';
 import { Prizes } from '../components/landing/Prizes';
-import { GallerySection } from '../components/gallery/GallerySection';
+import { Gallery } from '../components/landing/Gallery';
 import { RegisteredTeams } from '../components/teams/RegisteredTeams';
 import { RuleBook } from '../components/rules/RuleBook';
 import { Sponsors } from '../components/landing/Sponsors';
@@ -25,7 +25,7 @@ export const LandingPage: React.FC = () => {
       <Prizes />
 
       {/* 5. Media Gallery Section */}
-      <GallerySection />
+      <Gallery />
 
       {/* 6. Registered Teams */}
       <RegisteredTeams />

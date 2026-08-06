@@ -1,4 +1,13 @@
 import { Schema, model } from 'mongoose';
+/** Interactive task types that support auto-grading */
+export const INTERACTIVE_TASK_TYPES = [
+    'MCQ',
+    'Rapid Fire',
+    'Code Completion',
+    'Output Prediction',
+    'Treasure Hunt',
+    'Puzzle',
+];
 const taskSchema = new Schema({
     title: {
         type: String,
@@ -49,10 +58,20 @@ const taskSchema = new Schema({
         type: String,
         default: '',
         trim: true,
+        select: false, // Hidden from default student queries — use .select('+correctAnswer') for grading
     },
     timeLimitSeconds: {
         type: Number,
         default: 0,
+    },
+    /**
+     * Specific time limit in seconds for interactive tasks (e.g., Rapid Fire rounds).
+     * Overrides the global daily task countdown when > 0.
+     */
+    interactiveTimeLimit: {
+        type: Number,
+        default: 0,
+        min: [0, 'Interactive time limit cannot be negative'],
     },
     testCases: [
         {
@@ -63,9 +82,19 @@ const taskSchema = new Schema({
     ],
 }, {
     timestamps: true,
+    toJSON: {
+        transform(_doc, ret) {
+            // Strip correctAnswer from serialized JSON (student safety)
+            // Backend grading routes use select('+correctAnswer') explicitly
+            delete ret.correctAnswer;
+            return ret;
+        },
+    },
 });
 // Compound indexes for fetching active and upcoming visible tasks
 taskSchema.index({ visibility: 1, startTime: 1, endTime: 1 });
 taskSchema.index({ visibility: 1, endTime: 1 });
+// Index for interactive task type lookups
+taskSchema.index({ type: 1, visibility: 1 });
 export const Task = model('Task', taskSchema);
 export default Task;

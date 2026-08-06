@@ -8,9 +8,12 @@ export async function adminRoutes(fastify) {
     // All admin routes require authentication and admin role
     fastify.addHook('preHandler', verifyJWT);
     fastify.addHook('preHandler', isAdmin);
-    // Grand Finale State Toggle
+    // Grand Finale State Toggle & Settings Routes
     fastify.get('/grand-finale', getGrandFinale);
     fastify.post('/grand-finale', { schema: toggleGrandFinaleSchema }, toggleGrandFinale);
+    fastify.get('/settings/finale', getGrandFinale);
+    fastify.patch('/settings/finale', toggleGrandFinale);
+    fastify.post('/settings/finale', toggleGrandFinale);
     // Teams Management
     fastify.get('/teams', getAllTeams);
     fastify.get('/teams/events', streamTeamStatusEvents);

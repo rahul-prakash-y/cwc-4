@@ -52,6 +52,22 @@ export function broadcastStatusChanged(payload) {
         });
     }
 }
+export function broadcastAdvantageGranted(payload) {
+    if (ioInstance) {
+        ioInstance.to(GLOBAL_ROOM).to(STUDENT_ROOM).to(ADMIN_ROOM).emit('ADVANTAGE_GRANTED', {
+            timestamp: new Date().toISOString(),
+            ...payload,
+        });
+    }
+}
+export function broadcastFinaleTriggered(payload) {
+    if (ioInstance) {
+        ioInstance.emit('FINALE_TRIGGERED', {
+            timestamp: new Date().toISOString(),
+            ...payload,
+        });
+    }
+}
 export function getActiveSocketsCount() {
     return activeStudents.size;
 }

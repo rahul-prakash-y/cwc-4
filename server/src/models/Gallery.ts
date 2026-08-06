@@ -6,7 +6,7 @@ export interface IGallery {
   title: string;
   url: string;
   type: MediaType;
-  seasonNumber: number;
+  seasonNumber: 1 | 2 | 3 | 4 | number;
   publicId?: string;
   description?: string;
   thumbnailUrl?: string;
@@ -38,7 +38,9 @@ const gallerySchema = new Schema<IGalleryDocument>(
     seasonNumber: {
       type: Number,
       required: [true, 'Season number is required'],
-      min: [1, 'Season number must be at least 1'],
+      enum: [1, 2, 3, 4],
+      min: [1, 'Season number must be between 1 and 4'],
+      max: [4, 'Season number must be between 1 and 4'],
     },
     publicId: {
       type: String,

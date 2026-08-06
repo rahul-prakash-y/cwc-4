@@ -5,6 +5,7 @@ export * from './Score.js';
 export * from './Announcement.js';
 export * from './Submission.js';
 export * from './Setting.js';
+export * from './Settings.js';
 export * from './Gallery.js';
 export * from './Draft.js';
 export * from './Attendance.js';

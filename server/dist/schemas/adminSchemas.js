@@ -107,6 +107,7 @@ export const createTaskSchema = {
             mcqOptions: { type: 'array', items: { type: 'string' } },
             correctAnswer: { type: 'string' },
             timeLimitSeconds: { type: 'number', minimum: 0 },
+            interactiveTimeLimit: { type: 'number', minimum: 0 },
             testCases: {
                 type: 'array',
                 items: {
@@ -144,6 +145,7 @@ export const updateTaskSchema = {
             mcqOptions: { type: 'array', items: { type: 'string' } },
             correctAnswer: { type: 'string' },
             timeLimitSeconds: { type: 'number', minimum: 0 },
+            interactiveTimeLimit: { type: 'number', minimum: 0 },
             testCases: {
                 type: 'array',
                 items: {
