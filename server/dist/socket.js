@@ -68,6 +68,36 @@ export function broadcastFinaleTriggered(payload) {
         });
     }
 }
+export function broadcastVotesUpdated(payload) {
+    if (ioInstance) {
+        ioInstance.to(GLOBAL_ROOM).to(STUDENT_ROOM).to(ADMIN_ROOM).emit('VOTES_UPDATED', {
+            timestamp: new Date().toISOString(),
+            ...payload,
+        });
+    }
+}
+export function disconnectUserSockets(targetId) {
+    if (!ioInstance)
+        return;
+    const socketId = activeStudents.get(targetId);
+    if (socketId) {
+        const socket = ioInstance.sockets.sockets.get(socketId);
+        if (socket) {
+            socket.emit('ACCOUNT_BLOCKED', {
+                message: 'Your account/team has been blocked by SuperAdmin.',
+                timestamp: new Date().toISOString(),
+            });
+            socket.disconnect(true);
+        }
+        activeStudents.delete(targetId);
+        socketToStudent.delete(socketId);
+    }
+    // Broadcast to room
+    ioInstance.to(`team-${targetId}`).to(`user-${targetId}`).emit('ACCOUNT_BLOCKED', {
+        message: 'Your account/team has been blocked by SuperAdmin.',
+        timestamp: new Date().toISOString(),
+    });
+}
 export function getActiveSocketsCount() {
     return activeStudents.size;
 }

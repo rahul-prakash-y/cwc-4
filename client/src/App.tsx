@@ -1,20 +1,29 @@
-import React from 'react';
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
-import { AuthProvider } from './context/AuthContext';
-import { GrandFinaleProvider } from './context/GrandFinaleContext';
-import { SocketProvider } from './context/SocketContext';
-import { GrandFinaleFX } from './components/common/GrandFinaleFX';
-import { PublicLayout } from './layouts/PublicLayout';
-import { StudentLayout } from './layouts/StudentLayout';
-import { AdminLayout } from './layouts/AdminLayout';
-import { LandingPage } from './pages/LandingPage';
-import { RuleBookPage } from './pages/RuleBookPage';
-import { LoginPage } from './pages/LoginPage';
-import { LoginSelection } from './pages/public/LoginSelection';
-import { StudentDashboard } from './pages/StudentDashboard';
-import { AdminDashboard } from './pages/AdminDashboard';
-import { FirstLoginGuard } from './components/auth/FirstLoginGuard';
-import { ForcePasswordChange } from './pages/student/ForcePasswordChange';
+import React from "react";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { Toaster } from "react-hot-toast";
+import { AuthProvider } from "./context/AuthContext";
+import { GrandFinaleProvider } from "./context/GrandFinaleContext";
+import { SocketProvider } from "./context/SocketContext";
+import { GrandFinaleFX } from "./components/common/GrandFinaleFX";
+import { PublicLayout } from "./layouts/PublicLayout";
+import { StudentLayout } from "./layouts/StudentLayout";
+import { AdminLayout } from "./layouts/AdminLayout";
+import { LandingPage } from "./pages/LandingPage";
+import { RuleBookPage } from "./pages/RuleBookPage";
+import { AboutPage } from "./pages/public/AboutPage";
+import { GalleryPage } from "./pages/public/GalleryPage";
+import { PrizesPage } from "./pages/public/PrizesPage";
+import { TeamsPage } from "./pages/public/TeamsPage";
+import { SponsorsPage } from "./pages/public/SponsorsPage";
+import { ContactPage } from "./pages/public/ContactPage";
+import { LoginPage } from "./pages/LoginPage";
+import { LoginSelection } from "./pages/public/LoginSelection";
+import { StudentDashboard } from "./pages/StudentDashboard";
+import { AdminDashboard } from "./pages/AdminDashboard";
+import { FirstLoginGuard } from "./components/auth/FirstLoginGuard";
+import { ForcePasswordChange } from "./pages/student/ForcePasswordChange";
+
+import { Register } from "./pages/public/Register";
 
 export default function App() {
   return (
@@ -27,7 +36,15 @@ export default function App() {
               {/* Public Carnival Layout */}
               <Route path="/" element={<PublicLayout />}>
                 <Route index element={<LandingPage />} />
+                <Route path="about" element={<AboutPage />} />
+                <Route path="gallery" element={<GalleryPage />} />
+                <Route path="prizes" element={<PrizesPage />} />
+                <Route path="teams" element={<TeamsPage />} />
+                <Route path="sponsors" element={<SponsorsPage />} />
+                <Route path="contact" element={<ContactPage />} />
                 <Route path="rules" element={<RuleBookPage />} />
+                <Route path="register" element={<Register />} />
+                <Route path="register-team" element={<Register />} />
                 <Route path="login" element={<LoginSelection />} />
                 <Route path="login/student" element={<LoginPage />} />
                 <Route path="login/admin" element={<LoginPage />} />
@@ -82,4 +99,3 @@ export default function App() {
     </AuthProvider>
   );
 }
-

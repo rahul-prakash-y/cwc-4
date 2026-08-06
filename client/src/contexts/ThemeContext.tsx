@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import confetti from 'canvas-confetti';
 import { useSocket } from '../context/SocketContext';
+import apiClient from '@/api/axios';
 
 interface ThemeContextType {
   isGrandFinale: boolean;
@@ -70,10 +71,9 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         '/api/v1/admin/grand-finale',
       ];
       for (const endpoint of endpoints) {
-        const res = await fetch(endpoint);
-        if (res.ok) {
-          const data = await res.json();
-          const active = Boolean(data.isGrandFinale);
+        const res = await apiClient.get(endpoint);
+        if (res.data.success) {
+          const active = Boolean(res.data.data.isGrandFinale);
           setIsGrandFinaleState(active);
           localStorage.setItem('cwc_isGrandFinale', String(active));
           break;

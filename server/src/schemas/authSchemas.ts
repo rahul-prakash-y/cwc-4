@@ -12,24 +12,27 @@ export const registerTeamSchema: FastifySchema = {
       residenceType: { type: 'string', enum: ['Hosteller', 'Day Scholar'] },
       leader: {
         type: 'object',
-        required: ['name', 'email', 'password'],
+        required: ['name', 'email'],
         additionalProperties: false,
         properties: {
           name: { type: 'string', minLength: 2, maxLength: 100 },
           email: { type: 'string', format: 'email', maxLength: 255 },
           password: { type: 'string', minLength: 6, maxLength: 128 },
           phone: { type: 'string', maxLength: 30 },
+          rollNumber: { type: 'string', maxLength: 50 },
+          department: { type: 'string', maxLength: 100 },
         },
       },
       members: {
         type: 'array',
         items: {
           type: 'object',
-          required: ['name', 'email'],
+          required: ['name'],
           additionalProperties: false,
           properties: {
             name: { type: 'string', minLength: 1, maxLength: 100 },
-            email: { type: 'string', format: 'email', maxLength: 255 },
+            email: { type: 'string', maxLength: 255 },
+            rollNumber: { type: 'string', maxLength: 50 },
             role: { type: 'string', maxLength: 50 },
           },
         },

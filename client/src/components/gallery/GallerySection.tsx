@@ -15,6 +15,8 @@ import {
   Film,
 } from 'lucide-react';
 
+import apiClient from '../../api/axios';
+
 export interface PublicGalleryItem {
   _id: string;
   id?: string;
@@ -137,12 +139,9 @@ export const GallerySection: React.FC = () => {
   const fetchGallery = async () => {
     setLoading(true);
     try {
-      const response = await fetch('/api/v1/public/gallery');
-      if (response.ok) {
-        const data = await response.json();
-        if (data.items && data.items.length > 0) {
-          setItems(data.items);
-        }
+      const response = await apiClient.get('/v1/public/gallery');
+      if (response.data && response.data.items && response.data.items.length > 0) {
+        setItems(response.data.items);
       }
     } catch (err) {
       console.warn('Backend API connection offline, displaying curated carnival gallery fallback.');

@@ -1,62 +1,130 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate, useSearchParams, useLocation, Link } from 'react-router-dom';
+import { useNavigate, useSearchParams, useLocation } from 'react-router-dom';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { z } from 'zod';
+import toast from 'react-hot-toast';
 import { User, Shield, Lock, Ticket, ArrowRight, Eye, EyeOff, Sparkles, KeyRound, CheckCircle2, AlertCircle } from 'lucide-react';
 import { triggerCarnivalConfetti } from '../components/hero/ConfettiEffect';
+import { useAuth } from '../context/AuthContext';
+import apiClient from '../api/axios';
+
+// Task 2: Zod Schema Validation to prevent silent validation failures
+const loginFormSchema = z.object({
+  email: z.string().min(1, 'Email, Username or Ticket Code is required'),
+  password: z.string().min(1, 'Password is required'),
+});
+
+type LoginFormData = z.infer<typeof loginFormSchema>;
 
 export const LoginPage: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const [searchParams] = useSearchParams();
+  const { login: authContextLogin } = useAuth();
 
   // Active mode: 'student' or 'admin'
   const isPathAdmin = location.pathname.includes('/admin');
   const initialRole = isPathAdmin || searchParams.get('role') === 'admin' ? 'admin' : 'student';
   const [activeRole, setActiveRole] = useState<'student' | 'admin'>(initialRole);
 
-  // Form State
+  // UI State
   const [showPassword, setShowPassword] = useState(false);
-  const [loading, setLoading] = useState(false);
-  const [notification, setNotification] = useState<string | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Student Fields
-  const [teamCode, setTeamCode] = useState('CWC-S4-ALPHA');
-  const [studentPass, setStudentPass] = useState('carnival2026');
-
-  // Admin Fields
-  const [adminUser, setAdminUser] = useState('admin_cwc');
-  const [adminPass, setAdminPass] = useState('adminpass123');
-  const [securityToken, setSecurityToken] = useState('9988');
+  // Task 1 & Task 2: Setup react-hook-form with Zod validation
+  const {
+    register,
+    handleSubmit,
+    setValue,
+    reset,
+    formState: { errors },
+  } = useForm<LoginFormData>({
+    resolver: zodResolver(loginFormSchema),
+    defaultValues: {
+      email: initialRole === 'admin' ? 'admin@cwc.com' : 'leader@alpha.com',
+      password: initialRole === 'admin' ? 'adminpass123' : 'carnival2026',
+    },
+  });
 
   useEffect(() => {
     if (location.pathname.includes('/admin') || searchParams.get('role') === 'admin') {
       setActiveRole('admin');
+      setValue('email', 'admin@cwc.com');
+      setValue('password', 'adminpass123');
     } else if (location.pathname.includes('/student') || searchParams.get('role') === 'student') {
       setActiveRole('student');
+      setValue('email', 'leader@alpha.com');
+      setValue('password', 'carnival2026');
     }
-  }, [location.pathname, searchParams]);
+  }, [location.pathname, searchParams, setValue]);
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
-    setNotification(null);
+  // Task 1 & Task 4: Form Submit Handler with API Call & console.log verification
+  const onSubmit = async (data: LoginFormData) => {
+    // Task 1: Verify submit button click is registering
+    console.log("Form submitted", data);
+    setIsSubmitting(true);
 
-    // Simulate authentication process
-    setTimeout(() => {
-      setLoading(false);
+    try {
+      // Task 4: Wire Axios API call to POST /api/auth/login wrapped in try/catch
+      const response = await apiClient.post('/v1/auth/login', {
+        email: data.email,
+        password: data.password,
+      });
+
+      const resData = response.data;
+      console.log('Login API response:', resData);
+
+      if (resData.token && resData.user) {
+        authContextLogin(resData.token, resData.user);
+      }
+
+      // Display Toast notification on success
+      toast.success(resData.message || '🎉 Authentication Successful!');
       triggerCarnivalConfetti();
 
-      if (activeRole === 'student') {
-        setNotification('🎉 Student Access Granted! Redirecting to Student Dashboard...');
-        setTimeout(() => {
-          navigate('/student');
-        }, 1200);
+      // Route to correct portal based on role & isFirstLogin flag
+      if (resData.user?.role === 'student' && resData.user?.isFirstLogin) {
+        setTimeout(() => navigate('/student/setup-password'), 800);
+      } else if (resData.user?.role === 'student') {
+        setTimeout(() => navigate('/student'), 800);
       } else {
-        setNotification('⚡ Admin Authorization Confirmed! Redirecting to Command Center...');
-        setTimeout(() => {
-          navigate('/admin');
-        }, 1200);
+        setTimeout(() => navigate('/admin'), 800);
       }
-    }, 800);
+    } catch (err: any) {
+      console.error('Login error:', err);
+      const errorMessage =
+        err.response?.data?.message ||
+        err.response?.data?.error ||
+        err.message ||
+        'Login failed. Please check your credentials.';
+
+      // Task 4: Display error using Toast notification so we don't have to check console
+      toast.error(`❌ ${errorMessage}`);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  // Task 2: Invalid validation callback to fire toast notification on validation error
+  const onValidationError = (formErrors: typeof errors) => {
+    console.warn('Form validation failed:', formErrors);
+    const firstErrorMessage =
+      formErrors.email?.message || formErrors.password?.message || 'Please fill in all required fields properly.';
+    toast.error(`⚠️ Validation Error: ${firstErrorMessage}`);
+  };
+
+  // Demo credential autofill helper
+  const handleAutofillDemo = () => {
+    if (activeRole === 'student') {
+      setValue('email', 'leader@alpha.com');
+      setValue('password', 'carnival2026');
+      toast.success('Autofilled Student Demo Credentials!');
+    } else {
+      setValue('email', 'admin@cwc.com');
+      setValue('password', 'adminpass123');
+      toast.success('Autofilled Admin Demo Credentials!');
+    }
   };
 
   return (
@@ -67,7 +135,7 @@ export const LoginPage: React.FC = () => {
 
       {/* Main Container */}
       <div className="w-full max-w-xl space-y-8">
-        {/* Header Header */}
+        {/* Header Section */}
         <div className="text-center space-y-3">
           <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full glass-card border border-carnival-gold/40 text-carnival-gold text-xs font-mono font-bold tracking-widest uppercase">
             <Ticket className="w-4 h-4 text-carnival-gold" />
@@ -78,18 +146,18 @@ export const LoginPage: React.FC = () => {
             Enter <span className="text-gradient-carnival">CWC Season 4</span>
           </h1>
           <p className="text-sm text-slate-300">
-            Select your entrance pass below to access your portal.
+            Select your entrance portal pass below to log in.
           </p>
         </div>
 
-        {/* TASK 5 CORE REQUIREMENT: Two Distinct, Large, Animated Buttons */}
+        {/* Role Toggle Selector */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 p-2 rounded-3xl glass-card border border-white/10 shadow-2xl">
-          {/* 1. Student Login Animated Button */}
+          {/* Student Login Button */}
           <button
             type="button"
             onClick={() => {
               setActiveRole('student');
-              setNotification(null);
+              navigate('/login/student', { replace: true });
             }}
             className={`relative group overflow-hidden p-5 rounded-2xl border transition-all duration-300 text-left flex items-center justify-between cursor-pointer ${
               activeRole === 'student'
@@ -109,27 +177,23 @@ export const LoginPage: React.FC = () => {
               </div>
               <div>
                 <div className="text-base font-extrabold text-white group-hover:text-carnival-cyan transition-colors">
-                  Student Login
+                  Student Portal
                 </div>
-                <div className="text-[11px] font-mono text-slate-400">Team Dashboard Access</div>
+                <div className="text-[11px] font-mono text-slate-400">Team & Tasks Dashboard</div>
               </div>
             </div>
 
-            {/* Glowing Indicator Badge */}
             {activeRole === 'student' && (
               <div className="w-3 h-3 rounded-full bg-carnival-cyan shadow-[0_0_12px_#00F0FF] animate-pulse" />
             )}
-
-            {/* Shimmer sweep effect */}
-            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000" />
           </button>
 
-          {/* 2. Admin Login Animated Button */}
+          {/* Admin Login Button */}
           <button
             type="button"
             onClick={() => {
               setActiveRole('admin');
-              setNotification(null);
+              navigate('/login/admin', { replace: true });
             }}
             className={`relative group overflow-hidden p-5 rounded-2xl border transition-all duration-300 text-left flex items-center justify-between cursor-pointer ${
               activeRole === 'admin'
@@ -149,31 +213,19 @@ export const LoginPage: React.FC = () => {
               </div>
               <div>
                 <div className="text-base font-extrabold text-white group-hover:text-carnival-crimson transition-colors">
-                  Admin Login
+                  Admin Portal
                 </div>
                 <div className="text-[11px] font-mono text-slate-400">Command Center Access</div>
               </div>
             </div>
 
-            {/* Glowing Indicator Badge */}
             {activeRole === 'admin' && (
               <div className="w-3 h-3 rounded-full bg-carnival-crimson shadow-[0_0_12px_#FF0055] animate-pulse" />
             )}
-
-            {/* Shimmer sweep effect */}
-            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000" />
           </button>
         </div>
 
-        {/* Notification Toast */}
-        {notification && (
-          <div className="p-4 rounded-2xl bg-carnival-gold/20 border border-carnival-gold/50 text-carnival-gold font-semibold text-xs flex items-center gap-3 shadow-neon-gold animate-fadeIn">
-            <CheckCircle2 className="w-5 h-5 shrink-0" />
-            <span>{notification}</span>
-          </div>
-        )}
-
-        {/* Dynamic Authentication Form */}
+        {/* Dynamic Authentication Form - Task 1: form onSubmit */}
         <div className="glass-card rounded-3xl p-6 sm:p-8 border border-white/10 shadow-2xl relative">
           <div className="flex items-center justify-between border-b border-white/10 pb-4 mb-6">
             <div className="flex items-center gap-2">
@@ -183,159 +235,100 @@ export const LoginPage: React.FC = () => {
                 <Lock className="w-5 h-5 text-carnival-crimson" />
               )}
               <h3 className="text-lg font-extrabold text-white">
-                {activeRole === 'student' ? 'Student Team Ticket Portal' : 'Admin Security Verification'}
+                {activeRole === 'student' ? 'Student Portal Authentication' : 'Admin Security Access'}
               </h3>
             </div>
             <span className="text-[10px] font-mono font-bold px-2.5 py-1 rounded-full bg-white/10 text-slate-300 uppercase">
-              {activeRole === 'student' ? 'Squad Mode' : 'Super Admin'}
+              {activeRole === 'student' ? 'Student Mode' : 'Admin Mode'}
             </span>
           </div>
 
-          <form onSubmit={handleSubmit} className="space-y-5">
-            {activeRole === 'student' ? (
-              /* STUDENT FORM FIELDS */
-              <>
-                <div>
-                  <label className="block text-xs font-mono font-semibold text-slate-300 uppercase mb-2">
-                    Team Ticket Code / ID
-                  </label>
-                  <div className="relative">
-                    <input
-                      type="text"
-                      required
-                      value={teamCode}
-                      onChange={(e) => setTeamCode(e.target.value)}
-                      placeholder="e.g. CWC-S4-ALPHA"
-                      className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 pl-10 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-carnival-cyan focus:ring-1 focus:ring-carnival-cyan transition-all font-mono"
-                    />
-                    <Ticket className="w-4 h-4 text-slate-400 absolute left-3.5 top-3.5" />
-                  </div>
-                </div>
+          <form onSubmit={handleSubmit(onSubmit, onValidationError)} className="space-y-5">
+            {/* Email / Username Input */}
+            <div>
+              <label className="block text-xs font-mono font-semibold text-slate-300 uppercase mb-2">
+                {activeRole === 'student' ? 'Student Email / Ticket Code' : 'Admin Master Email'}
+              </label>
+              <div className="relative">
+                <input
+                  type="text"
+                  {...register('email')}
+                  placeholder={activeRole === 'student' ? 'e.g. leader@alpha.com' : 'e.g. admin@cwc.com'}
+                  className={`w-full bg-white/5 border ${
+                    errors.email ? 'border-red-500' : 'border-white/10'
+                  } rounded-xl px-4 py-3 pl-10 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-carnival-gold focus:ring-1 focus:ring-carnival-gold transition-all font-mono`}
+                />
+                <User className="w-4 h-4 text-slate-400 absolute left-3.5 top-3.5" />
+              </div>
+              {/* Task 2: Visual Error State below input */}
+              {errors.email && (
+                <p className="text-red-400 text-xs font-mono mt-1 flex items-center gap-1">
+                  <AlertCircle className="w-3.5 h-3.5 inline" />
+                  <span>{errors.email.message}</span>
+                </p>
+              )}
+            </div>
 
-                <div>
-                  <label className="block text-xs font-mono font-semibold text-slate-300 uppercase mb-2">
-                    Ticket Passkey / Password
-                  </label>
-                  <div className="relative">
-                    <input
-                      type={showPassword ? 'text' : 'password'}
-                      required
-                      value={studentPass}
-                      onChange={(e) => setStudentPass(e.target.value)}
-                      placeholder="••••••••"
-                      className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 pl-10 pr-10 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-carnival-cyan focus:ring-1 focus:ring-carnival-cyan transition-all font-mono"
-                    />
-                    <Lock className="w-4 h-4 text-slate-400 absolute left-3.5 top-3.5" />
-                    <button
-                      type="button"
-                      onClick={() => setShowPassword(!showPassword)}
-                      className="absolute right-3.5 top-3.5 text-slate-400 hover:text-white"
-                    >
-                      {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                    </button>
-                  </div>
-                </div>
-              </>
-            ) : (
-              /* ADMIN FORM FIELDS */
-              <>
-                <div>
-                  <label className="block text-xs font-mono font-semibold text-slate-300 uppercase mb-2">
-                    Admin Master ID
-                  </label>
-                  <div className="relative">
-                    <input
-                      type="text"
-                      required
-                      value={adminUser}
-                      onChange={(e) => setAdminUser(e.target.value)}
-                      placeholder="admin_cwc"
-                      className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 pl-10 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-carnival-crimson focus:ring-1 focus:ring-carnival-crimson transition-all font-mono"
-                    />
-                    <User className="w-4 h-4 text-slate-400 absolute left-3.5 top-3.5" />
-                  </div>
-                </div>
+            {/* Password Input */}
+            <div>
+              <label className="block text-xs font-mono font-semibold text-slate-300 uppercase mb-2">
+                Password
+              </label>
+              <div className="relative">
+                <input
+                  type={showPassword ? 'text' : 'password'}
+                  {...register('password')}
+                  placeholder="••••••••"
+                  className={`w-full bg-white/5 border ${
+                    errors.password ? 'border-red-500' : 'border-white/10'
+                  } rounded-xl px-4 py-3 pl-10 pr-10 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-carnival-gold focus:ring-1 focus:ring-carnival-gold transition-all font-mono`}
+                />
+                <Lock className="w-4 h-4 text-slate-400 absolute left-3.5 top-3.5" />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3.5 top-3.5 text-slate-400 hover:text-white"
+                >
+                  {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                </button>
+              </div>
+              {/* Task 2: Visual Error State below input */}
+              {errors.password && (
+                <p className="text-red-400 text-xs font-mono mt-1 flex items-center gap-1">
+                  <AlertCircle className="w-3.5 h-3.5 inline" />
+                  <span>{errors.password.message}</span>
+                </p>
+              )}
+            </div>
 
-                <div>
-                  <label className="block text-xs font-mono font-semibold text-slate-300 uppercase mb-2">
-                    Admin Password
-                  </label>
-                  <div className="relative">
-                    <input
-                      type={showPassword ? 'text' : 'password'}
-                      required
-                      value={adminPass}
-                      onChange={(e) => setAdminPass(e.target.value)}
-                      placeholder="••••••••"
-                      className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 pl-10 pr-10 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-carnival-crimson focus:ring-1 focus:ring-carnival-crimson transition-all font-mono"
-                    />
-                    <Lock className="w-4 h-4 text-slate-400 absolute left-3.5 top-3.5" />
-                    <button
-                      type="button"
-                      onClick={() => setShowPassword(!showPassword)}
-                      className="absolute right-3.5 top-3.5 text-slate-400 hover:text-white"
-                    >
-                      {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                    </button>
-                  </div>
-                </div>
-
-                <div>
-                  <label className="block text-xs font-mono font-semibold text-slate-300 uppercase mb-2">
-                    Security Token / PIN
-                  </label>
-                  <div className="relative">
-                    <input
-                      type="password"
-                      required
-                      value={securityToken}
-                      onChange={(e) => setSecurityToken(e.target.value)}
-                      placeholder="4-Digit Security Code"
-                      className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 pl-10 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-carnival-crimson focus:ring-1 focus:ring-carnival-crimson transition-all font-mono"
-                    />
-                    <KeyRound className="w-4 h-4 text-slate-400 absolute left-3.5 top-3.5" />
-                  </div>
-                </div>
-              </>
-            )}
-
-            {/* Submit Button */}
+            {/* Submit Button - Task 1: explicit type="submit" */}
             <button
               type="submit"
-              disabled={loading}
+              disabled={isSubmitting}
               className={`w-full py-3.5 rounded-xl font-black text-sm uppercase tracking-wider transition-all flex items-center justify-center gap-2 cursor-pointer ${
                 activeRole === 'student'
                   ? 'bg-gradient-to-r from-carnival-cyan via-indigo-500 to-carnival-purple text-black shadow-neon-cyan hover:scale-[1.02]'
                   : 'bg-gradient-to-r from-carnival-crimson via-carnival-purple to-carnival-gold text-white shadow-neon-crimson hover:scale-[1.02]'
-              } ${loading ? 'opacity-70 cursor-not-allowed' : ''}`}
+              } ${isSubmitting ? 'opacity-70 cursor-not-allowed' : ''}`}
             >
-              {loading ? (
+              {isSubmitting ? (
                 <div className="w-5 h-5 border-2 border-current border-t-transparent rounded-full animate-spin" />
               ) : (
                 <>
-                  <span>{activeRole === 'student' ? 'Access Student Dashboard' : 'Launch Command Center'}</span>
+                  <span>{activeRole === 'student' ? 'Access Student Portal' : 'Launch Admin Command'}</span>
                   <ArrowRight className="w-4 h-4" />
                 </>
               )}
             </button>
           </form>
 
-          {/* Quick Demo Autofill Helpers */}
+          {/* Quick Demo Autofill Helper */}
           <div className="mt-6 pt-4 border-t border-white/10 flex items-center justify-between text-xs font-mono text-slate-400">
             <span>Need immediate test access?</span>
             <button
               type="button"
-              onClick={() => {
-                if (activeRole === 'student') {
-                  setTeamCode('CWC-S4-ALPHA');
-                  setStudentPass('carnival2026');
-                } else {
-                  setAdminUser('admin_cwc');
-                  setAdminPass('adminpass123');
-                  setSecurityToken('9988');
-                }
-              }}
-              className="text-carnival-gold hover:underline flex items-center gap-1 font-bold"
+              onClick={handleAutofillDemo}
+              className="text-carnival-gold hover:underline flex items-center gap-1 font-bold cursor-pointer"
             >
               <Sparkles className="w-3.5 h-3.5" />
               <span>Autofill Demo Credentials</span>
@@ -346,3 +339,5 @@ export const LoginPage: React.FC = () => {
     </div>
   );
 };
+
+export default LoginPage;

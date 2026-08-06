@@ -9,3 +9,5 @@ export * from './Settings.js';
 export * from './Gallery.js';
 export * from './Draft.js';
 export * from './Attendance.js';
+export * from './AuditLog.js';
+export * from './VoteLog.js';

@@ -1,4 +1,4 @@
-import { getStudentDashboard, getActiveTasks, saveTaskDraft, submitTask, submitInteractiveTask, uploadTaskFile, useAdvantage, applyAdvantage, } from '../controllers/studentController.js';
+import { getStudentDashboard, getActiveTasks, saveTaskDraft, submitTask, submitInteractiveTask, uploadTaskFile, useAdvantage, applyAdvantage, castVote, getVotingStatus, } from '../controllers/studentController.js';
 import { verifyJWT, isStudent } from '../middleware/auth.js';
 import { submitTaskSchema, saveDraftSchema, useAdvantageSchema, submitInteractiveTaskSchema } from '../schemas/studentSchemas.js';
 export async function studentRoutes(fastify) {
@@ -7,6 +7,10 @@ export async function studentRoutes(fastify) {
     fastify.addHook('preHandler', isStudent);
     // Student Dashboard
     fastify.get('/dashboard', getStudentDashboard);
+    // Voting routes
+    fastify.get('/voting-status', getVotingStatus);
+    fastify.post('/vote', castVote);
+    fastify.post('/vote/cast', castVote);
     // Active Tasks
     fastify.get('/tasks/active', getActiveTasks);
     fastify.get('/tasks', getActiveTasks);

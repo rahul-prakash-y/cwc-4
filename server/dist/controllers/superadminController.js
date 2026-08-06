@@ -1,0 +1,318 @@
+import bcrypt from 'bcryptjs';
+import { User } from '../models/User.js';
+import { Team } from '../models/Team.js';
+import { AuditLog } from '../models/AuditLog.js';
+import { logAudit } from '../middleware/auth.js';
+import { disconnectUserSockets } from '../socket.js';
+/**
+ * Task 3: Fetch Paginated Audit Logs with Search & Date Filters
+ */
+export async function getAuditLogs(request, reply) {
+    const page = parseInt(request.query.page || '1', 10);
+    const limit = parseInt(request.query.limit || '20', 10);
+    const skip = (page - 1) * limit;
+    const filter = {};
+    if (request.query.search) {
+        const searchRegex = new RegExp(request.query.search.trim(), 'i');
+        filter.$or = [
+            { adminEmail: searchRegex },
+            { action: searchRegex },
+            { targetId: searchRegex },
+            { targetType: searchRegex },
+        ];
+    }
+    if (request.query.action && request.query.action !== 'ALL') {
+        filter.action = request.query.action;
+    }
+    if (request.query.startDate || request.query.endDate) {
+        filter.timestamp = {};
+        if (request.query.startDate) {
+            filter.timestamp.$gte = new Date(request.query.startDate);
+        }
+        if (request.query.endDate) {
+            filter.timestamp.$lte = new Date(request.query.endDate);
+        }
+    }
+    const [logs, total] = await Promise.all([
+        AuditLog.find(filter)
+            .sort({ timestamp: -1 })
+            .skip(skip)
+            .limit(limit)
+            .lean(),
+        AuditLog.countDocuments(filter),
+    ]);
+    return reply.send({
+        logs,
+        total,
+        page,
+        limit,
+        totalPages: Math.ceil(total / limit) || 1,
+    });
+}
+/**
+ * Task 3: Toggle the isBlocked status of a student or team
+ */
+export async function toggleBlockStatus(request, reply) {
+    const targetId = request.params.id;
+    const { targetType, isBlocked: explicitBlockedState } = request.body || {};
+    let updatedTarget = null;
+    let newBlockedState = false;
+    let resolvedType = targetType;
+    // Try finding in User first unless explicitly specified as 'team'
+    if (targetType !== 'team') {
+        const userDoc = await User.findById(targetId);
+        if (userDoc) {
+            resolvedType = 'user';
+            newBlockedState =
+                typeof explicitBlockedState === 'boolean'
+                    ? explicitBlockedState
+                    : !userDoc.isBlocked;
+            userDoc.isBlocked = newBlockedState;
+            await userDoc.save();
+            updatedTarget = userDoc.toJSON();
+            // If user is student, also sync team leader/member block status if desired
+            if (userDoc.role === 'student') {
+                const teamDoc = await Team.findOne({
+                    $or: [
+                        { 'leader.userId': userDoc._id },
+                        { 'leader.email': userDoc.email },
+                    ],
+                });
+                if (teamDoc) {
+                    teamDoc.isBlocked = newBlockedState;
+                    await teamDoc.save();
+                }
+            }
+        }
+    }
+    // If not found in User or explicitly specified as 'team'
+    if (!updatedTarget) {
+        const teamDoc = await Team.findById(targetId);
+        if (teamDoc) {
+            resolvedType = 'team';
+            newBlockedState =
+                typeof explicitBlockedState === 'boolean'
+                    ? explicitBlockedState
+                    : !teamDoc.isBlocked;
+            teamDoc.isBlocked = newBlockedState;
+            await teamDoc.save();
+            updatedTarget = teamDoc.toJSON();
+            // Also block team leader's User account
+            if (teamDoc.leader?.userId) {
+                await User.findByIdAndUpdate(teamDoc.leader.userId, {
+                    isBlocked: newBlockedState,
+                });
+            }
+        }
+    }
+    if (!updatedTarget) {
+        return reply.status(404).send({
+            error: 'Not Found',
+            message: 'Student user or team not found with provided ID.',
+        });
+    }
+    // If target was blocked, force-disconnect active WebSocket sessions instantly
+    if (newBlockedState) {
+        disconnectUserSockets(targetId);
+        if (updatedTarget.leader?.userId) {
+            disconnectUserSockets(updatedTarget.leader.userId.toString());
+        }
+    }
+    // Log action in AuditLog
+    await logAudit({
+        adminId: request.user.userId,
+        adminEmail: request.user.email,
+        action: newBlockedState ? 'BLOCK_ACCOUNT' : 'UNBLOCK_ACCOUNT',
+        targetId,
+        targetType: resolvedType,
+        details: {
+            isBlocked: newBlockedState,
+            targetName: updatedTarget.name || updatedTarget.teamName,
+            email: updatedTarget.email || updatedTarget.leader?.email,
+        },
+        ipAddress: request.ip,
+    });
+    return reply.send({
+        message: `${resolvedType === 'team' ? 'Team' : 'User'} account has been ${newBlockedState ? 'blocked 🚫' : 'unblocked ✅'} successfully.`,
+        isBlocked: newBlockedState,
+        target: updatedTarget,
+    });
+}
+/**
+ * Task 3: Force Reset Student Password to Default & Set isFirstLogin: true
+ */
+export async function forceResetPassword(request, reply) {
+    const userId = request.params.id;
+    const user = await User.findById(userId);
+    if (!user) {
+        return reply.status(404).send({
+            error: 'Not Found',
+            message: 'User account not found.',
+        });
+    }
+    const defaultPassword = 'CWC4-Student-2026';
+    const passwordHash = await bcrypt.hash(defaultPassword, 10);
+    user.passwordHash = passwordHash;
+    user.isFirstLogin = true;
+    await user.save();
+    // Audit log entry
+    await logAudit({
+        adminId: request.user.userId,
+        adminEmail: request.user.email,
+        action: 'FORCE_RESET_PASSWORD',
+        targetId: user._id.toString(),
+        targetType: 'User',
+        details: {
+            userEmail: user.email,
+            userName: user.name,
+            defaultPassword,
+            isFirstLogin: true,
+        },
+        ipAddress: request.ip,
+    });
+    return reply.send({
+        message: `🔑 Password for ${user.email} force-reset to default standard passcode successfully.`,
+        defaultPassword,
+        user: {
+            id: user._id,
+            name: user.name,
+            email: user.email,
+            role: user.role,
+            isFirstLogin: true,
+        },
+    });
+}
+/**
+ * Task 3: Manage Admins (Create, list, update role, or revoke access)
+ */
+export async function manageAdmins(request, reply) {
+    const { actionType = 'create', name, email, password, role = 'admin', adminId } = request.body || {};
+    if (request.method === 'GET') {
+        const adminList = await User.find({
+            role: { $in: ['admin', 'superadmin'] },
+        }).select('-passwordHash');
+        return reply.send({ admins: adminList });
+    }
+    if (actionType === 'revoke' || request.method === 'DELETE') {
+        const targetId = adminId || request.params.id || request.body?.id;
+        if (!targetId) {
+            return reply.status(400).send({
+                error: 'Bad Request',
+                message: 'Admin ID is required for revoking access.',
+            });
+        }
+        const adminUser = await User.findById(targetId);
+        if (!adminUser) {
+            return reply.status(404).send({
+                error: 'Not Found',
+                message: 'Admin account not found.',
+            });
+        }
+        // Demote to student or delete admin account
+        adminUser.role = 'student';
+        await adminUser.save();
+        await logAudit({
+            adminId: request.user.userId,
+            adminEmail: request.user.email,
+            action: 'REVOKE_ADMIN',
+            targetId: adminUser._id.toString(),
+            targetType: 'User',
+            details: { email: adminUser.email, demotedTo: 'student' },
+            ipAddress: request.ip,
+        });
+        return reply.send({
+            message: `Admin access revoked for ${adminUser.email}. Demoted to student role.`,
+        });
+    }
+    // Create or Update Admin
+    if (!email || !name) {
+        return reply.status(400).send({
+            error: 'Bad Request',
+            message: 'Name and email are required for admin management.',
+        });
+    }
+    const normalizedEmail = email.toLowerCase().trim();
+    let adminUser = await User.findOne({ email: normalizedEmail });
+    if (!adminUser) {
+        // Create new Admin
+        const rawPassword = password || 'CWC4-Admin-2026';
+        const passwordHash = await bcrypt.hash(rawPassword, 10);
+        adminUser = await User.create({
+            name: name.trim(),
+            email: normalizedEmail,
+            passwordHash,
+            role: role === 'superadmin' ? 'superadmin' : 'admin',
+            isFirstLogin: false,
+            isBlocked: false,
+        });
+        await logAudit({
+            adminId: request.user.userId,
+            adminEmail: request.user.email,
+            action: 'CREATE_ADMIN',
+            targetId: adminUser._id.toString(),
+            targetType: 'User',
+            details: { email: adminUser.email, role: adminUser.role },
+            ipAddress: request.ip,
+        });
+        return reply.status(201).send({
+            message: `🎩 ${adminUser.role.toUpperCase()} account created successfully for ${adminUser.email}`,
+            admin: {
+                id: adminUser._id,
+                name: adminUser.name,
+                email: adminUser.email,
+                role: adminUser.role,
+            },
+        });
+    }
+    else {
+        // Update existing user role to admin / superadmin
+        adminUser.role = role === 'superadmin' ? 'superadmin' : 'admin';
+        if (password) {
+            adminUser.passwordHash = await bcrypt.hash(password, 10);
+        }
+        await adminUser.save();
+        await logAudit({
+            adminId: request.user.userId,
+            adminEmail: request.user.email,
+            action: 'UPDATE_ADMIN_ROLE',
+            targetId: adminUser._id.toString(),
+            targetType: 'User',
+            details: { email: adminUser.email, role: adminUser.role },
+            ipAddress: request.ip,
+        });
+        return reply.send({
+            message: `Updated privileges for ${adminUser.email} to ${adminUser.role}.`,
+            admin: {
+                id: adminUser._id,
+                name: adminUser.name,
+                email: adminUser.email,
+                role: adminUser.role,
+            },
+        });
+    }
+}
+/**
+ * Security Search helper endpoint for searching students and teams
+ */
+export async function getSecurityTargets(request, reply) {
+    const query = request.query.search ? request.query.search.trim() : '';
+    let userFilter = { role: 'student' };
+    let teamFilter = {};
+    if (query) {
+        const reg = new RegExp(query, 'i');
+        userFilter.$or = [{ name: reg }, { email: reg }];
+        teamFilter.$or = [
+            { teamName: reg },
+            { 'leader.name': reg },
+            { 'leader.email': reg },
+        ];
+    }
+    const [students, teams] = await Promise.all([
+        User.find(userFilter).select('-passwordHash').limit(20).lean(),
+        Team.find(teamFilter).limit(20).lean(),
+    ]);
+    return reply.send({
+        students,
+        teams,
+    });
+}

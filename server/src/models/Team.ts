@@ -6,12 +6,15 @@ export interface ITeamLeader {
   name: string;
   email: string;
   phone?: string;
+  rollNumber?: string;
+  department?: string;
   userId?: Types.ObjectId;
 }
 
 export interface ITeamMember {
   name: string;
-  email: string;
+  email?: string;
+  rollNumber?: string;
   role?: string;
   userId?: Types.ObjectId;
 }
@@ -56,6 +59,8 @@ const leaderSchema = new Schema<ITeamLeader>(
     name: { type: String, required: true, trim: true },
     email: { type: String, required: true, lowercase: true, trim: true },
     phone: { type: String, trim: true },
+    rollNumber: { type: String, trim: true },
+    department: { type: String, trim: true },
     userId: { type: Schema.Types.ObjectId, ref: 'User' },
   },
   { _id: false }
@@ -64,7 +69,8 @@ const leaderSchema = new Schema<ITeamLeader>(
 const memberSchema = new Schema<ITeamMember>(
   {
     name: { type: String, required: true, trim: true },
-    email: { type: String, required: true, lowercase: true, trim: true },
+    email: { type: String, lowercase: true, trim: true, default: '' },
+    rollNumber: { type: String, trim: true },
     role: { type: String, trim: true, default: 'Member' },
     userId: { type: Schema.Types.ObjectId, ref: 'User' },
   },

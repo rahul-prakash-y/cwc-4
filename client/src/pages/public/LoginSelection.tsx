@@ -168,8 +168,27 @@ export const LoginSelection: React.FC = () => {
           </motion.div>
         </div>
 
+        {/* Registration Prompt Banner */}
+        <div className="pt-4 p-4 rounded-2xl glass-card border border-carnival-gold/30 flex flex-col sm:flex-row items-center justify-between gap-4">
+          <div className="text-left space-y-0.5">
+            <span className="text-xs font-mono text-carnival-gold font-bold uppercase flex items-center gap-1.5">
+              <Ticket className="w-3.5 h-3.5" />
+              Need a Team Admission Ticket?
+            </span>
+            <p className="text-xs text-slate-300">
+              Apply as a 4-member squad to join the CWC Season 4 Carnival competition.
+            </p>
+          </div>
+          <Link
+            to="/register"
+            className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-carnival-gold via-carnival-crimson to-carnival-cyan text-black font-extrabold text-xs uppercase tracking-wider shadow-neon-gold hover:scale-105 transition-transform shrink-0"
+          >
+            Apply & Punch Ticket 🎟️
+          </Link>
+        </div>
+
         {/* Back to Home Link */}
-        <div className="pt-4">
+        <div className="pt-2">
           <Link
             to="/"
             className="text-xs font-mono text-slate-400 hover:text-white transition-colors underline"

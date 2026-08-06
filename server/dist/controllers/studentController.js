@@ -5,9 +5,10 @@ import { Score } from '../models/Score.js';
 import { Submission } from '../models/Submission.js';
 import { Draft } from '../models/Draft.js';
 import { User } from '../models/User.js';
+import { DailyVoteLog } from '../models/VoteLog.js';
 import { uploadToCloudinary } from '../utils/cloudinary.js';
 import { delCache } from '../utils/redis.js';
-import { broadcastScoreUpdated } from '../socket.js';
+import { broadcastScoreUpdated, broadcastVotesUpdated } from '../socket.js';
 /**
  * Task 4: Fetch logged-in student's team dashboard data
  * Includes current score, rank, advantages, immunity, team info
@@ -767,4 +768,172 @@ export async function applyAdvantage(request, reply) {
         advantagesRemaining: team.advantages,
         immunity: team.immunity,
     });
+}
+/**
+ * Task 3: Protected Route GET /api/student/voting-status
+ * Returns current date's voting stats for logged-in student's team
+ */
+export async function getVotingStatus(request, reply) {
+    if (!request.user) {
+        return reply.status(401).send({ error: 'Unauthorized', message: 'Not authenticated' });
+    }
+    const user = await User.findById(request.user.userId);
+    if (!user) {
+        return reply.status(404).send({ error: 'Not Found', message: 'User not found' });
+    }
+    const voterTeam = await Team.findOne({
+        $or: [
+            { 'leader.userId': user._id },
+            { 'leader.email': user.email },
+            { 'members.email': user.email },
+        ],
+    });
+    if (!voterTeam) {
+        return reply.status(404).send({
+            error: 'Not Found',
+            message: 'You are not assigned to any team.',
+        });
+    }
+    const today = new Date().toISOString().split('T')[0];
+    const logsToday = await DailyVoteLog.find({ voterTeamId: voterTeam._id, date: today });
+    const totalVotesCastToday = logsToday.reduce((sum, log) => sum + (log.votesCast || 0), 0);
+    const votesPerTargetTeam = {};
+    logsToday.forEach((log) => {
+        votesPerTargetTeam[log.targetTeamId.toString()] = log.votesCast;
+    });
+    return reply.send({
+        voterTeamId: voterTeam._id.toString(),
+        voterTeamName: voterTeam.teamName,
+        date: today,
+        dailyLimit: 100,
+        teamLimit: 15,
+        totalVotesCastToday,
+        dailyVotesRemaining: Math.max(0, 100 - totalVotesCastToday),
+        votesPerTargetTeam,
+    });
+}
+/**
+ * Task 3: Protected Route POST /api/student/vote
+ * Body expects: { targetTeamId: string, voteCount: number }
+ * Strictly validates rules via MongoDB transaction & emits VOTES_UPDATED WebSocket event.
+ */
+export async function castVote(request, reply) {
+    if (!request.user) {
+        return reply.status(401).send({ error: 'Unauthorized', message: 'Not authenticated' });
+    }
+    const { targetTeamId, voteCount } = request.body || {};
+    if (!targetTeamId || typeof targetTeamId !== 'string') {
+        return reply.status(400).send({ error: 'Bad Request', message: 'targetTeamId is required' });
+    }
+    const numVotes = Number(voteCount);
+    if (isNaN(numVotes) || numVotes <= 0 || !Number.isInteger(numVotes)) {
+        return reply.status(400).send({ error: 'Bad Request', message: 'voteCount must be a positive integer' });
+    }
+    const user = await User.findById(request.user.userId);
+    if (!user) {
+        return reply.status(404).send({ error: 'Not Found', message: 'User not found' });
+    }
+    const voterTeam = await Team.findOne({
+        $or: [
+            { 'leader.userId': user._id },
+            { 'leader.email': user.email },
+            { 'members.email': user.email },
+        ],
+    });
+    if (!voterTeam) {
+        return reply.status(400).send({
+            error: 'Bad Request',
+            message: 'You must belong to a team to cast votes.',
+        });
+    }
+    // Rule 1: Cannot vote for your own team
+    if (voterTeam._id.toString() === targetTeamId.toString()) {
+        return reply.status(400).send({
+            error: 'Invalid Vote',
+            message: '🚫 Voting for your own team is strictly prohibited by carnival rules!',
+        });
+    }
+    const targetTeam = await Team.findById(targetTeamId);
+    if (!targetTeam) {
+        return reply.status(404).send({ error: 'Not Found', message: 'Target team not found' });
+    }
+    // Current date string YYYY-MM-DD
+    const today = new Date().toISOString().split('T')[0];
+    // Query DailyVoteLog for voterTeam today
+    const logsToday = await DailyVoteLog.find({ voterTeamId: voterTeam._id, date: today });
+    const totalVotesCastToday = logsToday.reduce((sum, log) => sum + (log.votesCast || 0), 0);
+    // Rule 3: Check overall daily limit <= 100
+    if (totalVotesCastToday + numVotes > 100) {
+        const remainingDaily = Math.max(0, 100 - totalVotesCastToday);
+        return reply.status(400).send({
+            error: 'Daily Limit Exceeded',
+            message: `⚠️ Daily vote limit exceeded! You have ${remainingDaily} votes remaining today out of 100.`,
+            remainingDailyVotes: remainingDaily,
+        });
+    }
+    // Rule 4: Check per-target-team limit <= 15
+    const targetLog = logsToday.find((log) => log.targetTeamId.toString() === targetTeamId.toString());
+    const votesForTargetToday = targetLog ? targetLog.votesCast : 0;
+    if (votesForTargetToday + numVotes > 15) {
+        const remainingForTarget = Math.max(0, 15 - votesForTargetToday);
+        return reply.status(400).send({
+            error: 'Team Limit Exceeded',
+            message: `⚠️ Limit of 15 votes per team per day reached! You have ${remainingForTarget} votes remaining for '${targetTeam.teamName}' today.`,
+            remainingTeamVotes: remainingForTarget,
+        });
+    }
+    // Perform transactional update
+    const session = await mongoose.startSession();
+    let transactionStarted = false;
+    try {
+        try {
+            session.startTransaction();
+            transactionStarted = true;
+        }
+        catch {
+            // Fallback for standalone MongoDB without replica set
+        }
+        const sessionOption = transactionStarted ? { session } : {};
+        // 1. Increment target team's totalPublicVotes
+        const updatedTargetTeam = await Team.findByIdAndUpdate(targetTeamId, { $inc: { totalPublicVotes: numVotes } }, { new: true, ...sessionOption });
+        // 2. Update or insert DailyVoteLog record
+        await DailyVoteLog.findOneAndUpdate({ voterTeamId: voterTeam._id, targetTeamId: targetTeam._id, date: today }, { $inc: { votesCast: numVotes } }, { upsert: true, new: true, ...sessionOption });
+        if (transactionStarted) {
+            await session.commitTransaction();
+        }
+        // Invalidate Redis Caches
+        await delCache('cwc:leaderboard');
+        await delCache('cwc:fan-favorite');
+        const newTargetTotal = updatedTargetTeam ? updatedTargetTeam.totalPublicVotes : (targetTeam.totalPublicVotes || 0) + numVotes;
+        // Broadcast VOTES_UPDATED WebSocket Event
+        broadcastVotesUpdated({
+            voterTeamId: voterTeam._id.toString(),
+            voterTeamName: voterTeam.teamName,
+            targetTeamId: targetTeam._id.toString(),
+            targetTeamName: targetTeam.teamName,
+            votesCast: numVotes,
+            totalPublicVotes: newTargetTotal,
+        });
+        const newDailyRemaining = 100 - (totalVotesCastToday + numVotes);
+        const newTargetRemaining = 15 - (votesForTargetToday + numVotes);
+        return reply.send({
+            success: true,
+            message: `🎉 Successfully cast ${numVotes} vote(s) for '${targetTeam.teamName}'!`,
+            voterTeamId: voterTeam._id.toString(),
+            targetTeamId: targetTeam._id.toString(),
+            votesCast: numVotes,
+            totalPublicVotes: newTargetTotal,
+            dailyVotesRemaining: newDailyRemaining,
+            teamVotesRemaining: newTargetRemaining,
+        });
+    }
+    catch (error) {
+        if (transactionStarted) {
+            await session.abortTransaction();
+        }
+        throw error;
+    }
+    finally {
+        session.endSession();
+    }
 }

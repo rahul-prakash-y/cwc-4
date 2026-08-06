@@ -19,13 +19,17 @@ const userSchema = new Schema({
     },
     role: {
         type: String,
-        enum: ['admin', 'student'],
+        enum: ['student', 'admin', 'superadmin'],
         default: 'student',
         required: true,
     },
     isFirstLogin: {
         type: Boolean,
         default: true,
+    },
+    isBlocked: {
+        type: Boolean,
+        default: false,
     },
     avatarUrl: {
         type: String,

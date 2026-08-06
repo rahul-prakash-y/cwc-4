@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import apiClient, { API_BASE_URL } from '../api/axios';
 
 export interface User {
   id: string;
@@ -27,8 +28,6 @@ interface AuthContextType {
   isSuperAdmin: boolean;
   isStudent: boolean;
 }
-
-const API_BASE_URL = (import.meta as any).env?.VITE_API_BASE_URL || 'https://cwc-season4-api.onrender.com/api';
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
@@ -79,62 +78,70 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setUser(null);
     localStorage.removeItem('cwc_jwt_token');
     localStorage.removeItem('cwc_user');
+    localStorage.removeItem('token');
   };
 
   const register = async (data: any) => {
-    const response = await fetch(`${API_BASE_URL}/auth/register`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(data),
-    });
-
-    const resData = await response.json();
-    if (!response.ok) {
-      throw new Error(resData.message || 'Registration failed');
+    try {
+      const response = await apiClient.post('/auth/register', data);
+      const resData = response.data;
+      if (resData.token && resData.user) {
+        login(resData.token, resData.user);
+      }
+      return resData;
+    } catch (err: any) {
+      const msg = err.response?.data?.message || err.message || 'Registration failed';
+      throw new Error(msg);
     }
-
-    if (resData.token && resData.user) {
-      login(resData.token, resData.user);
-    }
-    return resData;
   };
 
-  // Interceptor API fetch wrapper with token injection
+  // Interceptor API fetch wrapper powered by Axios
   const apiFetch = async (endpoint: string, options: RequestInit = {}) => {
-    const url = endpoint.startsWith('http') ? endpoint : `${API_BASE_URL}${endpoint.startsWith('/') ? '' : '/'}${endpoint}`;
-    
-    const headers: Record<string, string> = {
-      'Content-Type': 'application/json',
-      ...(options.headers as Record<string, string> || {}),
-    };
-
-    if (token) {
-      headers['Authorization'] = `Bearer ${token}`;
-    }
-
-    const response = await fetch(url, {
-      ...options,
-      headers,
-    });
-
-    if (response.status === 401 || response.status === 403) {
-      const cloned = response.clone();
-      try {
-        const body = await cloned.json();
-        if (body.message?.toLowerCase().includes('blocked')) {
-          logout();
-          window.location.href = '/login?blocked=true';
-        } else if (response.status === 401) {
-          logout();
+    const method = (options.method || 'GET').toUpperCase();
+    let data: any = undefined;
+    if (options.body) {
+      if (options.body instanceof FormData) {
+        data = options.body;
+      } else if (typeof options.body === 'string') {
+        try {
+          data = JSON.parse(options.body);
+        } catch {
+          data = options.body;
         }
-      } catch {
-        if (response.status === 401) logout();
+      } else {
+        data = options.body;
       }
     }
 
-    return response;
+    try {
+      const response = await apiClient.request({
+        url: endpoint,
+        method,
+        data,
+        headers: options.headers as any,
+      });
+
+      return {
+        ok: response.status >= 200 && response.status < 300,
+        status: response.status,
+        json: async () => response.data,
+        text: async () => JSON.stringify(response.data),
+        clone: () => ({ json: async () => response.data }),
+        data: response.data,
+      };
+    } catch (err: any) {
+      if (err.response) {
+        return {
+          ok: false,
+          status: err.response.status,
+          json: async () => err.response.data,
+          text: async () => JSON.stringify(err.response.data),
+          clone: () => ({ json: async () => err.response.data }),
+          data: err.response.data,
+        };
+      }
+      throw err;
+    }
   };
 
   const value: AuthContextType = {

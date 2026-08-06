@@ -59,6 +59,15 @@ const teamSchema = new Schema({
         type: Boolean,
         default: false,
     },
+    isBlocked: {
+        type: Boolean,
+        default: false,
+    },
+    totalPublicVotes: {
+        type: Number,
+        default: 0,
+        min: 0,
+    },
 }, {
     timestamps: true,
 });

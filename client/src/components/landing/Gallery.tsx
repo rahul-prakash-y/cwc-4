@@ -13,6 +13,8 @@ import {
   ExternalLink,
 } from 'lucide-react';
 
+import apiClient from '../../api/axios';
+
 export interface GalleryItem {
   _id: string;
   id?: string;
@@ -136,16 +138,13 @@ export const Gallery: React.FC = () => {
   const fetchGalleryMedia = async (seasonParam?: number | 'all') => {
     setLoading(true);
     try {
-      let queryUrl = '/api/gallery';
+      let queryUrl = '/v1/public/gallery';
       if (seasonParam && seasonParam !== 'all') {
         queryUrl += `?season=${seasonParam}`;
       }
-      const res = await fetch(queryUrl);
-      if (res.ok) {
-        const data = await res.json();
-        if (data.items && data.items.length > 0) {
-          setItems(data.items);
-        }
+      const res = await apiClient.get(queryUrl);
+      if (res.data && res.data.items && res.data.items.length > 0) {
+        setItems(res.data.items);
       }
     } catch (err) {
       console.warn('API fetch offline, using fallback public gallery media.');

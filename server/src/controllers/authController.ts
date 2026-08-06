@@ -16,10 +16,13 @@ interface RegisterTeamBody {
     email: string;
     password?: string;
     phone?: string;
+    rollNumber?: string;
+    department?: string;
   };
   members?: Array<{
     name: string;
-    email: string;
+    email?: string;
+    rollNumber?: string;
     role?: string;
   }>;
 }
@@ -101,11 +104,14 @@ export async function registerTeam(request: FastifyRequest<{ Body: RegisterTeamB
       name: leader.name.trim(),
       email: normalizedEmail,
       phone: leader.phone ? leader.phone.trim() : '',
+      rollNumber: leader.rollNumber ? leader.rollNumber.trim() : '',
+      department: leader.department ? leader.department.trim() : '',
       userId: newUser._id,
     },
     members: members.map((m) => ({
       name: m.name.trim(),
-      email: m.email.toLowerCase().trim(),
+      email: m.email ? m.email.toLowerCase().trim() : '',
+      rollNumber: m.rollNumber ? m.rollNumber.trim() : '',
       role: m.role || 'Member',
     })),
     advantages: [],

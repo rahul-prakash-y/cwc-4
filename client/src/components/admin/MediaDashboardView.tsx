@@ -18,6 +18,8 @@ import {
   RefreshCw,
 } from 'lucide-react';
 
+import apiClient from '../../api/axios';
+
 export interface GalleryMediaItem {
   _id: string;
   id?: string;
@@ -109,16 +111,9 @@ export const MediaDashboardView: React.FC = () => {
     setLoading(true);
     setError(null);
     try {
-      const token = localStorage.getItem('token');
-      const response = await fetch('/api/v1/admin/gallery', {
-        headers: token ? { Authorization: `Bearer ${token}` } : {},
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        if (data.items && data.items.length > 0) {
-          setItems(data.items);
-        }
+      const response = await apiClient.get('/v1/admin/gallery');
+      if (response.data && response.data.items && response.data.items.length > 0) {
+        setItems(response.data.items);
       }
     } catch (err) {
       console.warn('Backend API connection offline, using mock gallery data.');
@@ -179,51 +174,23 @@ export const MediaDashboardView: React.FC = () => {
         formData.append('type', type);
         formData.append('description', description);
 
-        const response = await fetch('/api/v1/admin/gallery', {
-          method: 'POST',
-          headers: token ? { Authorization: `Bearer ${token}` } : {},
-          body: formData,
+        const response = await apiClient.post('/v1/admin/gallery', formData, {
+          headers: { 'Content-Type': 'multipart/form-data' },
         });
 
-        if (!response.ok) {
-          throw new Error('Upload failed on server');
-        }
-
-        const data = await response.json();
-        createdItem = data.item;
+        createdItem = response.data.item;
       } else {
         // Direct URL mode or fallback
         const finalUrl = uploadMode === 'file' && previewUrl ? previewUrl : urlInput;
-        const response = await fetch('/api/v1/admin/gallery', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            ...(token ? { Authorization: `Bearer ${token}` } : {}),
-          },
-          body: JSON.stringify({
-            title,
-            url: finalUrl,
-            type,
-            seasonNumber,
-            description,
-          }),
+        const response = await apiClient.post('/v1/admin/gallery', {
+          title,
+          url: finalUrl,
+          type,
+          seasonNumber,
+          description,
         });
 
-        if (response.ok) {
-          const data = await response.json();
-          createdItem = data.item;
-        } else {
-          // Local fallback creation if API offline
-          createdItem = {
-            _id: `media-${Date.now()}`,
-            title,
-            url: finalUrl,
-            type,
-            seasonNumber,
-            description,
-            createdAt: new Date().toISOString(),
-          };
-        }
+        createdItem = response.data.item;
       }
 
       setItems((prev) => [createdItem, ...prev]);
@@ -264,11 +231,7 @@ export const MediaDashboardView: React.FC = () => {
   const handleDelete = async (id: string) => {
     setDeletingId(id);
     try {
-      const token = localStorage.getItem('token');
-      await fetch(`/api/v1/admin/gallery/${id}`, {
-        method: 'DELETE',
-        headers: token ? { Authorization: `Bearer ${token}` } : {},
-      });
+      await apiClient.delete(`/v1/admin/gallery/${id}`);
     } catch (err) {
       console.warn('API delete request error');
     } finally {
