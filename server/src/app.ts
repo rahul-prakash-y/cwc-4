@@ -18,6 +18,8 @@ import { authRoutes } from './routes/authRoutes.js';
 import { adminRoutes } from './routes/adminRoutes.js';
 import { studentRoutes } from './routes/studentRoutes.js';
 import { publicRoutes } from './routes/publicRoutes.js';
+import { getActiveSocketsCount } from './socket.js';
+
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -126,6 +128,7 @@ export function buildApp(): FastifyInstance {
 
     const healthStatus = {
       status: isDbConnected ? 'ok' : 'degraded',
+      activeSockets: getActiveSocketsCount(),
       timestamp: new Date().toISOString(),
       uptime: process.uptime(),
       correlationId: request.id,
