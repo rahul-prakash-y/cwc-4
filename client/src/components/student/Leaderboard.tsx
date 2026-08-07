@@ -33,84 +33,54 @@ interface StudentLeaderboardProps {
   showScores?: boolean; // Set to true ONLY in Admin Panel
 }
 
-const MOCK_STUDENT_LEADERBOARD: LeaderboardItem[] = [
-  {
-    id: 'team-1',
-    name: 'Cyber Circus Kings',
-    avatar: '🎪',
-    tagline: 'Defending Carnival Champions',
-    rank: 1,
-    trend: 'same',
-    trendValue: 0,
-    status: 'Qualified',
-    points: 1850,
-  },
-  {
-    id: 'team-2',
-    name: 'Neon Ringmasters',
-    avatar: '🎡',
-    tagline: 'High Voltage Sprints',
-    rank: 2,
-    trend: 'up',
-    trendValue: 2,
-    status: 'Safe',
-    points: 1720,
-  },
-  {
-    id: 'team-3',
-    name: 'Jesters of Java',
-    avatar: '🃏',
-    tagline: 'Code & Chaos',
-    rank: 3,
-    trend: 'down',
-    trendValue: 1,
-    status: 'Safe',
-    points: 1640,
-  },
-  {
-    id: 'team-4',
-    name: 'High Wire Hackers',
-    avatar: '🎢',
-    tagline: 'Zero Net Failures',
-    rank: 4,
-    trend: 'up',
-    trendValue: 1,
-    status: 'Safe',
-    points: 1580,
-  },
-  {
-    id: 'team-5',
-    name: 'Firebreather Code',
-    avatar: '🔥',
-    tagline: 'Flame-Proof Algorithms',
-    rank: 5,
-    trend: 'down',
-    trendValue: 2,
-    status: 'Danger',
-    points: 1420,
-  },
-  {
-    id: 'team-6',
-    name: 'Ferris Wheel Functions',
-    avatar: '🎠',
-    tagline: 'Spinning Async Loops',
-    rank: 6,
-    trend: 'same',
-    trendValue: 0,
-    status: 'Eliminated',
-    points: 1100,
-  },
-];
-
 export const Leaderboard: React.FC<StudentLeaderboardProps> = ({
-  teams: initialTeams = MOCK_STUDENT_LEADERBOARD,
-  currentTeamId = 'team-1',
+  teams: initialTeams,
+  currentTeamId,
   showScores = false, // CRITICAL PRIVACY RULE: Defaults to false (scores hidden)
 }) => {
-  const [teams, setTeams] = useState<LeaderboardItem[]>(initialTeams);
+  const [teams, setTeams] = useState<LeaderboardItem[]>(initialTeams || []);
   const [searchQuery, setSearchQuery] = useState('');
   const [isLeaderboardVisible, setIsLeaderboardVisible] = useState<boolean>(true);
   const { socket } = useSocket();
+
+  useEffect(() => {
+    if (initialTeams && initialTeams.length > 0) {
+      setTeams(initialTeams);
+      return;
+    }
+
+    const fetchLeaderboardData = async () => {
+      try {
+        const token = localStorage.getItem('token');
+        const res = await fetch('/api/public/leaderboard', {
+          headers: token ? { Authorization: `Bearer ${token}` } : {},
+        });
+        if (res.ok) {
+          const data = await res.json();
+          const rawTeams = data.teams || data;
+          if (Array.isArray(rawTeams)) {
+            const mapped: LeaderboardItem[] = rawTeams.map((t: any, idx: number) => ({
+              id: t._id || t.id || `team-${idx + 1}`,
+              name: t.name || t.teamName,
+              avatar: t.avatar || '🎪',
+              logoUrl: t.logoUrl,
+              tagline: t.tagline || t.description || '',
+              rank: t.rank || idx + 1,
+              trend: t.trend || 'same',
+              trendValue: t.trendValue || 0,
+              status: t.status || 'Safe',
+              points: t.points || t.totalPoints || 0,
+            }));
+            setTeams(mapped);
+          }
+        }
+      } catch (err) {
+        console.warn('Failed to fetch leaderboard:', err);
+      }
+    };
+
+    fetchLeaderboardData();
+  }, [initialTeams]);
 
   useEffect(() => {
     const fetchGlobalSettings = async () => {
@@ -228,10 +198,10 @@ export const Leaderboard: React.FC<StudentLeaderboardProps> = ({
         </div>
         <div className="space-y-2">
           <h3 className="text-xl sm:text-2xl font-black text-white">
-            Leaderboard Hidden
+            Leaderboard hidden by Super Admin. The suspense builds...
           </h3>
           <p className="text-sm text-slate-300 max-w-md mx-auto font-sans leading-relaxed">
-            The leaderboard is currently hidden by the event organizers. Check back soon for updated live rankings!
+            The leaderboard is currently hidden by the Super Admin. The suspense builds... Check back soon for updated live rankings!
           </p>
         </div>
       </div>

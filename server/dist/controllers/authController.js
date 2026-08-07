@@ -64,25 +64,34 @@ export async function registerTeam(request, reply) {
             message: 'Missing required leader details in member profiles.',
         });
     }
-    // Check existing user for leader email
-    const existingUser = await User.findOne({ email: leaderEmail });
-    if (existingUser) {
+    // Check existing user for any of the 4 member emails
+    const memberEmails = members.map((m) => (m.deptMailId || m.email || '').toLowerCase().trim()).filter(Boolean);
+    const existingUsers = await User.find({ email: { $in: memberEmails } });
+    if (existingUsers.length > 0) {
         return reply.status(400).send({
             error: 'Bad Request',
-            message: 'A user with this department email address already exists.',
+            message: `A user account with department email "${existingUsers[0].email}" already exists.`,
         });
     }
     // Set standard default password
     const rawPassword = leaderInput?.password || 'CWC4-Student-2026';
     const passwordHash = await bcrypt.hash(rawPassword, 10);
-    // Create Leader User account
-    const newUser = await User.create({
-        name: leaderName,
-        email: leaderEmail,
-        passwordHash,
-        role: 'student',
-        isFirstLogin: true,
-    });
+    // Create User accounts for ALL 4 team members
+    const createdUsers = [];
+    for (let idx = 0; idx < members.length; idx++) {
+        const m = members[idx];
+        const mName = idx === 0 ? leaderName : m.name.trim();
+        const mEmail = (idx === 0 ? leaderEmail : (m.deptMailId || m.email || '')).toLowerCase().trim();
+        const u = await User.create({
+            name: mName,
+            email: mEmail,
+            passwordHash,
+            role: 'student',
+            isFirstLogin: true,
+        });
+        createdUsers.push(u);
+    }
+    const newUser = createdUsers[0];
     const formattedMembers = members.map((m, idx) => ({
         name: m.name.trim(),
         rollNo: (m.rollNo || m.rollNumber || '').trim(),
@@ -93,7 +102,7 @@ export async function registerTeam(request, reply) {
         email: (m.deptMailId || m.email || '').toLowerCase().trim(),
         rollNumber: (m.rollNo || m.rollNumber || '').trim(),
         role: idx === 0 ? 'Leader' : `Member ${idx + 1}`,
-        userId: idx === 0 ? newUser._id : undefined,
+        userId: createdUsers[idx]._id,
     }));
     // Create Team Application with status 'Pending'
     const newTeam = await Team.create({
@@ -164,7 +173,47 @@ export async function login(request, reply) {
         });
     }
     const normalizedEmail = email.toLowerCase().trim();
-    const user = await User.findOne({ email: normalizedEmail });
+    let user = await User.findOne({ email: normalizedEmail });
+    // Auto-heal missing User document for team members registered previously
+    if (!user) {
+        const matchingTeam = await Team.findOne({
+            $or: [
+                { 'leader.email': normalizedEmail },
+                { 'members.email': normalizedEmail },
+                { 'members.deptMailId': normalizedEmail },
+            ],
+        });
+        if (matchingTeam) {
+            const memberObj = matchingTeam.members.find((m) => m.email === normalizedEmail || m.deptMailId === normalizedEmail) ||
+                matchingTeam.leader;
+            const defaultPassword = 'CWC4-Student-2026';
+            let isValidPass = password === defaultPassword;
+            let passwordHashToUse = await bcrypt.hash(defaultPassword, 10);
+            if (matchingTeam.leader?.userId) {
+                const leaderUser = await User.findById(matchingTeam.leader.userId);
+                if (leaderUser) {
+                    const isLeaderPassValid = await bcrypt.compare(password, leaderUser.passwordHash);
+                    if (isLeaderPassValid) {
+                        isValidPass = true;
+                        passwordHashToUse = leaderUser.passwordHash;
+                    }
+                }
+            }
+            if (isValidPass) {
+                user = await User.create({
+                    name: memberObj?.name || 'Squad Member',
+                    email: normalizedEmail,
+                    passwordHash: passwordHashToUse,
+                    role: 'student',
+                    isFirstLogin: true,
+                });
+                if (memberObj) {
+                    memberObj.userId = user._id;
+                    await matchingTeam.save();
+                }
+            }
+        }
+    }
     if (!user) {
         return reply.status(401).send({
             error: 'Unauthorized',

@@ -156,7 +156,7 @@ export const StudentDashboard: React.FC = () => {
       {/* Main Tab Content */}
       {currentTab === 'overview' && (
         <div className="space-y-8">
-          <BuzzerButton />
+          {/* <BuzzerButton /> */}
           <TeamProgress />
           <MarksSection />
           <DailyTaskView />

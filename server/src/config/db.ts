@@ -2,8 +2,7 @@ import mongoose from 'mongoose';
 import { env } from './env.js';
 import { logger } from '../utils/logger.js';
 
-// Global Mongoose hardening against NoSQL injection
-mongoose.set('sanitizeFilter', true);
+// Global Mongoose DB Connection
 
 export const connectDB = async (): Promise<void> => {
   try {

@@ -18,7 +18,10 @@ import {
   RefreshCw,
   Table as TableIcon,
   Grid as GridIcon,
+  ShieldAlert,
+  Lock,
 } from 'lucide-react';
+import { useAuth } from '../../context/AuthContext';
 
 export interface GalleryMediaItem {
   _id: string;
@@ -32,56 +35,10 @@ export interface GalleryMediaItem {
   createdAt?: string;
 }
 
-const DEFAULT_ADMIN_MEDIA: GalleryMediaItem[] = [
-  {
-    _id: 'media-s4-1',
-    title: 'CWC Season 4 Grand Opening & Ringmaster Show',
-    url: 'https://images.unsplash.com/photo-1514525253161-7a46d19cd819?auto=format&fit=crop&w=1000&q=80',
-    type: 'Photo',
-    seasonNumber: 4,
-    description: 'Inaugural gala event for Code With Curious Season 4.',
-    createdAt: new Date().toISOString(),
-  },
-  {
-    _id: 'media-s4-2',
-    title: 'Season 4 Hackathon Live Code Battle Recap',
-    url: 'https://www.youtube.com/embed/dQw4w9WgXcQ',
-    type: 'Video',
-    seasonNumber: 4,
-    description: 'Highlights from the rapid-fire arena challenge.',
-    createdAt: new Date(Date.now() - 86400000).toISOString(),
-  },
-  {
-    _id: 'media-s3-1',
-    title: 'Season 3 Cyber Carnival Hackathon',
-    url: 'https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?auto=format&fit=crop&w=1000&q=80',
-    type: 'Photo',
-    seasonNumber: 3,
-    description: 'Midnight coding sessions during Season 3.',
-    createdAt: new Date(Date.now() - 86400000 * 30).toISOString(),
-  },
-  {
-    _id: 'media-s2-1',
-    title: 'Season 2 Finale Champion Celebrations',
-    url: 'https://images.unsplash.com/photo-1531482615713-2afd69097998?auto=format&fit=crop&w=1000&q=80',
-    type: 'Photo',
-    seasonNumber: 2,
-    description: 'Trophy ceremony for Season 2 winner teams.',
-    createdAt: new Date(Date.now() - 86400000 * 120).toISOString(),
-  },
-  {
-    _id: 'media-s1-1',
-    title: 'Season 1 Genesis Hackathon',
-    url: 'https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?auto=format&fit=crop&w=1000&q=80',
-    type: 'Photo',
-    seasonNumber: 1,
-    description: 'Where the CWC journey first started.',
-    createdAt: new Date(Date.now() - 86400000 * 300).toISOString(),
-  },
-];
-
 export const Media: React.FC = () => {
-  const [items, setItems] = useState<GalleryMediaItem[]>(DEFAULT_ADMIN_MEDIA);
+  const { user, isSuperAdmin } = useAuth();
+
+  const [items, setItems] = useState<GalleryMediaItem[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
@@ -119,10 +76,15 @@ export const Media: React.FC = () => {
         const data = await res.json();
         if (data.items && Array.isArray(data.items)) {
           setItems(data.items);
+        } else {
+          setItems([]);
         }
+      } else {
+        setItems([]);
       }
     } catch (err) {
-      console.warn('API fetch offline, using current media list.');
+      console.warn('Failed to fetch media list:', err);
+      setItems([]);
     } finally {
       setLoading(false);
     }
@@ -131,6 +93,42 @@ export const Media: React.FC = () => {
   useEffect(() => {
     fetchItems();
   }, []);
+
+  // Task 3: Enforce strict SuperAdmin guard on Media Management page
+  if (!isSuperAdmin && user?.role !== 'superadmin') {
+    return (
+      <div className="max-w-4xl mx-auto p-6 sm:p-12 my-12">
+        <motion.div
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+          className="glass-card rounded-3xl p-8 sm:p-12 border-2 border-rose-500/40 shadow-2xl text-center space-y-6 bg-slate-950/90 relative overflow-hidden"
+        >
+          <div className="absolute top-0 right-0 w-64 h-64 bg-rose-500/10 rounded-full blur-3xl pointer-events-none" />
+
+          <div className="w-20 h-20 rounded-2xl bg-rose-500/20 border border-rose-500/40 text-rose-400 flex items-center justify-center mx-auto shadow-neon-crimson">
+            <ShieldAlert className="w-10 h-10 stroke-[2.5]" />
+          </div>
+
+          <div className="space-y-2">
+            <span className="px-3 py-1 rounded-full bg-rose-500/20 text-rose-300 font-mono text-xs font-bold border border-rose-500/30 uppercase tracking-widest">
+              Access Restricted
+            </span>
+            <h2 className="text-2xl sm:text-4xl font-black text-white font-display">
+              SuperAdmin Privileges Required
+            </h2>
+            <p className="text-slate-300 text-sm sm:text-base max-w-xl mx-auto leading-relaxed">
+              Gallery media management (uploading, editing, and deleting photo/video assets) is strictly restricted to <span className="text-cwc-gold font-bold font-mono">SuperAdmin</span> accounts.
+            </p>
+          </div>
+
+          <div className="p-4 rounded-2xl bg-black/50 border border-white/10 font-mono text-xs text-slate-400 max-w-md mx-auto flex items-center justify-center gap-2">
+            <Lock className="w-4 h-4 text-rose-400" />
+            <span>Current Role: <strong className="text-white uppercase">{user?.role || 'Guest'}</strong> (Standard Admin)</span>
+          </div>
+        </motion.div>
+      </div>
+    );
+  }
 
   // Drag and Drop handlers
   const handleDragOver = useCallback((e: React.DragEvent) => {
@@ -220,7 +218,8 @@ export const Media: React.FC = () => {
           const data = await res.json();
           newItem = data.item;
         } else {
-          throw new Error('Upload error from server');
+          const errData = await res.json().catch(() => ({}));
+          throw new Error(errData.message || 'Upload error from server');
         }
       } else {
         const finalUrl = uploadMode === 'file' && previewUrl ? previewUrl : urlInput;
@@ -243,15 +242,8 @@ export const Media: React.FC = () => {
           const data = await res.json();
           newItem = data.item;
         } else {
-          newItem = {
-            _id: `media-${Date.now()}`,
-            title,
-            url: finalUrl,
-            type,
-            seasonNumber,
-            description,
-            createdAt: new Date().toISOString(),
-          };
+          const errData = await res.json().catch(() => ({}));
+          throw new Error(errData.message || 'Failed to save media URL');
         }
       }
 
@@ -264,24 +256,7 @@ export const Media: React.FC = () => {
       setPreviewUrl(null);
       setShowUploadModal(false);
     } catch (err: any) {
-      const fallbackUrl = previewUrl || urlInput || 'https://images.unsplash.com/photo-1514525253161-7a46d19cd819?auto=format&fit=crop&w=1000&q=80';
-      const fallbackItem: GalleryMediaItem = {
-        _id: `media-fallback-${Date.now()}`,
-        title,
-        url: fallbackUrl,
-        type,
-        seasonNumber,
-        description,
-        createdAt: new Date().toISOString(),
-      };
-      setItems((prev) => [fallbackItem, ...prev]);
-      setSuccessMsg(`Media "${title}" saved locally to Season ${seasonNumber}!`);
-      setTitle('');
-      setUrlInput('');
-      setDescription('');
-      setSelectedFile(null);
-      setPreviewUrl(null);
-      setShowUploadModal(false);
+      setError(err.message || 'Media upload failed.');
     } finally {
       setIsSubmitting(false);
     }
@@ -292,16 +267,21 @@ export const Media: React.FC = () => {
     setDeletingId(id);
     try {
       const token = localStorage.getItem('token');
-      await fetch(`/api/admin/gallery/${id}`, {
+      const res = await fetch(`/api/admin/gallery/${id}`, {
         method: 'DELETE',
         headers: token ? { Authorization: `Bearer ${token}` } : {},
       });
+      if (res.ok) {
+        setItems((prev) => prev.filter((item) => item._id !== id && item.id !== id));
+        setSuccessMsg('Media asset removed successfully.');
+      } else {
+        const data = await res.json().catch(() => ({}));
+        setError(data.message || 'Failed to delete media asset');
+      }
     } catch (err) {
-      console.warn('Delete request issue');
+      setError('Error deleting media asset.');
     } finally {
-      setItems((prev) => prev.filter((item) => item._id !== id && item.id !== id));
       setDeletingId(null);
-      setSuccessMsg('Media asset removed successfully.');
     }
   };
 
@@ -322,10 +302,10 @@ export const Media: React.FC = () => {
         <div className="space-y-1.5 z-10">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-carnival-gold/20 text-carnival-gold text-xs font-mono font-bold border border-carnival-gold/30">
             <Sparkles className="w-3.5 h-3.5 text-carnival-gold" />
-            <span>ORGANIZER MEDIA COMMAND CENTER</span>
+            <span>SUPERADMIN MEDIA COMMAND CENTER</span>
           </div>
           <h2 className="text-2xl sm:text-3xl font-black text-white flex items-center gap-2">
-            <span>Admin Media Management</span>
+            <span>SuperAdmin Media Management</span>
             <span className="text-xs font-mono px-2 py-0.5 rounded bg-carnival-gold/20 text-carnival-gold border border-carnival-gold/30">
               Season 1 - 4
             </span>
@@ -387,7 +367,7 @@ export const Media: React.FC = () => {
         </motion.div>
       )}
 
-      {/* Drag & Drop Upload Modal / Interface (Task 3 requirement) */}
+      {/* Drag & Drop Upload Modal / Interface */}
       <AnimatePresence>
         {showUploadModal && (
           <motion.div
@@ -444,7 +424,7 @@ export const Media: React.FC = () => {
                   />
                 </div>
 
-                {/* Season Selection Dropdown (Task 3 requirement: Dropdown for Season Number 1, 2, 3, 4) */}
+                {/* Season Selection Dropdown */}
                 <div className="space-y-1.5">
                   <label className="block text-xs font-mono text-slate-300 font-bold">Season Number *</label>
                   <select
@@ -461,7 +441,7 @@ export const Media: React.FC = () => {
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                {/* Media Type Dropdown / Toggle (Task 3 requirement: Dropdown for Media Type Photo/Video) */}
+                {/* Media Type Dropdown / Toggle */}
                 <div className="space-y-1.5">
                   <label className="block text-xs font-mono text-slate-300 font-bold">Media Type *</label>
                   <select
@@ -646,15 +626,19 @@ export const Media: React.FC = () => {
         </div>
 
         {filteredItems.length === 0 ? (
-          <div className="p-12 text-center rounded-2xl glass-card border border-white/10 space-y-3">
-            <ImageIcon className="w-12 h-12 text-slate-500 mx-auto" />
-            <div className="text-white font-bold text-base">No media assets found</div>
-            <p className="text-xs text-slate-400 max-w-sm mx-auto">
-              Select another season filter or click "Upload Media" to add new photos/videos.
-            </p>
+          <div className="p-16 text-center rounded-3xl glass-card border border-white/10 space-y-4 bg-slate-950/60">
+            <div className="w-16 h-16 rounded-2xl bg-white/5 border border-white/10 text-slate-400 flex items-center justify-center mx-auto">
+              <ImageIcon className="w-8 h-8" />
+            </div>
+            <div className="space-y-1">
+              <h4 className="text-white font-bold text-lg font-mono">No gallery media uploaded yet</h4>
+              <p className="text-xs text-slate-400 max-w-md mx-auto">
+                No items found for the selected season filter. Click the "Upload Media" button above to add media assets to the database.
+              </p>
+            </div>
           </div>
         ) : viewMode === 'table' ? (
-          /* Task 3 Data Table View */
+          /* Data Table View */
           <div className="overflow-x-auto rounded-2xl glass-card border border-white/10">
             <table className="w-full text-left border-collapse">
               <thead>
@@ -757,7 +741,6 @@ export const Media: React.FC = () => {
                       <ExternalLink className="w-3 h-3" />
                     </a>
 
-                    {/* Task 3 Delete action button */}
                     <button
                       onClick={() => handleDelete(item._id || item.id || '')}
                       disabled={deletingId === (item._id || item.id)}

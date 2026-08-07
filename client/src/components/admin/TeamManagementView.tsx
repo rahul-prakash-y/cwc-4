@@ -1,7 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Users, Edit3, Search, Filter, Save, Trash2, X, Ticket, List, Gift, Calendar } from 'lucide-react';
-import { MOCK_TEAMS } from '../../data/mockData';
 import { TicketTeamCard } from '../common/TicketTeamCard';
 import { GrantAdvantageModal } from './GrantAdvantageModal';
 import { DailyAttendanceView } from './DailyAttendanceView';
@@ -25,22 +24,43 @@ export interface ExtendedTeam {
 export const TeamManagementView: React.FC = () => {
   const [viewMode, setViewMode] = useState<'tickets' | 'table' | 'attendance'>('tickets');
   const [isGrantModalOpen, setIsGrantModalOpen] = useState(false);
-  const [teams, setTeams] = useState<ExtendedTeam[]>([
-    ...MOCK_TEAMS.map((t, idx) => ({
-      id: t.id,
-      name: t.name,
-      tagline: t.tagline,
-      rank: t.rank,
-      points: t.points,
-      status: (idx === 0 ? 'Qualified' : idx === 1 ? 'Approved' : idx === 4 ? 'Danger' : idx === 5 ? 'Eliminated' : 'Safe') as ExtendedTeam['status'],
-      avatar: t.avatar,
-      themeColor: t.themeColor,
-      streak: t.streak,
-      leaderName: t.members[0]?.name || 'Leader Name',
-      leaderEmail: t.members[0]?.github ? `${t.members[0].github}@cwc.io` : 'leader@cwc.io',
-      membersCount: t.members.length,
-    })),
-  ]);
+  const [teams, setTeams] = useState<ExtendedTeam[]>([]);
+
+  useEffect(() => {
+    const fetchTeams = async () => {
+      try {
+        const token = localStorage.getItem('token');
+        const res = await fetch('/api/admin/teams', {
+          headers: token ? { Authorization: `Bearer ${token}` } : {},
+        });
+        if (res.ok) {
+          const data = await res.json();
+          const rawTeams = data.teams || data;
+          if (Array.isArray(rawTeams)) {
+            const mapped: ExtendedTeam[] = rawTeams.map((t: any, idx: number) => ({
+              id: t._id || t.id || `team-${idx + 1}`,
+              name: t.name || t.teamName,
+              tagline: t.tagline || t.description || 'Carnival contender',
+              rank: t.rank || idx + 1,
+              points: t.points ?? 0,
+              status: t.status || 'Approved',
+              avatar: t.avatar || '🎪',
+              themeColor: t.themeColor || '#FFD700',
+              streak: t.streak || 0,
+              leaderName: t.leaderName || (t.members && t.members[0]?.name) || 'Team Leader',
+              leaderEmail: t.leaderEmail || (t.members && t.members[0]?.email) || 'leader@cwc.io',
+              membersCount: t.membersCount || (t.members ? t.members.length : 1),
+            }));
+            setTeams(mapped);
+          }
+        }
+      } catch (err) {
+        console.warn('Failed to fetch admin teams:', err);
+      }
+    };
+
+    fetchTeams();
+  }, []);
 
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('All');

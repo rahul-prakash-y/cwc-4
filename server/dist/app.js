@@ -19,6 +19,7 @@ import { adminRoutes } from './routes/adminRoutes.js';
 import { studentRoutes } from './routes/studentRoutes.js';
 import { publicRoutes } from './routes/publicRoutes.js';
 import { superadminRoutes } from './routes/superadminRoutes.js';
+import { settingsRoutes } from './routes/settings.js';
 import { getActiveSocketsCount } from './socket.js';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -154,12 +155,33 @@ export function buildApp() {
             correlationId: request.id,
         };
     });
-    // Public Grand Finale status route
-    fastify.get('/api/v1/settings/grand-finale', async () => {
-        const { Setting } = await import('./models/Setting.js');
-        let settingDoc = await Setting.findOne({ key: 'isGrandFinale' });
-        return { isGrandFinale: Boolean(settingDoc?.value) };
-    });
+    // Public Grand Finale status route (No auth required)
+    const getFinaleStatusHandler = async () => {
+        try {
+            const { Setting } = await import('./models/Setting.js');
+            const { Settings } = await import('./models/Settings.js');
+            let settingDoc = await Setting.findOne({ key: 'isGrandFinale' });
+            let isGrandFinale = false;
+            if (settingDoc !== null && settingDoc !== undefined) {
+                isGrandFinale = Boolean(settingDoc.value);
+            }
+            else {
+                const settingsDoc = await Settings.findOne();
+                isGrandFinale = Boolean(settingsDoc?.isGrandFinale);
+            }
+            return {
+                success: true,
+                isGrandFinale,
+                data: { isGrandFinale },
+            };
+        }
+        catch {
+            return { success: true, isGrandFinale: false, data: { isGrandFinale: false } };
+        }
+    };
+    fastify.get('/api/v1/settings/grand-finale', getFinaleStatusHandler);
+    fastify.get('/api/settings/grand-finale', getFinaleStatusHandler);
+    fastify.get('/api/public/settings/finale', getFinaleStatusHandler);
     // Register Route Plugins
     fastify.register(publicRoutes, { prefix: '/api/v1/public' });
     fastify.register(publicRoutes, { prefix: '/api/public' });
@@ -173,6 +195,8 @@ export function buildApp() {
     fastify.register(superadminRoutes, { prefix: '/api/superadmin' });
     fastify.register(studentRoutes, { prefix: '/api/v1/student' });
     fastify.register(studentRoutes, { prefix: '/api/student' });
+    fastify.register(settingsRoutes, { prefix: '/api/v1/settings' });
+    fastify.register(settingsRoutes, { prefix: '/api/settings' });
     // Serve Frontend Static Files in Production (Render)
     const clientDistPath = path.resolve(__dirname, '../../client/dist');
     if (fs.existsSync(clientDistPath)) {

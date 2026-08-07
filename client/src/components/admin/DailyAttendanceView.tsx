@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Calendar, CheckCircle2, AlertTriangle, Shield, UserCheck, UserX, Sparkles, Filter, RefreshCw, Home, Bus, Zap, FileSpreadsheet } from 'lucide-react';
-import { MOCK_TEAMS } from '../../data/mockData';
 
 export interface AttendanceTeamMember {
   id: string;
@@ -29,32 +28,61 @@ export const DailyAttendanceView: React.FC = () => {
   const [autoCheckMessage, setAutoCheckMessage] = useState<string | null>(null);
   const [saveStatusMessage, setSaveStatusMessage] = useState<string | null>(null);
 
-  // Initialize Team Attendance state with mock data
-  const [teams, setTeams] = useState<AttendanceTeam[]>(() => {
-    return MOCK_TEAMS.map((t, idx) => {
-      const isHosteller = idx % 2 === 0;
-      const leaderEmail = t.members[0]?.github ? `${t.members[0].github}@cwc.io` : `${t.name.toLowerCase().replace(/\s+/g, '')}@cwc.io`;
-      
-      const roster: AttendanceTeamMember[] = t.members.map((m, mIdx) => ({
-        id: `${t.id}-m${mIdx}`,
-        name: m.name,
-        role: m.role,
-        email: m.github ? `${m.github}@cwc.io` : `${m.name.toLowerCase().replace(/\s+/g, '')}@cwc.io`,
-        isPresent: true, // Default to present
-      }));
+  // Initialize Team Attendance state with live data
+  const [teams, setTeams] = useState<AttendanceTeam[]>([]);
 
-      return {
-        id: t.id,
-        name: t.name,
-        residenceType: isHosteller ? 'Hosteller' : 'Day Scholar',
-        status: (idx === 4 ? 'Danger' : idx === 5 ? 'Eliminated' : 'Safe') as AttendanceTeam['status'],
-        avatar: t.avatar,
-        themeColor: t.themeColor,
-        members: roster,
-        isTeamPresent: true,
-      };
-    });
-  });
+  useEffect(() => {
+    const fetchAttendanceTeams = async () => {
+      try {
+        const token = localStorage.getItem('token');
+        const res = await fetch('/api/admin/teams', {
+          headers: token ? { Authorization: `Bearer ${token}` } : {},
+        });
+        if (res.ok) {
+          const data = await res.json();
+          const rawTeams = data.teams || data;
+          if (Array.isArray(rawTeams)) {
+            const mapped: AttendanceTeam[] = rawTeams.map((t: any, idx: number) => {
+              const isHosteller = idx % 2 === 0;
+              const roster: AttendanceTeamMember[] = Array.isArray(t.members)
+                ? t.members.map((m: any, mIdx: number) => ({
+                    id: m._id || m.id || `${t._id || t.id}-m${mIdx}`,
+                    name: typeof m === 'string' ? m : m.name || 'Member',
+                    role: m.role || (mIdx === 0 ? 'Leader' : 'Member'),
+                    email: m.email || 'student@cwc.io',
+                    isPresent: true,
+                  }))
+                : [
+                    {
+                      id: `${t._id || t.id}-m0`,
+                      name: t.leaderName || 'Team Leader',
+                      role: 'Leader',
+                      email: t.leaderEmail || 'leader@cwc.io',
+                      isPresent: true,
+                    },
+                  ];
+
+              return {
+                id: t._id || t.id || `team-${idx + 1}`,
+                name: t.name || t.teamName,
+                residenceType: t.residenceType || (isHosteller ? 'Hosteller' : 'Day Scholar'),
+                status: t.status || 'Safe',
+                avatar: t.avatar || '🎪',
+                themeColor: t.themeColor || '#FFD700',
+                members: roster,
+                isTeamPresent: true,
+              };
+            });
+            setTeams(mapped);
+          }
+        }
+      } catch (err) {
+        console.warn('Failed to fetch attendance teams:', err);
+      }
+    };
+
+    fetchAttendanceTeams();
+  }, []);
 
   // Track attendance state per day e.g. { [dayNumber]: { [teamId]: AttendanceTeam } }
   const [dailyAttendanceRecords, setDailyAttendanceRecords] = useState<Record<number, Record<string, AttendanceTeam>>>({});

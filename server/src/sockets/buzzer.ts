@@ -1,4 +1,5 @@
 import { Server, Socket } from 'socket.io';
+import { AuditLog } from '../models/AuditLog.js';
 
 export interface BuzzerEntry {
   teamId: string;
@@ -111,6 +112,14 @@ export function registerBuzzerHandlers(io: Server, socket: Socket, logger?: any)
     if (logger) {
       logger.info('🔄 ADMIN_RESET_BUZZER triggered');
     }
+
+    AuditLog.create({
+      adminId: (socket as any).user?.userId || 'admin',
+      adminEmail: (socket as any).user?.email || 'admin@cwc.com',
+      action: 'BUZZER_RESET',
+      details: { timestamp: Date.now() },
+      timestamp: new Date(),
+    }).catch(() => {});
 
     // Broadcast lock/reset event to all clients
     io.emit('BUZZER_RESET', { timestamp: Date.now() });

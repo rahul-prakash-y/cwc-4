@@ -26,115 +26,17 @@ export interface GalleryItem {
   createdAt?: string;
 }
 
-const PUBLIC_GALLERY_ITEMS: GalleryItem[] = [
-  // Season 4 items
-  {
-    _id: 's4-1',
-    title: 'CWC Season 4 Carnival Opening Gala & Stage Show',
-    url: 'https://images.unsplash.com/photo-1514525253161-7a46d19cd819?auto=format&fit=crop&w=1200&q=80',
-    type: 'Photo',
-    seasonNumber: 4,
-    description: 'Ringmasters and student teams kicking off Code With Curious Season 4 under the grand carnival marquee.',
-  },
-  {
-    _id: 's4-2',
-    title: 'Mid-Season Arena Boss Fight Highlights',
-    url: 'https://www.youtube.com/embed/dQw4w9WgXcQ',
-    type: 'Video',
-    seasonNumber: 4,
-    description: 'High-speed live coding combat where top teams fought for immunity and bonus points.',
-  },
-  {
-    _id: 's4-3',
-    title: 'Night Arena Glassmorphism Hackathon',
-    url: 'https://images.unsplash.com/photo-1531482615713-2afd69097998?auto=format&fit=crop&w=1200&q=80',
-    type: 'Photo',
-    seasonNumber: 4,
-    description: 'Student developers crafting vibrant carnival interfaces during the 24-hour design sprint.',
-  },
-  {
-    _id: 's4-4',
-    title: 'Ringmaster Live Keynote & Tournament Briefing',
-    url: 'https://images.unsplash.com/photo-1475721027785-f74eccf877e2?auto=format&fit=crop&w=1200&q=80',
-    type: 'Photo',
-    seasonNumber: 4,
-    description: 'Announcing rulebook updates and task schedules for Season 4 arena participants.',
-  },
-
-  // Season 3 items
-  {
-    _id: 's3-1',
-    title: 'Season 3 Cyber Circus Night Arena',
-    url: 'https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?auto=format&fit=crop&w=1200&q=80',
-    type: 'Photo',
-    seasonNumber: 3,
-    description: 'Electric neon lights and algorithm battlegrounds during Season 3.',
-  },
-  {
-    _id: 's3-2',
-    title: 'Season 3 Grand Champion Trophy Reveal',
-    url: 'https://images.unsplash.com/photo-1567427017947-545c5f8d16ad?auto=format&fit=crop&w=1200&q=80',
-    type: 'Photo',
-    seasonNumber: 3,
-    description: 'Unveiling the customized neon gold trophy for the Season 3 winning team.',
-  },
-  {
-    _id: 's3-3',
-    title: 'Season 3 Code Sprints & Team Mentorship',
-    url: 'https://images.unsplash.com/photo-1522071820081-009f0129c71c?auto=format&fit=crop&w=1200&q=80',
-    type: 'Photo',
-    seasonNumber: 3,
-    description: 'Mentors guiding student teams through complex system architectures.',
-  },
-
-  // Season 2 items
-  {
-    _id: 's2-1',
-    title: 'Season 2 Finale Celebrations & Award Ceremony',
-    url: 'https://images.unsplash.com/photo-1511578314322-379afb476865?auto=format&fit=crop&w=1200&q=80',
-    type: 'Photo',
-    seasonNumber: 2,
-    description: 'Confetti explosion as team ByteBusters claimed victory in Season 2.',
-  },
-  {
-    _id: 's2-2',
-    title: 'Season 2 Rapid Fire Challenge Sprints',
-    url: 'https://images.unsplash.com/photo-1504384308090-c894fdcc538d?auto=format&fit=crop&w=1200&q=80',
-    type: 'Photo',
-    seasonNumber: 2,
-    description: 'Intense 30-minute bug fixing rounds that decided leaderboard rankings.',
-  },
-
-  // Season 1 items
-  {
-    _id: 's1-1',
-    title: 'Season 1 Inception Hackathon & Inaugural Meet',
-    url: 'https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?auto=format&fit=crop&w=1200&q=80',
-    type: 'Photo',
-    seasonNumber: 1,
-    description: 'The foundation of Code With Curious carnival gaming culture.',
-  },
-  {
-    _id: 's1-2',
-    title: 'Season 1 Pioneer Teams Group Photo',
-    url: 'https://images.unsplash.com/photo-1528605248644-14dd04022da1?auto=format&fit=crop&w=1200&q=80',
-    type: 'Photo',
-    seasonNumber: 1,
-    description: 'Our inaugural batch of student coders and event organizers.',
-  },
-];
-
 export const Gallery: React.FC = () => {
   // Season tabs (Season 1, Season 2, Season 3, Season 4)
   const [activeSeason, setActiveSeason] = useState<number | 'all'>(4);
   const [activeType, setActiveType] = useState<'all' | 'Photo' | 'Video'>('all');
-  const [items, setItems] = useState<GalleryItem[]>(PUBLIC_GALLERY_ITEMS);
+  const [items, setItems] = useState<GalleryItem[]>([]);
   const [loading, setLoading] = useState(false);
 
   // Lightbox Modal State
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
 
-  // Fetch gallery media from GET /api/gallery?season= endpoint
+  // Fetch gallery media from GET /api/admin/gallery or public endpoint
   const fetchGalleryMedia = async (seasonParam?: number | 'all') => {
     setLoading(true);
     try {
@@ -142,12 +44,29 @@ export const Gallery: React.FC = () => {
       if (seasonParam && seasonParam !== 'all') {
         queryUrl += `?season=${seasonParam}`;
       }
-      const res = await apiClient.get(queryUrl);
-      if (res.data && res.data.items && res.data.items.length > 0) {
+      const res = await apiClient.get(queryUrl).catch(() => null);
+      if (res && res.data && res.data.items && Array.isArray(res.data.items)) {
         setItems(res.data.items);
+      } else {
+        // Fallback to GET /api/admin/gallery
+        const token = localStorage.getItem('token');
+        const fetchRes = await fetch('/api/admin/gallery', {
+          headers: token ? { Authorization: `Bearer ${token}` } : {},
+        }).catch(() => null);
+        if (fetchRes && fetchRes.ok) {
+          const data = await fetchRes.json();
+          if (data.items && Array.isArray(data.items)) {
+            setItems(data.items);
+          } else {
+            setItems([]);
+          }
+        } else {
+          setItems([]);
+        }
       }
     } catch (err) {
-      console.warn('API fetch offline, using fallback public gallery media.');
+      console.warn('Failed to fetch gallery items:', err);
+      setItems([]);
     } finally {
       setLoading(false);
     }

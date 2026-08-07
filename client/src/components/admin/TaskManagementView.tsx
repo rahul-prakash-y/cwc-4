@@ -1,7 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { CheckSquare, Plus, Clock, Calendar, Award, Trash2, Edit3, Eye, EyeOff, Sparkles, AlertCircle } from 'lucide-react';
-import { MOCK_TIMELINE } from '../../data/mockData';
 
 export type TaskType = 'Main Task' | 'Special Task' | 'Rapid Fire' | 'Boss Fight' | 'Bonus Quest' | 'Quiz';
 
@@ -18,41 +17,40 @@ export interface AdminTaskItem {
 }
 
 export const TaskManagementView: React.FC = () => {
-  const [tasks, setTasks] = useState<AdminTaskItem[]>([
-    {
-      id: 'task-1',
-      title: 'Day 5: Mid-Season Arena Boss Fight',
-      description: 'Build a dynamic real-time multiplayer mini-game within 4 hours using WebSockets.',
-      type: 'Boss Fight',
-      points: 500,
-      startTime: '2026-08-05T10:00',
-      endTime: '2026-08-05T14:00',
-      visibility: true,
-      status: 'Live',
-    },
-    {
-      id: 'task-2',
-      title: 'Day 6: Magic Illusion UI Hackathon',
-      description: 'Create mind-bending glassmorphism web apps with smooth Framer Motion micro-interactions.',
-      type: 'Special Task',
-      points: 350,
-      startTime: '2026-08-06T09:00',
-      endTime: '2026-08-06T18:00',
-      visibility: true,
-      status: 'Upcoming',
-    },
-    {
-      id: 'task-3',
-      title: 'Rapid Fire: Memory Leak Hunt',
-      description: 'Find and patch 5 hidden memory leaks in the provided Node.js repository in 30 mins.',
-      type: 'Rapid Fire',
-      points: 200,
-      startTime: '2026-08-04T16:00',
-      endTime: '2026-08-04T16:30',
-      visibility: false,
-      status: 'Completed',
-    },
-  ]);
+  const [tasks, setTasks] = useState<AdminTaskItem[]>([]);
+
+  useEffect(() => {
+    const fetchAdminTasks = async () => {
+      try {
+        const token = localStorage.getItem('token');
+        const res = await fetch('/api/tasks', {
+          headers: token ? { Authorization: `Bearer ${token}` } : {},
+        });
+        if (res.ok) {
+          const data = await res.json();
+          const rawTasks = data.tasks || data;
+          if (Array.isArray(rawTasks)) {
+            const mapped: AdminTaskItem[] = rawTasks.map((t: any, idx: number) => ({
+              id: t._id || t.id || `task-${idx + 1}`,
+              title: t.title,
+              description: t.description || '',
+              type: t.type || 'Main Task',
+              points: t.points || 100,
+              startTime: t.startTime || new Date().toISOString(),
+              endTime: t.endTime || new Date().toISOString(),
+              visibility: t.visibility ?? true,
+              status: t.status || 'Upcoming',
+            }));
+            setTasks(mapped);
+          }
+        }
+      } catch (err) {
+        console.warn('Failed to fetch admin tasks:', err);
+      }
+    };
+
+    fetchAdminTasks();
+  }, []);
 
   // Form State
   const [title, setTitle] = useState('');

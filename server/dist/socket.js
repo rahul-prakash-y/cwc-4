@@ -1,6 +1,7 @@
 import { Server } from 'socket.io';
 import { env } from './config/env.js';
 import { Draft } from './models/Draft.js';
+import { registerBuzzerHandlers } from './sockets/buzzer.js';
 export const TEST_ROOM = 'test-room-season4';
 export const GLOBAL_ROOM = 'global';
 export const STUDENT_ROOM = 'student-dashboard';
@@ -76,6 +77,14 @@ export function broadcastVotesUpdated(payload) {
         });
     }
 }
+export function broadcastSettingsUpdated(payload) {
+    if (ioInstance) {
+        ioInstance.emit('SETTINGS_UPDATED', {
+            timestamp: new Date().toISOString(),
+            ...payload,
+        });
+    }
+}
 export function disconnectUserSockets(targetId) {
     if (!ioInstance)
         return;
@@ -139,6 +148,8 @@ export function setupSocketIO(app) {
         app.log.info({ socketId: socket.id }, '🔌 Client connected to Socket.io');
         // Auto-join global room on connection
         socket.join(GLOBAL_ROOM);
+        // Register Rapid Fire Live Buzzer Handlers
+        registerBuzzerHandlers(io, socket, app.log);
         // Task 1: Room joining handler for 'global', 'student-dashboard', 'admin-panel'
         socket.on('join-room', (roomName) => {
             const allowedRooms = [GLOBAL_ROOM, STUDENT_ROOM, ADMIN_ROOM, TEST_ROOM];

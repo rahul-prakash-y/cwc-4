@@ -26,15 +26,7 @@ interface MarksSectionProps {
   records?: DailyMarksRecord[];
 }
 
-const DEFAULT_MOCK_RECORDS: DailyMarksRecord[] = [
-  { day: 1, adv: 50, main: 300, special: 50, total: 400, notes: 'Day 1 Kickoff Sprint' },
-  { day: 2, adv: 100, main: 350, special: 0, total: 450, notes: '2x Multiplier Perk Applied' },
-  { day: 3, adv: 0, main: 250, special: 100, total: 350, notes: 'Special Trivia Challenge' },
-  { day: 4, adv: 75, main: 400, special: 50, total: 525, notes: 'Arena Rapid Fire' },
-  { day: 5, adv: 50, main: 380, special: 50, total: 480, notes: 'WebSocket Boss Fight' },
-];
-
-export const MarksSection: React.FC<MarksSectionProps> = ({ records = DEFAULT_MOCK_RECORDS }) => {
+export const MarksSection: React.FC<MarksSectionProps> = ({ records = [] }) => {
   const [filterDay, setFilterDay] = useState<number | 'all'>('all');
 
   // Overall totals calculation
@@ -151,7 +143,14 @@ export const MarksSection: React.FC<MarksSectionProps> = ({ records = DEFAULT_MO
             </tr>
           </thead>
           <tbody>
-            {filteredRecords.map((r) => {
+            {filteredRecords.length === 0 ? (
+              <tr>
+                <td colSpan={5} className="py-8 text-center text-slate-400 font-mono text-xs">
+                  No score records recorded yet for your team.
+                </td>
+              </tr>
+            ) : (
+              filteredRecords.map((r) => {
               const dayTotal = r.total || (r.adv + r.main + r.special);
               return (
                 <tr
@@ -200,7 +199,7 @@ export const MarksSection: React.FC<MarksSectionProps> = ({ records = DEFAULT_MO
                   </td>
                 </tr>
               );
-            })}
+            }))}
 
             {/* Overall Total Calculation Footer Row */}
             <tr className="bg-gradient-to-r from-carnival-gold/20 via-black/60 to-carnival-gold/20 border-2 border-carnival-gold/60 rounded-2xl text-sm font-mono font-bold">

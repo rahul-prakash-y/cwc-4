@@ -1,5 +1,7 @@
 import { Gallery } from '../models/Gallery.js';
 import { uploadToCloudinary, deleteFromCloudinary } from '../utils/cloudinary.js';
+import { verifyJWT, isSuperAdmin } from '../middleware/auth.js';
+import { logAdminAction } from '../utils/auditLogger.js';
 export async function galleryRoutes(fastify) {
     // Public GET /api/gallery route that accepts ?season= query parameter
     fastify.get('/gallery', async (request, reply) => {
@@ -37,8 +39,17 @@ export async function galleryRoutes(fastify) {
             });
         }
     });
-    // Admin POST /api/admin/gallery route (Cloudinary Upload & MongoDB Save)
-    fastify.post('/admin/gallery', async (request, reply) => {
+    // Also expose GET /admin/gallery for admin dashboard
+    fastify.get('/admin/gallery', async (request, reply) => {
+        const items = await Gallery.find().sort({ seasonNumber: 1, createdAt: -1 });
+        return reply.status(200).send({
+            success: true,
+            count: items.length,
+            items,
+        });
+    });
+    // SuperAdmin POST /api/admin/gallery route (Protected by verifyJWT & isSuperAdmin)
+    fastify.post('/admin/gallery', { preHandler: [verifyJWT, isSuperAdmin] }, async (request, reply) => {
         try {
             let title = '';
             let url = '';
@@ -108,6 +119,12 @@ export async function galleryRoutes(fastify) {
                 description: description.trim(),
                 publicId,
             });
+            // Audit Log for GALLERY_ITEM_ADDED
+            await logAdminAction(request, 'GALLERY_ITEM_ADDED', newItem._id.toString(), {
+                title: newItem.title,
+                seasonNumber: newItem.seasonNumber,
+                type: newItem.type,
+            });
             return reply.status(201).send({
                 success: true,
                 message: 'Media item uploaded and saved successfully',
@@ -122,8 +139,8 @@ export async function galleryRoutes(fastify) {
             });
         }
     });
-    // Admin DELETE /api/admin/gallery/:id route (Cloudinary Removal & MongoDB Delete)
-    fastify.delete('/admin/gallery/:id', async (request, reply) => {
+    // SuperAdmin DELETE /api/admin/gallery/:id route (Protected by verifyJWT & isSuperAdmin)
+    fastify.delete('/admin/gallery/:id', { preHandler: [verifyJWT, isSuperAdmin] }, async (request, reply) => {
         try {
             const { id } = request.params;
             const item = await Gallery.findById(id);
@@ -137,6 +154,11 @@ export async function galleryRoutes(fastify) {
                 await deleteFromCloudinary(item.publicId);
             }
             await Gallery.findByIdAndDelete(id);
+            // Audit Log for GALLERY_ITEM_DELETED
+            await logAdminAction(request, 'GALLERY_ITEM_DELETED', item._id.toString(), {
+                title: item.title,
+                seasonNumber: item.seasonNumber,
+            });
             return reply.status(200).send({
                 success: true,
                 message: 'Media item deleted successfully',

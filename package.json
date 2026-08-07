@@ -11,6 +11,7 @@
     "dev:server": "npm --prefix server run dev",
     "dev:client": "npm --prefix client run dev",
     "seed": "npm --prefix server run seed",
+    "db:reset-production": "npm --prefix server run db:reset-production",
     "build:server": "npm --prefix server run build",
     "build:client": "npm --prefix client run build",
     "install:all": "npm install && npm --prefix server install && npm --prefix client install",

@@ -65,18 +65,29 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
   const fetchFinaleSettings = useCallback(async () => {
     try {
-      const endpoints = [
-        '/api/admin/settings/finale',
+      const publicEndpoints = [
         '/api/v1/settings/grand-finale',
-        '/api/v1/admin/grand-finale',
+        '/api/settings/grand-finale',
+        '/api/public/settings/finale',
+        '/api/settings/global',
       ];
-      for (const endpoint of endpoints) {
-        const res = await apiClient.get(endpoint);
-        if (res.data.success) {
-          const active = Boolean(res.data.data.isGrandFinale);
-          setIsGrandFinaleState(active);
-          localStorage.setItem('cwc_isGrandFinale', String(active));
-          break;
+      for (const endpoint of publicEndpoints) {
+        try {
+          const res = await apiClient.get(endpoint);
+          const data = res.data;
+          let active: boolean | null = null;
+          if (typeof data.isGrandFinale === 'boolean') {
+            active = data.isGrandFinale;
+          } else if (data.data && typeof data.data.isGrandFinale === 'boolean') {
+            active = data.data.isGrandFinale;
+          }
+          if (active !== null) {
+            setIsGrandFinaleState(active);
+            localStorage.setItem('cwc_isGrandFinale', String(active));
+            break;
+          }
+        } catch {
+          // Continue trying public fallback endpoints
         }
       }
     } catch {
@@ -132,19 +143,7 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     setIsGrandFinale(nextVal);
 
     try {
-      const token = localStorage.getItem('token');
-      const headers: Record<string, string> = {
-        'Content-Type': 'application/json',
-      };
-      if (token) {
-        headers['Authorization'] = `Bearer ${token}`;
-      }
-
-      await fetch('/api/admin/settings/finale', {
-        method: 'PATCH',
-        headers,
-        body: JSON.stringify({ isGrandFinale: nextVal }),
-      });
+      await apiClient.patch('/admin/settings/finale', { isGrandFinale: nextVal });
     } catch (e) {
       console.warn('Backend update failed, local toggle maintained', e);
     } finally {

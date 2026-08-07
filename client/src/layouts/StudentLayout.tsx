@@ -150,17 +150,14 @@ export const StudentLayout: React.FC = () => {
         {/* Page Body */}
         <main className="p-4 sm:p-6 lg:p-8 flex-1 relative overflow-x-hidden">
           <AnnouncementToast />
-          <AnimatePresence mode="wait">
-            <motion.div
-              key={location.pathname}
-              initial={{ opacity: 0, y: 15 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -15 }}
-              transition={{ duration: 0.3, ease: 'easeOut' }}
-            >
-              <Outlet />
-            </motion.div>
-          </AnimatePresence>
+          <motion.div
+            key={location.pathname}
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.2, ease: 'easeOut' }}
+          >
+            <Outlet />
+          </motion.div>
         </main>
       </div>
     </div>

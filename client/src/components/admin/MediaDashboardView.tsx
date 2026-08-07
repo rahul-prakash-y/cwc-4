@@ -32,56 +32,8 @@ export interface GalleryMediaItem {
   createdAt?: string;
 }
 
-const INITIAL_MOCK_MEDIA: GalleryMediaItem[] = [
-  {
-    _id: 'mock-1',
-    title: 'CWC Season 4 Opening Ceremony & Carnival Kickoff',
-    url: 'https://images.unsplash.com/photo-1514525253161-7a46d19cd819?auto=format&fit=crop&w=1000&q=80',
-    type: 'Photo',
-    seasonNumber: 4,
-    description: 'Ringmasters and code carnival teams gathered for the Season 4 grand inaugural night.',
-    createdAt: new Date().toISOString(),
-  },
-  {
-    _id: 'mock-2',
-    title: 'Season 4 Boss Fight Highlights & Winner Reveal',
-    url: 'https://www.youtube.com/embed/dQw4w9WgXcQ',
-    type: 'Video',
-    seasonNumber: 4,
-    description: 'High-octane live coding arena showdown video recap.',
-    createdAt: new Date(Date.now() - 86400000).toISOString(),
-  },
-  {
-    _id: 'mock-3',
-    title: 'Season 3 Neon Night Code Hackathon',
-    url: 'https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?auto=format&fit=crop&w=1000&q=80',
-    type: 'Photo',
-    seasonNumber: 3,
-    description: 'Students hacking through the midnight arena challenge during Season 3.',
-    createdAt: new Date(Date.now() - 86400000 * 30).toISOString(),
-  },
-  {
-    _id: 'mock-4',
-    title: 'Season 2 Finale Trophy Presentation',
-    url: 'https://images.unsplash.com/photo-1531482615713-2afd69097998?auto=format&fit=crop&w=1000&q=80',
-    type: 'Photo',
-    seasonNumber: 2,
-    description: 'Champions receiving the grand carnival golden cup in Season 2.',
-    createdAt: new Date(Date.now() - 86400000 * 180).toISOString(),
-  },
-  {
-    _id: 'mock-5',
-    title: 'Season 1 Genesis Hackathon Documentary',
-    url: 'https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?auto=format&fit=crop&w=1000&q=80',
-    type: 'Photo',
-    seasonNumber: 1,
-    description: 'Where the Code With Curious carnival journey first began.',
-    createdAt: new Date(Date.now() - 86400000 * 365).toISOString(),
-  },
-];
-
 export const MediaDashboardView: React.FC = () => {
-  const [items, setItems] = useState<GalleryMediaItem[]>(INITIAL_MOCK_MEDIA);
+  const [items, setItems] = useState<GalleryMediaItem[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
@@ -112,11 +64,14 @@ export const MediaDashboardView: React.FC = () => {
     setError(null);
     try {
       const response = await apiClient.get('/v1/admin/gallery');
-      if (response.data && response.data.items && response.data.items.length > 0) {
+      if (response.data && response.data.items && Array.isArray(response.data.items)) {
         setItems(response.data.items);
+      } else {
+        setItems([]);
       }
     } catch (err) {
-      console.warn('Backend API connection offline, using mock gallery data.');
+      console.warn('Failed to fetch gallery items:', err);
+      setItems([]);
     } finally {
       setLoading(false);
     }

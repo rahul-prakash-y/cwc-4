@@ -176,12 +176,35 @@ export function buildApp(): FastifyInstance {
     };
   });
 
-  // Public Grand Finale status route
-  fastify.get('/api/v1/settings/grand-finale', async () => {
-    const { Setting } = await import('./models/Setting.js');
-    let settingDoc = await Setting.findOne({ key: 'isGrandFinale' });
-    return { isGrandFinale: Boolean(settingDoc?.value) };
-  });
+  // Public Grand Finale status route (No auth required)
+  const getFinaleStatusHandler = async () => {
+    try {
+      const { Setting } = await import('./models/Setting.js');
+      const { Settings } = await import('./models/Settings.js');
+      
+      let settingDoc = await Setting.findOne({ key: 'isGrandFinale' });
+      let isGrandFinale = false;
+      
+      if (settingDoc !== null && settingDoc !== undefined) {
+        isGrandFinale = Boolean(settingDoc.value);
+      } else {
+        const settingsDoc = await Settings.findOne();
+        isGrandFinale = Boolean(settingsDoc?.isGrandFinale);
+      }
+      
+      return {
+        success: true,
+        isGrandFinale,
+        data: { isGrandFinale },
+      };
+    } catch {
+      return { success: true, isGrandFinale: false, data: { isGrandFinale: false } };
+    }
+  };
+
+  fastify.get('/api/v1/settings/grand-finale', getFinaleStatusHandler);
+  fastify.get('/api/settings/grand-finale', getFinaleStatusHandler);
+  fastify.get('/api/public/settings/finale', getFinaleStatusHandler);
 
   // Register Route Plugins
   fastify.register(publicRoutes, { prefix: '/api/v1/public' });

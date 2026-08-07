@@ -1,6 +1,7 @@
 import { FastifyRequest, FastifyReply } from 'fastify';
 import { Gallery, IGallery } from '../models/Gallery.js';
 import { uploadToCloudinary, deleteFromCloudinary } from '../utils/cloudinary.js';
+import { logAdminAction } from '../utils/auditLogger.js';
 
 export async function getGalleryItems(
   request: FastifyRequest<{ Querystring: { season?: string; type?: string } }>,
@@ -23,7 +24,6 @@ export async function getGalleryItems(
 
     const items = await Gallery.find(filter).sort({ seasonNumber: 1, createdAt: -1 });
 
-    // Group items by season for easy frontend consumption
     const grouped: Record<number, IGallery[]> = {
       1: [],
       2: [],
@@ -63,7 +63,6 @@ export async function createGalleryItem(request: FastifyRequest, reply: FastifyR
     let description: string = '';
     let publicId: string | undefined = undefined;
 
-    // Check if request is multipart/form-data (file upload)
     if (request.isMultipart()) {
       const parts = request.parts();
       let fileBuffer: Buffer | null = null;
@@ -74,7 +73,6 @@ export async function createGalleryItem(request: FastifyRequest, reply: FastifyR
           fileBuffer = await part.toBuffer();
           fileName = part.filename || 'media';
         } else {
-          // Regular fields
           const fieldName = part.fieldname;
           const val = String(part.value);
           if (fieldName === 'title') title = val;
@@ -86,14 +84,12 @@ export async function createGalleryItem(request: FastifyRequest, reply: FastifyR
       }
 
       if (fileBuffer) {
-        // Folder tag depending on season
         const folder = `cwc-season-${seasonNumber}`;
         const uploadResult = await uploadToCloudinary(fileBuffer, fileName, folder);
         url = uploadResult.url;
         publicId = uploadResult.public_id;
       }
     } else {
-      // JSON payload
       const body = request.body as any;
       if (body) {
         title = body.title;
@@ -135,6 +131,12 @@ export async function createGalleryItem(request: FastifyRequest, reply: FastifyR
       publicId,
     });
 
+    await logAdminAction(request, 'GALLERY_ITEM_ADDED', newItem._id.toString(), {
+      title: newItem.title,
+      seasonNumber: newItem.seasonNumber,
+      type: newItem.type,
+    });
+
     return reply.status(201).send({
       success: true,
       message: 'Gallery item uploaded successfully',
@@ -169,6 +171,11 @@ export async function deleteGalleryItem(
     }
 
     await Gallery.findByIdAndDelete(id);
+
+    await logAdminAction(request, 'GALLERY_ITEM_DELETED', item._id.toString(), {
+      title: item.title,
+      seasonNumber: item.seasonNumber,
+    });
 
     return reply.status(200).send({
       success: true,

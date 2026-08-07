@@ -1,12 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Shield, Search, Flame, Crown, Github, Award, CheckCircle2, Ticket, RefreshCw } from 'lucide-react';
-import { MOCK_TEAMS } from '../../data/mockData';
 import { Team } from '../../types';
 import { useAuth } from '../../context/AuthContext';
 
 export const RegisteredTeams: React.FC = () => {
-  const [teams, setTeams] = useState<Team[]>(MOCK_TEAMS);
+  const [teams, setTeams] = useState<Team[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [filterCategory, setFilterCategory] = useState<'all' | 'top3'>('all');
   const [isLoading, setIsLoading] = useState(false);
@@ -19,14 +18,14 @@ export const RegisteredTeams: React.FC = () => {
         const res = await apiFetch('/teams');
         if (res.ok) {
           const data = await res.json();
-          if (Array.isArray(data) && data.length > 0) {
-            // Map backend schema to Team frontend model if needed
+          if (Array.isArray(data)) {
+            // Map backend schema to Team frontend model
             const mappedTeams: Team[] = data.map((t: any, idx: number) => ({
               id: t._id || t.id || `team-${idx + 1}`,
               name: t.name,
               tagline: t.tagline || t.description || 'Carnival contender',
               rank: t.rank || idx + 1,
-              points: t.points ?? 1200,
+              points: t.points ?? 0,
               status: t.status || 'Approved',
               avatar: t.avatar || '🎪',
               themeColor: t.themeColor || '#FFD700',
@@ -37,10 +36,15 @@ export const RegisteredTeams: React.FC = () => {
               ],
             }));
             setTeams(mappedTeams);
+          } else {
+            setTeams([]);
           }
+        } else {
+          setTeams([]);
         }
       } catch (err) {
-        console.warn('API offline or error fetching teams, using mock team data:', err);
+        console.warn('Failed to fetch arena teams:', err);
+        setTeams([]);
       } finally {
         setIsLoading(false);
       }
@@ -151,6 +155,18 @@ export const RegisteredTeams: React.FC = () => {
         <div className="flex items-center justify-center py-16 text-carnival-gold font-mono gap-3">
           <RefreshCw className="w-6 h-6 animate-spin" />
           <span>Fetching Arena Ticket Roster...</span>
+        </div>
+      ) : filteredTeams.length === 0 ? (
+        <div className="p-16 text-center rounded-3xl glass-card border border-white/10 space-y-4 bg-slate-950/60 my-8">
+          <div className="w-16 h-16 rounded-2xl bg-white/5 border border-white/10 text-slate-400 flex items-center justify-center mx-auto">
+            <Ticket className="w-8 h-8 text-carnival-gold" />
+          </div>
+          <div className="space-y-1">
+            <h4 className="text-white font-bold text-lg font-mono">No registered teams found</h4>
+            <p className="text-xs text-slate-400 max-w-md mx-auto">
+              No approved carnival teams are currently registered in the database. When teams self-register or get approved by SuperAdmin, they will appear here.
+            </p>
+          </div>
         </div>
       ) : (
         /* Grid of 3D Physical Admission-Ticket Styled Carnival Cards */

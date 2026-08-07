@@ -7,6 +7,7 @@ import { Score } from '../models/Score.js';
 import { Setting } from '../models/Setting.js';
 import { Settings } from '../models/Settings.js';
 import { delCache } from '../utils/redis.js';
+import { logAdminAction } from '../utils/auditLogger.js';
 import {
   broadcastScoreUpdated,
   broadcastNewAnnouncement,
@@ -65,6 +66,8 @@ export async function toggleGrandFinale(
 
   // Instantly emit FINALE_TRIGGERED WebSocket event to all connected clients
   broadcastFinaleTriggered({ isGrandFinale: newValue });
+
+  await logAdminAction(request, 'SITE_CONFIG_UPDATED', null, { isGrandFinale: newValue });
 
   return reply.send({
     message: `Grand Finale Mode is now ${newValue ? '🏆 ACTIVE (GOLD THEME)' : '🎪 STANDARD CARNIVAL'}`,
@@ -199,6 +202,11 @@ export async function updateTeamStatus(
 
   await delCache('cwc:leaderboard');
 
+  await logAdminAction(request, 'TEAM_STATUS_CHANGED', team._id, {
+    status: team.status,
+    teamName: team.teamName,
+  });
+
   // Asynchronously dispatch Status Alert Email to Team Leader
   if (team.leader?.email) {
     setImmediate(() => {
@@ -252,6 +260,11 @@ export async function eliminateTeam(
   });
 
   await delCache('cwc:leaderboard');
+
+  await logAdminAction(request, 'TEAM_STATUS_CHANGED', team._id, {
+    status: 'Eliminated',
+    teamName: team.teamName,
+  });
 
   // Asynchronously dispatch Elimination Email Alert
   if (team.leader?.email) {
@@ -338,6 +351,12 @@ export async function createTask(
     }
   });
 
+  await logAdminAction(request, 'TASK_CREATED', newTask._id, {
+    title: newTask.title,
+    type: newTask.type,
+    points: newTask.points,
+  });
+
   return reply.status(201).send({
     message: 'Task created successfully! 🎯',
     task: newTask,
@@ -368,6 +387,8 @@ export async function updateTask(
     return reply.status(404).send({ error: 'Not Found', message: 'Task not found' });
   }
 
+  await logAdminAction(request, 'TASK_UPDATED', updatedTask._id, updateData);
+
   return reply.send({
     message: 'Task updated successfully! 🎯',
     task: updatedTask,
@@ -384,6 +405,8 @@ export async function deleteTask(
   if (!deletedTask) {
     return reply.status(404).send({ error: 'Not Found', message: 'Task not found' });
   }
+
+  await logAdminAction(request, 'TASK_DELETED', taskId, { title: deletedTask.title });
 
   return reply.send({
     message: 'Task deleted successfully.',
@@ -425,6 +448,12 @@ export async function createAnnouncement(
   });
 
   await delCache('cwc:announcements');
+
+  await logAdminAction(request, 'ANNOUNCEMENT_CREATED', announcement._id, {
+    message: announcement.message,
+    author: announcement.author,
+    sendEmailAlert: Boolean(sendEmailAlert),
+  });
 
   // Broadcast WebSocket event for NEW_ANNOUNCEMENT
   broadcastNewAnnouncement({
@@ -489,6 +518,10 @@ export async function deleteAnnouncement(
   }
 
   await delCache('cwc:announcements');
+
+  await logAdminAction(request, 'ANNOUNCEMENT_DELETED', announcementId, {
+    message: deleted.message,
+  });
 
   return reply.send({
     message: 'Announcement deleted successfully.',
@@ -595,6 +628,13 @@ export async function grantAdvantage(
 
     await delCache('cwc:leaderboard');
 
+    await logAdminAction(request, 'GRANT_ADVANTAGE', team._id, {
+      advantage: effectiveAdvantage,
+      quantity,
+      immunity: team.immunity,
+      teamName: team.teamName,
+    });
+
     // Broadcast WebSocket event for advantage grant
     broadcastAdvantageGranted({
       teamId: team._id.toString(),
@@ -697,6 +737,11 @@ export async function setTeamImmunity(
     type: 'IMMUNITY_CHANGED',
   });
 
+  await logAdminAction(request, 'GRANT_IMMUNITY', team._id, {
+    immunity: team.immunity,
+    teamName: team.teamName,
+  });
+
   return reply.send({
     message: `Immunity status for team '${team.teamName}' set to: ${immunity ? '🛡️ PROTECTED' : '❌ NONE'}`,
     team,
@@ -765,6 +810,11 @@ export async function updateScoresBatch(
   );
 
   await delCache('cwc:leaderboard');
+
+  await logAdminAction(request, 'SCORE_UPDATED', null, {
+    updatedCount: results.length,
+    scores,
+  });
 
   // Broadcast WebSocket event for SCORE_UPDATED
   broadcastScoreUpdated({

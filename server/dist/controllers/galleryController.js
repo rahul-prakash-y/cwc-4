@@ -1,5 +1,6 @@
 import { Gallery } from '../models/Gallery.js';
 import { uploadToCloudinary, deleteFromCloudinary } from '../utils/cloudinary.js';
+import { logAdminAction } from '../utils/auditLogger.js';
 export async function getGalleryItems(request, reply) {
     try {
         const { season, type } = request.query;
@@ -14,7 +15,6 @@ export async function getGalleryItems(request, reply) {
             filter.type = type;
         }
         const items = await Gallery.find(filter).sort({ seasonNumber: 1, createdAt: -1 });
-        // Group items by season for easy frontend consumption
         const grouped = {
             1: [],
             2: [],
@@ -51,7 +51,6 @@ export async function createGalleryItem(request, reply) {
         let seasonNumber = 4;
         let description = '';
         let publicId = undefined;
-        // Check if request is multipart/form-data (file upload)
         if (request.isMultipart()) {
             const parts = request.parts();
             let fileBuffer = null;
@@ -62,7 +61,6 @@ export async function createGalleryItem(request, reply) {
                     fileName = part.filename || 'media';
                 }
                 else {
-                    // Regular fields
                     const fieldName = part.fieldname;
                     const val = String(part.value);
                     if (fieldName === 'title')
@@ -78,7 +76,6 @@ export async function createGalleryItem(request, reply) {
                 }
             }
             if (fileBuffer) {
-                // Folder tag depending on season
                 const folder = `cwc-season-${seasonNumber}`;
                 const uploadResult = await uploadToCloudinary(fileBuffer, fileName, folder);
                 url = uploadResult.url;
@@ -86,7 +83,6 @@ export async function createGalleryItem(request, reply) {
             }
         }
         else {
-            // JSON payload
             const body = request.body;
             if (body) {
                 title = body.title;
@@ -123,6 +119,11 @@ export async function createGalleryItem(request, reply) {
             description: description.trim(),
             publicId,
         });
+        await logAdminAction(request, 'GALLERY_ITEM_ADDED', newItem._id.toString(), {
+            title: newItem.title,
+            seasonNumber: newItem.seasonNumber,
+            type: newItem.type,
+        });
         return reply.status(201).send({
             success: true,
             message: 'Gallery item uploaded successfully',
@@ -151,6 +152,10 @@ export async function deleteGalleryItem(request, reply) {
             await deleteFromCloudinary(item.publicId);
         }
         await Gallery.findByIdAndDelete(id);
+        await logAdminAction(request, 'GALLERY_ITEM_DELETED', item._id.toString(), {
+            title: item.title,
+            seasonNumber: item.seasonNumber,
+        });
         return reply.status(200).send({
             success: true,
             message: 'Media item deleted successfully',

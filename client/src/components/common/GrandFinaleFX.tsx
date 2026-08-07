@@ -118,8 +118,7 @@ export const GrandFinaleFX: React.FC = () => {
     let fireworks: Firework[] = [];
 
     const loop = () => {
-      ctx.fillStyle = 'rgba(11, 10, 22, 0.2)';
-      ctx.fillRect(0, 0, width, height);
+      ctx.clearRect(0, 0, width, height);
 
       // Random firework spawn rate
       if (Math.random() < 0.08) {
