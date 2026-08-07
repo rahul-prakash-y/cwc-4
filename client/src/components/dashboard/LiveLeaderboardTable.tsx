@@ -231,9 +231,8 @@ export const LiveLeaderboardTable: React.FC<LiveLeaderboardTableProps> = ({
               <th className="py-2 px-4">Rank & Trend</th>
               <th className="py-2 px-4">Team</th>
               <th className="py-2 px-4 text-center">Status</th>
-              <th className="py-2 px-4 text-center">P</th>
-              <th className="py-2 px-4 text-center">W</th>
-              <th className="py-2 px-4 text-center">Streak</th>
+              <th className="py-2 px-4 text-center">Played</th>
+              <th className="py-2 px-4 text-center">Won</th>
               <th className="py-2 px-4 text-center">Streak</th>
               {showScores && <th className="py-2 px-4 text-right">Points (PTS)</th>}
             </tr>
@@ -366,7 +365,7 @@ export const LiveLeaderboardTable: React.FC<LiveLeaderboardTableProps> = ({
 
                     {/* Streak (🔥) */}
                     <td className="py-4 px-4 text-center">
-                      <div className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-cwc-red/20 text-cwc-red border border-cwc-red/30 font-display font-bold text-xs">
+                      <div className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-yellow-400/80 text-cwc-red border border-cwc-red/30 font-display font-bold text-xs">
                         <span>{team.streak}</span>
                         <Flame className="w-3.5 h-3.5 fill-cwc-red" />
                       </div>

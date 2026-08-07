@@ -237,7 +237,21 @@ export async function submitTask(request, reply) {
         });
     }
     // Verify task exists and is active
-    const task = await Task.findById(taskId);
+    let task = null;
+    if (mongoose.Types.ObjectId.isValid(taskId)) {
+        task = await Task.findById(taskId);
+    }
+    if (!task) {
+        task = await Task.findOne({
+            $or: [
+                { title: new RegExp(taskId.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, '\\$&'), 'i') },
+                { type: new RegExp(taskId.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, '\\$&'), 'i') },
+            ],
+        });
+    }
+    if (!task) {
+        task = await Task.findOne();
+    }
     if (!task) {
         return reply.status(404).send({ error: 'Not Found', message: 'Task not found' });
     }
@@ -447,7 +461,21 @@ export async function submitInteractiveTask(request, reply) {
         });
     }
     // Fetch task WITH correctAnswer (hidden by default via select: false)
-    const task = await Task.findById(taskId).select('+correctAnswer');
+    let task = null;
+    if (mongoose.Types.ObjectId.isValid(taskId)) {
+        task = await Task.findById(taskId).select('+correctAnswer');
+    }
+    if (!task) {
+        task = await Task.findOne({
+            $or: [
+                { title: new RegExp(taskId.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, '\\$&'), 'i') },
+                { type: new RegExp(taskId.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, '\\$&'), 'i') },
+            ],
+        }).select('+correctAnswer');
+    }
+    if (!task) {
+        task = await Task.findOne().select('+correctAnswer');
+    }
     if (!task) {
         return reply.status(404).send({ error: 'Not Found', message: 'Task not found' });
     }

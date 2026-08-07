@@ -162,6 +162,7 @@ export function buildApp() {
     });
     // Register Route Plugins
     fastify.register(publicRoutes, { prefix: '/api/v1/public' });
+    fastify.register(publicRoutes, { prefix: '/api/public' });
     fastify.register(publicRoutes, { prefix: '/api/v1' });
     fastify.register(publicRoutes, { prefix: '/api' });
     fastify.register(authRoutes, { prefix: '/api/v1/auth' });

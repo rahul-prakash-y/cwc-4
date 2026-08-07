@@ -161,7 +161,8 @@ export async function saveAttendance(request, reply) {
    AUTO-CHECKER FOR MINIMUM ATTENDANCE RULES (OVERALL BATCH ROUTE)
    ========================================================================== */
 export async function runAttendanceAutoChecker(_request, reply) {
-    const teams = await Team.find({ status: { $ne: 'Eliminated' } });
+    const allTeams = await Team.find();
+    const teams = allTeams.filter((t) => t.status !== 'Eliminated');
     const allAttendance = await Attendance.find().lean();
     const flaggedTeams = [];
     for (const team of teams) {

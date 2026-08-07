@@ -12,9 +12,10 @@ export async function getPublicLeaderboard(_request, reply) {
         return reply.header('X-Cache', 'HIT').send(cachedData);
     }
     // Aggregate leaderboard score data from MongoDB using indexed queries
-    const teams = await Team.find({ status: { $in: ['Approved', 'Pending', 'Eliminated'] } })
+    const allTeams = await Team.find()
         .select('teamName logoUrl themeColor status leader members advantages immunity')
         .lean();
+    const teams = allTeams.filter((t) => t.status !== 'Rejected');
     const leaderboard = await Promise.all(teams.map(async (team) => {
         const scores = await Score.find({ team: team._id }).select('pointsEarned');
         const totalPoints = scores.reduce((sum, s) => sum + (s.pointsEarned || 0), 0);
@@ -105,10 +106,11 @@ export async function getFanFavoriteLeaderboard(_request, reply) {
     if (cachedData) {
         return reply.header('X-Cache', 'HIT').send(cachedData);
     }
-    const teams = await Team.find({ status: { $in: ['Approved', 'Pending', 'Safe', 'Danger', 'Qualified'] } })
+    const allTeams = await Team.find()
         .select('teamName logoUrl themeColor totalPublicVotes status leader members')
         .sort({ totalPublicVotes: -1, createdAt: 1 })
         .lean();
+    const teams = allTeams.filter((t) => t.status !== 'Rejected');
     const rankedLeaderboard = teams.map((team, index) => ({
         rank: index + 1,
         id: team._id.toString(),
