@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=Space+Grotesk:wght@500;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -6,24 +6,42 @@
 
 @layer base {
   body {
-    font-family: 'Outfit', 'Inter', sans-serif;
-    background-color: #0c0a1a;
+    font-family: 'Plus Jakarta Sans', 'Inter', sans-serif;
+    background-color: #05050A;
     background-image: 
-      radial-gradient(circle at 12% 15%, rgba(255, 0, 119, 0.22) 0%, transparent 40%),
-      radial-gradient(circle at 88% 22%, rgba(0, 240, 255, 0.20) 0%, transparent 45%),
-      radial-gradient(circle at 50% 65%, rgba(138, 43, 226, 0.22) 0%, transparent 50%),
-      radial-gradient(circle at 82% 88%, rgba(255, 215, 0, 0.18) 0%, transparent 40%),
-      radial-gradient(circle at 20% 80%, rgba(59, 130, 246, 0.15) 0%, transparent 45%);
+      radial-gradient(circle at 10% 10%, rgba(139, 92, 246, 0.15) 0%, transparent 45%),
+      radial-gradient(circle at 90% 10%, rgba(225, 29, 72, 0.15) 0%, transparent 45%),
+      radial-gradient(circle at 50% 90%, rgba(139, 92, 246, 0.12) 0%, transparent 50%),
+      radial-gradient(circle at 85% 85%, rgba(255, 215, 0, 0.08) 0%, transparent 40%);
     background-attachment: fixed;
-    color: #F8FAFC;
+    color: #E5E7EB;
     overflow-x: hidden;
     transition: background-color 0.5s ease, color 0.5s ease;
+    position: relative;
+  }
+
+  /* Fixed subtle SVG noise/grain overlay for cinematic feel */
+  body::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    opacity: 0.035;
+    pointer-events: none;
+    z-index: 9999;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+  }
+
+  h1, h2, h3, h4, h5, h6, .font-display {
+    font-family: 'Outfit', 'Plus Jakarta Sans', sans-serif;
   }
 }
 
 /* Grand Finale Gold Theme Class Overrides */
 html.grand-finale-gold body {
-  background-color: #0d0a03 !important;
+  background-color: #05050A !important;
   background-image: 
     radial-gradient(circle at 50% 0%, rgba(255, 215, 0, 0.28) 0%, transparent 70%),
     radial-gradient(circle at 20% 40%, rgba(245, 158, 11, 0.2) 0%, transparent 50%),
@@ -48,42 +66,43 @@ html.grand-finale-gold .glass-card-glow {
   height: 8px;
 }
 ::-webkit-scrollbar-track {
-  background: #0c0a1a;
+  background: #05050A;
 }
 ::-webkit-scrollbar-thumb {
-  background: linear-gradient(180deg, #FF007F, #8A2BE2);
+  background: linear-gradient(180deg, #E11D48, #8B5CF6);
   border-radius: 4px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #00F0FF;
+  background: #FFD700;
 }
 
-/* Glassmorphism utility classes - Vivid & High Contrast */
+/* Glassmorphism utility classes - Senior UI Pattern */
 .glass-card {
-  background: rgba(24, 20, 52, 0.78);
-  backdrop-filter: blur(18px);
-  -webkit-backdrop-filter: blur(18px);
-  border: 1px solid rgba(255, 255, 255, 0.16);
-  box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.15);
+  background: rgba(255, 255, 255, 0.03);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.1), 0 10px 30px -5px rgba(0, 0, 0, 0.5);
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .glass-card-glow {
-  background: rgba(28, 23, 62, 0.85);
+  background: rgba(255, 255, 255, 0.05);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
-  border: 1px solid rgba(255, 0, 127, 0.5);
-  box-shadow: 0 0 35px rgba(255, 0, 127, 0.25), 0 0 15px rgba(0, 240, 255, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.25);
+  border: 1px solid rgba(225, 29, 72, 0.4);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.2), 0 0 30px rgba(225, 29, 72, 0.25);
 }
 
 .glass-card-hover {
-  transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .glass-card-hover:hover {
-  background: rgba(34, 28, 76, 0.92);
-  border-color: rgba(0, 240, 255, 0.65);
-  box-shadow: 0 18px 40px -10px rgba(0, 240, 255, 0.4), 0 0 25px rgba(255, 0, 127, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.3);
-  transform: translateY(-5px);
+  background: rgba(255, 255, 255, 0.06);
+  border-color: rgba(255, 255, 255, 0.3);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.2), 0 0 25px rgba(225, 29, 72, 0.3);
+  transform: translateY(-4px);
 }
 
 /* Bright Vivid Text Gradients */

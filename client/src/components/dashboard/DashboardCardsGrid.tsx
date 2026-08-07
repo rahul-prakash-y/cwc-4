@@ -65,35 +65,35 @@ export const DashboardCardsGrid: React.FC<DashboardCardsGridProps> = ({
   const progressPercent = Math.max(0, Math.min(100, (remainingSeconds / totalTimeSeconds) * 100));
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
       {/* Card 1: Today's Task */}
       <motion.div
         whileHover={{ y: -4 }}
-        className="p-5 rounded-2xl glass-card border border-carnival-crimson/40 shadow-neon-crimson flex flex-col justify-between relative overflow-hidden bg-gradient-to-b from-[#1C1226]/90 to-[#120F24]/90"
+        className="p-6 rounded-2xl bg-white/5 backdrop-blur-lg border border-white/10 shadow-[inset_0_1px_0_rgba(255,255,255,0.1),0_10px_30px_rgba(0,0,0,0.5)] hover:border-white/30 hover:shadow-glow-red transition-all duration-300 ease-out flex flex-col justify-between relative overflow-hidden"
       >
-        <div className="absolute top-0 right-0 w-24 h-24 bg-carnival-crimson/10 rounded-full blur-2xl pointer-events-none" />
+        <div className="absolute top-0 right-0 w-24 h-24 bg-cwc-red/10 rounded-full blur-2xl pointer-events-none" />
 
         <div>
-          <div className="flex items-center justify-between gap-2 mb-3">
-            <span className="px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold bg-carnival-crimson/20 text-carnival-crimson border border-carnival-crimson/40 animate-pulse flex items-center gap-1">
-              <span className="w-1.5 h-1.5 rounded-full bg-carnival-crimson animate-ping" />
+          <div className="flex items-center justify-between gap-2 mb-4">
+            <span className="px-3 py-1 rounded-full text-[10px] font-display font-bold bg-cwc-red/20 text-cwc-red border border-cwc-red/40 animate-pulse flex items-center gap-1.5">
+              <span className="w-1.5 h-1.5 rounded-full bg-cwc-red animate-ping" />
               DAY {currentDay} • LIVE
             </span>
-            <span className="text-xs font-mono font-bold text-carnival-gold flex items-center gap-1">
-              <Zap className="w-3.5 h-3.5 text-carnival-gold" />
+            <span className="text-xs font-display font-bold text-cwc-gold flex items-center gap-1">
+              <Zap className="w-3.5 h-3.5 text-cwc-gold" />
               +{taskPoints} PTS
             </span>
           </div>
 
-          <h3 className="text-lg font-extrabold text-white line-clamp-1 mb-1">{taskTitle}</h3>
-          <p className="text-xs text-slate-300 line-clamp-2">
-            Category: <strong className="text-carnival-cyan">{taskCategory}</strong>. Execute live solution before the time window expires.
+          <h3 className="text-lg font-bold font-display text-white line-clamp-1 mb-2">{taskTitle}</h3>
+          <p className="text-xs text-gray-300 line-clamp-2 leading-relaxed">
+            Category: <strong className="text-cwc-gold">{taskCategory}</strong>. Execute live solution before the time window expires.
           </p>
         </div>
 
         <button
           onClick={onSelectTaskCard}
-          className="mt-4 w-full py-2.5 px-4 rounded-xl bg-gradient-to-r from-carnival-crimson to-carnival-purple text-white text-xs font-bold flex items-center justify-center gap-2 hover:brightness-110 active:scale-[0.98] transition-all shadow-lg"
+          className="mt-6 w-full py-3 px-4 rounded-xl bg-gradient-to-r from-cwc-red to-[#9F1239] text-white text-xs font-bold font-display tracking-wide border border-white/15 shadow-[inset_0_1px_0_rgba(255,255,255,0.2),0_4px_15px_rgba(225,29,72,0.3)] hover:-translate-y-0.5 hover:border-white/30 hover:shadow-glow-red transition-all duration-300 ease-out flex items-center justify-center gap-2"
         >
           <span>Open Task Arena</span>
           <ArrowRight className="w-3.5 h-3.5" />
@@ -103,54 +103,54 @@ export const DashboardCardsGrid: React.FC<DashboardCardsGridProps> = ({
       {/* Card 2: Time Remaining */}
       <motion.div
         whileHover={{ y: -4 }}
-        className="p-5 rounded-2xl glass-card border border-carnival-cyan/40 shadow-neon-cyan flex flex-col justify-between relative overflow-hidden bg-gradient-to-b from-[#101F30]/90 to-[#120F24]/90"
+        className="p-6 rounded-2xl bg-white/5 backdrop-blur-lg border border-white/10 shadow-[inset_0_1px_0_rgba(255,255,255,0.1),0_10px_30px_rgba(0,0,0,0.5)] hover:border-white/30 hover:shadow-glow-gold transition-all duration-300 ease-out flex flex-col justify-between relative overflow-hidden"
       >
-        <div className="absolute top-0 right-0 w-24 h-24 bg-carnival-cyan/10 rounded-full blur-2xl pointer-events-none" />
+        <div className="absolute top-0 right-0 w-24 h-24 bg-cwc-gold/10 rounded-full blur-2xl pointer-events-none" />
 
         <div>
-          <div className="flex items-center justify-between gap-2 mb-3">
-            <span className="text-xs font-mono font-semibold text-slate-400 uppercase tracking-wider flex items-center gap-1.5">
-              <Clock className="w-3.5 h-3.5 text-carnival-cyan" /> Time Remaining
+          <div className="flex items-center justify-between gap-2 mb-4">
+            <span className="text-xs font-display font-semibold text-gray-300 uppercase tracking-wider flex items-center gap-1.5">
+              <Clock className="w-3.5 h-3.5 text-cwc-gold" /> Time Remaining
             </span>
-            <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-carnival-cyan/20 text-carnival-cyan font-bold">
+            <span className="text-[10px] font-display px-2.5 py-0.5 rounded-full bg-cwc-gold/20 text-cwc-gold font-bold border border-cwc-gold/30">
               Arena Window
             </span>
           </div>
 
           {/* Digital Timer */}
-          <div className="flex items-center justify-center gap-1.5 my-2">
-            <div className="bg-black/60 border border-carnival-cyan/30 rounded-xl px-3 py-1.5 text-center min-w-[52px]">
-              <span className="text-xl font-black font-mono text-white">
+          <div className="flex items-center justify-center gap-1.5 my-3">
+            <div className="bg-cwc-bg/80 border border-white/10 rounded-xl px-3 py-2 text-center min-w-[54px] shadow-[inset_0_1px_0_rgba(255,255,255,0.05)]">
+              <span className="text-xl font-bold font-display text-white">
                 {String(timeLeft.hours).padStart(2, '0')}
               </span>
-              <span className="block text-[9px] text-slate-400 font-mono">HRS</span>
+              <span className="block text-[9px] text-gray-400 font-display font-bold">HRS</span>
             </div>
-            <span className="text-xl font-bold text-carnival-cyan animate-pulse">:</span>
-            <div className="bg-black/60 border border-carnival-cyan/30 rounded-xl px-3 py-1.5 text-center min-w-[52px]">
-              <span className="text-xl font-black font-mono text-white">
+            <span className="text-xl font-bold text-cwc-gold animate-pulse">:</span>
+            <div className="bg-cwc-bg/80 border border-white/10 rounded-xl px-3 py-2 text-center min-w-[54px] shadow-[inset_0_1px_0_rgba(255,255,255,0.05)]">
+              <span className="text-xl font-bold font-display text-white">
                 {String(timeLeft.minutes).padStart(2, '0')}
               </span>
-              <span className="block text-[9px] text-slate-400 font-mono">MIN</span>
+              <span className="block text-[9px] text-gray-400 font-display font-bold">MIN</span>
             </div>
-            <span className="text-xl font-bold text-carnival-cyan animate-pulse">:</span>
-            <div className="bg-black/60 border border-carnival-cyan/30 rounded-xl px-3 py-1.5 text-center min-w-[52px]">
-              <span className="text-xl font-black font-mono text-carnival-cyan">
+            <span className="text-xl font-bold text-cwc-gold animate-pulse">:</span>
+            <div className="bg-cwc-bg/80 border border-white/10 rounded-xl px-3 py-2 text-center min-w-[54px] shadow-[inset_0_1px_0_rgba(255,255,255,0.05)]">
+              <span className="text-xl font-bold font-display text-cwc-gold">
                 {String(timeLeft.seconds).padStart(2, '0')}
               </span>
-              <span className="block text-[9px] text-slate-400 font-mono">SEC</span>
+              <span className="block text-[9px] text-gray-400 font-display font-bold">SEC</span>
             </div>
           </div>
         </div>
 
         {/* Progress Bar */}
-        <div className="mt-3 space-y-1.5">
-          <div className="flex items-center justify-between text-[10px] font-mono text-slate-400">
+        <div className="mt-4 space-y-1.5">
+          <div className="flex items-center justify-between text-[10px] font-display text-gray-400">
             <span>Window Closing</span>
-            <span className="text-carnival-cyan font-bold">{Math.round(progressPercent)}% Remaining</span>
+            <span className="text-cwc-gold font-bold">{Math.round(progressPercent)}% Remaining</span>
           </div>
           <div className="h-1.5 w-full bg-white/10 rounded-full overflow-hidden">
             <div
-              className="h-full bg-gradient-to-r from-carnival-cyan to-blue-500 rounded-full transition-all duration-1000"
+              className="h-full bg-gradient-to-r from-cwc-gold via-amber-500 to-cwc-red rounded-full transition-all duration-1000"
               style={{ width: `${progressPercent}%` }}
             />
           </div>
@@ -160,41 +160,41 @@ export const DashboardCardsGrid: React.FC<DashboardCardsGridProps> = ({
       {/* Card 3: Bonus Available */}
       <motion.div
         whileHover={{ y: -4 }}
-        className="p-5 rounded-2xl glass-card border border-carnival-gold/40 shadow-neon-gold flex flex-col justify-between relative overflow-hidden bg-gradient-to-b from-[#241E11]/90 to-[#120F24]/90"
+        className="p-6 rounded-2xl bg-white/5 backdrop-blur-lg border border-white/10 shadow-[inset_0_1px_0_rgba(255,255,255,0.1),0_10px_30px_rgba(0,0,0,0.5)] hover:border-white/30 hover:shadow-glow-gold transition-all duration-300 ease-out flex flex-col justify-between relative overflow-hidden"
       >
-        <div className="absolute top-0 right-0 w-24 h-24 bg-carnival-gold/10 rounded-full blur-2xl pointer-events-none" />
+        <div className="absolute top-0 right-0 w-24 h-24 bg-cwc-gold/10 rounded-full blur-2xl pointer-events-none" />
 
         <div>
-          <div className="flex items-center justify-between gap-2 mb-3">
-            <span className="text-xs font-mono font-semibold text-slate-400 uppercase tracking-wider flex items-center gap-1.5">
-              <Gift className="w-3.5 h-3.5 text-carnival-gold" /> Bonus Available
+          <div className="flex items-center justify-between gap-2 mb-4">
+            <span className="text-xs font-display font-semibold text-gray-300 uppercase tracking-wider flex items-center gap-1.5">
+              <Gift className="w-3.5 h-3.5 text-cwc-gold" /> Bonus Available
             </span>
-            <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-carnival-gold/20 text-carnival-gold font-bold">
+            <span className="text-[10px] font-display px-2.5 py-0.5 rounded-full bg-cwc-gold/20 text-cwc-gold font-bold border border-cwc-gold/30">
               Streak Boost
             </span>
           </div>
 
           <div className="space-y-2">
-            <div className="flex items-center justify-between p-2 rounded-xl bg-black/40 border border-carnival-gold/20">
+            <div className="flex items-center justify-between p-2.5 rounded-xl bg-cwc-bg/60 border border-cwc-gold/20">
               <div className="flex items-center gap-2">
-                <Flame className="w-4 h-4 text-carnival-crimson fill-carnival-crimson" />
-                <span className="text-xs font-bold text-white">4-Day Streak Bonus</span>
+                <Flame className="w-4 h-4 text-cwc-red fill-cwc-red" />
+                <span className="text-xs font-bold font-display text-white">4-Day Streak Bonus</span>
               </div>
-              <span className="text-xs font-black font-mono text-carnival-gold">+200 PTS</span>
+              <span className="text-xs font-bold font-display text-cwc-gold">+200 PTS</span>
             </div>
 
-            <div className="flex items-center justify-between p-2 rounded-xl bg-black/40 border border-carnival-cyan/20">
+            <div className="flex items-center justify-between p-2.5 rounded-xl bg-cwc-bg/60 border border-cwc-purple/20">
               <div className="flex items-center gap-2">
-                <TrendingUp className="w-4 h-4 text-carnival-cyan" />
-                <span className="text-xs font-bold text-white">Speed Submissions</span>
+                <TrendingUp className="w-4 h-4 text-cwc-purple" />
+                <span className="text-xs font-bold font-display text-white">Speed Submissions</span>
               </div>
-              <span className="text-xs font-black font-mono text-carnival-cyan">+15% Multiplier</span>
+              <span className="text-xs font-bold font-display text-cwc-purple">+15% Multiplier</span>
             </div>
           </div>
         </div>
 
-        <div className="mt-3 flex items-center gap-2 text-[11px] text-slate-300 font-mono">
-          <Sparkles className="w-3.5 h-3.5 text-carnival-gold flex-shrink-0" />
+        <div className="mt-4 flex items-center gap-2 text-[11px] text-gray-300 font-display">
+          <Sparkles className="w-3.5 h-3.5 text-cwc-gold flex-shrink-0" />
           <span>Submit before 2h mark to claim early-bird speed multiplier!</span>
         </div>
       </motion.div>
@@ -202,17 +202,17 @@ export const DashboardCardsGrid: React.FC<DashboardCardsGridProps> = ({
       {/* Card 4: Announcements Ticker */}
       <motion.div
         whileHover={{ y: -4 }}
-        className="p-5 rounded-2xl glass-card border border-carnival-purple/40 shadow-neon-purple flex flex-col justify-between relative overflow-hidden bg-gradient-to-b from-[#1C1330]/90 to-[#120F24]/90"
+        className="p-6 rounded-2xl bg-white/5 backdrop-blur-lg border border-white/10 shadow-[inset_0_1px_0_rgba(255,255,255,0.1),0_10px_30px_rgba(0,0,0,0.5)] hover:border-white/30 hover:shadow-glow-purple transition-all duration-300 ease-out flex flex-col justify-between relative overflow-hidden"
       >
-        <div className="absolute top-0 right-0 w-24 h-24 bg-carnival-purple/10 rounded-full blur-2xl pointer-events-none" />
+        <div className="absolute top-0 right-0 w-24 h-24 bg-cwc-purple/10 rounded-full blur-2xl pointer-events-none" />
 
         <div>
-          <div className="flex items-center justify-between gap-2 mb-3">
-            <span className="text-xs font-mono font-semibold text-slate-400 uppercase tracking-wider flex items-center gap-1.5">
-              <Bell className="w-3.5 h-3.5 text-carnival-purple" /> Announcements
+          <div className="flex items-center justify-between gap-2 mb-4">
+            <span className="text-xs font-display font-semibold text-gray-300 uppercase tracking-wider flex items-center gap-1.5">
+              <Bell className="w-3.5 h-3.5 text-cwc-purple" /> Announcements
             </span>
-            <span className="px-2 py-0.5 rounded-full bg-carnival-purple/30 text-white font-mono text-[10px] font-bold flex items-center gap-1">
-              <span className="w-1.5 h-1.5 rounded-full bg-carnival-purple animate-ping" />
+            <span className="px-2.5 py-0.5 rounded-full bg-cwc-purple/20 text-cwc-purple font-display text-[10px] font-bold border border-cwc-purple/30 flex items-center gap-1">
+              <span className="w-1.5 h-1.5 rounded-full bg-cwc-purple animate-ping" />
               {announcements.length} Live
             </span>
           </div>
@@ -221,19 +221,19 @@ export const DashboardCardsGrid: React.FC<DashboardCardsGridProps> = ({
             {announcements.map((item) => (
               <div
                 key={item.id}
-                className="p-2 rounded-xl bg-black/40 border border-white/10 hover:border-carnival-purple/40 transition-colors"
+                className="p-2.5 rounded-xl bg-cwc-bg/60 border border-white/10 hover:border-cwc-purple/40 transition-colors"
               >
                 <div className="flex items-center justify-between gap-1 mb-0.5">
-                  <span className="text-xs font-bold text-white line-clamp-1">{item.title}</span>
-                  <span className="text-[9px] font-mono text-slate-400 whitespace-nowrap">{item.time}</span>
+                  <span className="text-xs font-bold font-display text-white line-clamp-1">{item.title}</span>
+                  <span className="text-[9px] font-display text-gray-400 whitespace-nowrap">{item.time}</span>
                 </div>
-                <p className="text-[11px] text-slate-300 line-clamp-1">{item.message}</p>
+                <p className="text-[11px] text-gray-300 line-clamp-1">{item.message}</p>
               </div>
             ))}
           </div>
         </div>
 
-        <div className="mt-3 text-[10px] text-carnival-purple font-mono font-semibold text-right">
+        <div className="mt-4 text-[10px] text-cwc-purple font-display font-semibold text-right">
           • Official Broadcast Stream Active
         </div>
       </motion.div>

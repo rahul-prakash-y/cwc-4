@@ -28,42 +28,42 @@ export const Navbar: React.FC = () => {
   ];
 
   return (
-    <header className="fixed top-0 left-0 right-0 z-50 bg-[#0B0A16]/85 backdrop-blur-xl border-b border-white/10 shadow-2xl">
+    <header className="fixed top-0 left-0 right-0 z-50 bg-[#05050A]/85 backdrop-blur-2xl border-b border-white/10 shadow-2xl">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
         {/* Logo & Brand */}
         <Link to="/" className="flex items-center gap-3 group">
-          <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-carnival-crimson via-carnival-gold to-carnival-cyan p-0.5 group-hover:scale-105 transition-transform">
-            <div className="w-full h-full rounded-[10px] bg-[#0B0A16] flex items-center justify-center">
-              <span className="font-extrabold text-gradient-carnival font-mono text-lg">
+          <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-cwc-red via-cwc-gold to-cwc-purple p-0.5 group-hover:scale-105 transition-transform duration-300">
+            <div className="w-full h-full rounded-[10px] bg-cwc-bg flex items-center justify-center">
+              <span className="font-extrabold font-display bg-clip-text text-transparent bg-gradient-to-r from-cwc-gold to-yellow-200 text-lg">
                 CWC
               </span>
             </div>
           </div>
           <div>
-            <div className="font-black text-white text-lg tracking-tight flex items-center gap-1.5">
+            <div className="font-black font-display text-white text-lg tracking-tight flex items-center gap-1.5">
               <span>Code With Curious</span>
-              <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-carnival-crimson/20 text-carnival-crimson font-bold border border-carnival-crimson/30">
+              <span className="text-[10px] font-display px-2 py-0.5 rounded-full bg-cwc-red/20 text-cwc-red font-bold border border-cwc-red/30">
                 S4
               </span>
             </div>
-            <div className="text-[10px] text-carnival-gold font-mono tracking-widest uppercase">
+            <div className="text-[10px] text-cwc-gold font-display tracking-widest uppercase font-semibold">
               Carnival Edition 🎪
             </div>
           </div>
         </Link>
 
         {/* Desktop Navigation Links */}
-        <nav className="hidden xl:flex items-center gap-1 glass-card px-4 py-1 rounded-full border-white/10">
+        <nav className="hidden xl:flex items-center gap-1 bg-cwc-surface backdrop-blur-xl px-4 py-1.5 rounded-full border border-white/10 shadow-[inset_0_1px_0_rgba(255,255,255,0.1)]">
           {navLinks.map((link) => {
             const isActive = location.pathname === link.path;
             return (
               <Link
                 key={link.label}
                 to={link.path}
-                className={`px-3.5 py-1.5 rounded-full text-xs font-semibold transition-all ${
+                className={`px-3.5 py-1.5 rounded-full text-xs font-bold font-display transition-all duration-300 ${
                   isActive
-                    ? "bg-carnival-crimson text-white shadow-neon-crimson"
-                    : "text-slate-300 hover:text-white hover:bg-white/5"
+                    ? "bg-gradient-to-r from-cwc-red to-rose-900 text-white shadow-glow-red border border-white/20"
+                    : "text-gray-300 hover:text-white hover:bg-white/10"
                 }`}
               >
                 {link.label}
@@ -73,10 +73,10 @@ export const Navbar: React.FC = () => {
         </nav>
 
         {/* Action Portal Buttons */}
-        <div className="hidden md:flex items-center gap-2.5">
+        <div className="hidden md:flex items-center gap-3">
           <button
             onClick={triggerCarnivalConfetti}
-            className="p-2.5 rounded-xl glass-card text-carnival-gold hover:border-carnival-gold/50 transition-all cursor-pointer"
+            className="p-2.5 rounded-xl bg-cwc-surface backdrop-blur-lg text-cwc-gold border border-cwc-gold/30 shadow-[inset_0_1px_0_rgba(255,255,255,0.1)] hover:-translate-y-1 hover:border-cwc-gold/60 hover:shadow-glow-gold transition-all duration-300 ease-out cursor-pointer"
             title="Pop Confetti Celebration!"
           >
             <PartyPopper className="w-4 h-4" />
@@ -84,17 +84,17 @@ export const Navbar: React.FC = () => {
 
           <Link
             to="/register"
-            className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-gradient-to-r from-carnival-crimson to-carnival-gold text-black font-extrabold text-xs shadow-neon-crimson hover:scale-105 transition-all"
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-gradient-to-r from-cwc-red to-[#9F1239] text-white font-bold font-display text-xs tracking-wide border border-white/15 shadow-[inset_0_1px_0_rgba(255,255,255,0.2),0_4px_15px_rgba(225,29,72,0.3)] hover:-translate-y-1 hover:border-white/30 hover:shadow-glow-red transition-all duration-300 ease-out"
           >
-            <Ticket className="w-3.5 h-3.5 text-black" />
+            <Ticket className="w-3.5 h-3.5 fill-current" />
             <span>Register Team</span>
           </Link>
 
           <Link
             to="/login"
-            className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-gradient-to-r from-carnival-gold/20 via-carnival-cyan/20 to-carnival-purple/20 text-carnival-gold font-bold text-xs border border-carnival-gold/40 hover:border-carnival-gold transition-all shadow-neon-gold"
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-cwc-surface backdrop-blur-lg text-cwc-gold font-bold font-display text-xs tracking-wide border border-cwc-gold/30 shadow-[inset_0_1px_0_rgba(255,255,255,0.1)] hover:-translate-y-1 hover:border-cwc-gold/60 hover:shadow-glow-gold transition-all duration-300 ease-out"
           >
-            <LogIn className="w-3.5 h-3.5 text-carnival-gold" />
+            <LogIn className="w-3.5 h-3.5 text-cwc-gold" />
             <span>Login Gate</span>
           </Link>
         </div>
@@ -103,7 +103,7 @@ export const Navbar: React.FC = () => {
         <div className="xl:hidden flex items-center gap-2">
           <button
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className="p-2 rounded-xl glass-card text-slate-300 hover:text-white"
+            className="p-2.5 rounded-xl bg-cwc-surface backdrop-blur-lg text-gray-300 hover:text-white border border-white/10"
           >
             {mobileMenuOpen ? (
               <X className="w-6 h-6" />
@@ -116,36 +116,36 @@ export const Navbar: React.FC = () => {
 
       {/* Mobile Dropdown Menu */}
       {mobileMenuOpen && (
-        <div className="xl:hidden glass-card border-t border-white/10 p-4 space-y-3 bg-[#0B0A16]/95 backdrop-blur-2xl">
+        <div className="xl:hidden bg-[#05050A]/95 backdrop-blur-2xl border-t border-white/10 p-5 space-y-3">
           {navLinks.map((link) => (
             <Link
               key={link.label}
               to={link.path}
               onClick={() => setMobileMenuOpen(false)}
-              className="block px-4 py-2 rounded-xl text-sm font-semibold text-slate-200 hover:bg-white/5"
+              className="block px-4 py-2.5 rounded-xl text-sm font-bold font-display text-gray-200 hover:bg-white/5 hover:text-cwc-gold transition-all"
             >
               {link.label}
             </Link>
           ))}
-          <div className="pt-3 border-t border-white/10 flex flex-col gap-2">
+          <div className="pt-4 border-t border-white/10 flex flex-col gap-2.5">
             <Link
               to="/login"
               onClick={() => setMobileMenuOpen(false)}
-              className="w-full text-center px-4 py-2.5 rounded-xl bg-gradient-to-r from-carnival-gold/20 to-carnival-cyan/20 border border-carnival-gold/40 text-carnival-gold text-xs font-bold"
+              className="w-full text-center px-4 py-3 rounded-xl bg-cwc-surface border border-cwc-gold/40 text-cwc-gold text-xs font-bold font-display tracking-wide shadow-glow-gold/20"
             >
               Carnival Login Gate
             </Link>
             <Link
               to="/login/student"
               onClick={() => setMobileMenuOpen(false)}
-              className="w-full text-center px-4 py-2.5 rounded-xl glass-card text-slate-100 text-xs font-semibold border border-carnival-cyan/40"
+              className="w-full text-center px-4 py-3 rounded-xl bg-white/5 text-gray-100 text-xs font-bold font-display border border-white/10"
             >
               Student Portal
             </Link>
             <Link
               to="/login/admin"
               onClick={() => setMobileMenuOpen(false)}
-              className="w-full text-center px-4 py-2.5 rounded-xl bg-carnival-crimson text-white text-xs font-bold"
+              className="w-full text-center px-4 py-3 rounded-xl bg-gradient-to-r from-cwc-red to-[#9F1239] text-white text-xs font-bold font-display tracking-wide"
             >
               Admin Portal
             </Link>
