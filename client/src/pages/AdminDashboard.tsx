@@ -1,6 +1,6 @@
 import React from 'react';
 import { useLocation, Link } from 'react-router-dom';
-import { Crown, Users, CheckSquare, Grid, Download, Image as ImageIcon, UserCheck } from 'lucide-react';
+import { Crown, Users, CheckSquare, Grid, Download, Image as ImageIcon, UserCheck, Zap } from 'lucide-react';
 import { Dashboard } from './admin/Dashboard';
 import { Teams } from './admin/Teams';
 import { Tasks } from './admin/Tasks';
@@ -9,6 +9,7 @@ import { Export } from './admin/Export';
 import { Media } from './admin/Media';
 import { Attendance } from './admin/Attendance';
 import { SuperAdminDashboard } from './admin/SuperAdminDashboard';
+import { BuzzerConsole } from './admin/BuzzerConsole';
 import { ChampionBanner } from '../components/common/ChampionBanner';
 import { useAuth } from '../context/AuthContext';
 
@@ -19,6 +20,7 @@ export const AdminDashboard: React.FC = () => {
   // Determine active view tab based on current path
   const getTabFromPath = () => {
     if (location.pathname.includes('/admin/superadmin')) return 'superadmin';
+    if (location.pathname.includes('/admin/buzzer')) return 'buzzer';
     if (location.pathname.includes('/admin/attendance')) return 'attendance';
     if (location.pathname.includes('/admin/media')) return 'media';
     if (location.pathname.includes('/admin/teams')) return 'teams';
@@ -62,6 +64,18 @@ export const AdminDashboard: React.FC = () => {
             <span>SuperAdmin Hub</span>
           </Link>
         )}
+
+        <Link
+          to="/admin/buzzer"
+          className={`flex items-center gap-2 px-4 py-2.5 rounded-xl font-mono text-xs font-bold transition-all ${
+            activeTab === 'buzzer'
+              ? 'bg-gradient-to-r from-red-500 via-rose-500 to-amber-500 text-white shadow-[0_0_15px_rgba(239,68,68,0.5)] font-black animate-pulse'
+              : 'glass-card text-rose-300 hover:text-white border-rose-500/30'
+          }`}
+        >
+          <Zap className="w-4 h-4 text-red-400" />
+          <span>Rapid Fire Buzzer</span>
+        </Link>
 
         <Link
           to="/admin/attendance"
@@ -138,6 +152,7 @@ export const AdminDashboard: React.FC = () => {
 
       {/* Render Active Page / View */}
       {activeTab === 'superadmin' && <SuperAdminDashboard />}
+      {activeTab === 'buzzer' && <BuzzerConsole />}
       {activeTab === 'overview' && <Dashboard />}
       {activeTab === 'attendance' && <Attendance />}
       {activeTab === 'media' && <Media />}

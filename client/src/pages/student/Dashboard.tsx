@@ -1,13 +1,14 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { Trophy, CheckSquare, Zap, Heart, LayoutDashboard, Flame } from 'lucide-react';
+import { Trophy, CheckSquare, Zap, Heart, LayoutDashboard, Flame, Radio } from 'lucide-react';
 import { Leaderboard } from '../../components/student/Leaderboard';
 import { DailyTaskView } from '../../components/student/DailyTaskView';
 import { AdvantagesLocker } from '../../components/student/AdvantagesLocker';
 import { VotingBooth } from '../../components/student/VotingBooth';
 import { TeamProgress } from '../../components/student/TeamProgress';
 import { MarksSection } from '../../components/student/MarksSection';
+import { BuzzerButton } from '../../components/student/BuzzerButton';
 
 export const StudentDashboard: React.FC = () => {
   const location = useLocation();
@@ -22,9 +23,11 @@ export const StudentDashboard: React.FC = () => {
     ? 'advantages'
     : path.includes('/leaderboard')
     ? 'leaderboard'
+    : path.includes('/buzzer')
+    ? 'buzzer'
     : 'overview';
 
-  const handleTabClick = (tab: 'overview' | 'tasks' | 'advantages' | 'leaderboard') => {
+  const handleTabClick = (tab: 'overview' | 'tasks' | 'advantages' | 'leaderboard' | 'buzzer') => {
     switch (tab) {
       case 'overview':
         navigate('/student');
@@ -37,6 +40,9 @@ export const StudentDashboard: React.FC = () => {
         break;
       case 'leaderboard':
         navigate('/student/leaderboard');
+        break;
+      case 'buzzer':
+        navigate('/student/buzzer');
         break;
     }
   };
@@ -83,6 +89,18 @@ export const StudentDashboard: React.FC = () => {
           >
             <LayoutDashboard className="w-4 h-4" />
             <span>Arena Overview</span>
+          </button>
+
+          <button
+            onClick={() => handleTabClick('buzzer')}
+            className={`flex items-center gap-2 px-4 py-2.5 rounded-xl font-mono text-xs font-bold transition-all whitespace-nowrap shrink-0 ${
+              currentTab === 'buzzer'
+                ? 'bg-gradient-to-r from-red-600 via-rose-600 to-amber-500 text-white font-black shadow-[0_0_15px_rgba(239,68,68,0.5)] animate-pulse'
+                : 'glass-card text-rose-300 hover:text-white border-rose-500/30'
+            }`}
+          >
+            <Radio className="w-4 h-4 text-red-400" />
+            <span>Rapid Fire Buzzer</span>
           </button>
 
           <button
@@ -138,10 +156,17 @@ export const StudentDashboard: React.FC = () => {
       {/* Main Tab Content */}
       {currentTab === 'overview' && (
         <div className="space-y-8">
+          <BuzzerButton />
           <TeamProgress />
           <MarksSection />
           <DailyTaskView />
           <Leaderboard />
+        </div>
+      )}
+
+      {currentTab === 'buzzer' && (
+        <div className="py-4">
+          <BuzzerButton />
         </div>
       )}
 

@@ -2,6 +2,7 @@ import { Server, Socket } from 'socket.io';
 import { FastifyInstance } from 'fastify';
 import { env } from './config/env.js';
 import { Draft } from './models/Draft.js';
+import { registerBuzzerHandlers } from './sockets/buzzer.js';
 
 export const TEST_ROOM = 'test-room-season4';
 export const GLOBAL_ROOM = 'global';
@@ -170,6 +171,9 @@ export function setupSocketIO(app: FastifyInstance): Server {
 
     // Auto-join global room on connection
     socket.join(GLOBAL_ROOM);
+
+    // Register Rapid Fire Live Buzzer Handlers
+    registerBuzzerHandlers(io, socket, app.log);
 
     // Task 1: Room joining handler for 'global', 'student-dashboard', 'admin-panel'
     socket.on('join-room', (roomName: string) => {

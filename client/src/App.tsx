@@ -75,12 +75,14 @@ export default function App() {
                 <Route path="advantages" element={<StudentDashboard />} />
                 <Route path="leaderboard" element={<StudentDashboard />} />
                 <Route path="voting" element={<StudentDashboard />} />
+                <Route path="buzzer" element={<StudentDashboard />} />
               </Route>
 
               {/* Admin Command Layout (Protected) */}
               <Route path="/admin" element={<AdminLayout />}>
                 <Route index element={<AdminDashboard />} />
                 <Route path="superadmin" element={<AdminDashboard />} />
+                <Route path="buzzer" element={<AdminDashboard />} />
                 <Route path="attendance" element={<AdminDashboard />} />
                 <Route path="media" element={<AdminDashboard />} />
                 <Route path="teams" element={<AdminDashboard />} />
