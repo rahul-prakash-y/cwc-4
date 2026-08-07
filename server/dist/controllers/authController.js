@@ -5,69 +5,116 @@ import { generateToken } from '../middleware/auth.js';
 import { sendCarnivalEmail } from '../utils/mailer.js';
 import { getRegistrationEmailHtml } from '../utils/emailTemplates.js';
 /**
- * Task 1: Register Team ("Carnival Ticket" Application)
- * Creates the leader user account with standard default password and sets Team status to 'Pending'
+ * Task 1: Check Team Name Availability (real-time duplicate check)
  */
-export async function registerTeam(request, reply) {
-    const { teamName, themeColor, logoUrl, residenceType, leader, members = [] } = request.body;
-    // Validation
-    if (!teamName || !leader || !leader.name || !leader.email) {
-        return reply.status(400).send({
-            error: 'Bad Request',
-            message: 'Missing required team or leader information',
-        });
+export async function checkTeamName(request, reply) {
+    const teamName = request.query.teamName?.trim();
+    if (!teamName) {
+        return reply.status(400).send({ error: 'Bad Request', message: 'teamName query parameter is required' });
     }
-    const normalizedEmail = leader.email.toLowerCase().trim();
-    const normalizedTeamName = teamName.trim();
-    // Check existing user or team
-    const existingUser = await User.findOne({ email: normalizedEmail });
-    if (existingUser) {
-        return reply.status(400).send({
-            error: 'Conflict',
-            message: 'A user with this email address already exists.',
-        });
-    }
-    const existingTeam = await Team.findOne({ teamName: normalizedTeamName });
+    const escaped = teamName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const existingTeam = await Team.findOne({ teamName: new RegExp('^' + escaped + '$', 'i') });
     if (existingTeam) {
         return reply.status(400).send({
-            error: 'Conflict',
-            message: 'A team with this carnival team name already exists.',
+            available: false,
+            error: 'Bad Request',
+            message: 'Team Name is already taken. Please choose a unique name for your team.',
         });
     }
-    // Set standard default password if not provided
-    const rawPassword = leader.password || 'CWC4-Student-2026';
-    // Hash default password with bcrypt
+    return reply.send({ available: true, message: 'Team name is available!' });
+}
+/**
+ * Task 1: Register Team ("Carnival Ticket" Application)
+ * Every team MUST contain exactly 4 complete member profile objects.
+ * Enforces case-insensitive unique check on teamName.
+ */
+export async function registerTeam(request, reply) {
+    const { teamName, themeColor, logoUrl, residenceType, members = [], leader: leaderInput } = request.body;
+    if (!teamName || !teamName.trim()) {
+        return reply.status(400).send({
+            error: 'Bad Request',
+            message: 'Team name is required.',
+        });
+    }
+    if (!Array.isArray(members) || members.length !== 4) {
+        return reply.status(400).send({
+            error: 'Bad Request',
+            message: 'Every team MUST contain exactly 4 complete member profile objects.',
+        });
+    }
+    const trimmedTeamName = teamName.trim();
+    const escapedTeamName = trimmedTeamName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    // Task 1 Duplicate check: Query Team.findOne({ teamName: new RegExp('^' + teamName + '$', 'i') })
+    const existingTeam = await Team.findOne({ teamName: new RegExp('^' + escapedTeamName + '$', 'i') });
+    if (existingTeam) {
+        return reply.status(400).send({
+            error: 'Bad Request',
+            message: 'Team Name is already taken. Please choose a unique name for your team.',
+        });
+    }
+    // Member 1 is the Team Leader
+    const leaderMember = members[0];
+    const leaderName = leaderInput?.name?.trim() || leaderMember.name.trim();
+    const leaderEmail = (leaderInput?.email || leaderMember.deptMailId || leaderMember.email || '').toLowerCase().trim();
+    const leaderPhone = leaderInput?.phone?.trim() || leaderMember.phone.trim();
+    const leaderRollNumber = leaderInput?.rollNumber?.trim() || leaderMember.rollNo.trim();
+    if (!leaderName || !leaderEmail) {
+        return reply.status(400).send({
+            error: 'Bad Request',
+            message: 'Missing required leader details in member profiles.',
+        });
+    }
+    // Check existing user for leader email
+    const existingUser = await User.findOne({ email: leaderEmail });
+    if (existingUser) {
+        return reply.status(400).send({
+            error: 'Bad Request',
+            message: 'A user with this department email address already exists.',
+        });
+    }
+    // Set standard default password
+    const rawPassword = leaderInput?.password || 'CWC4-Student-2026';
     const passwordHash = await bcrypt.hash(rawPassword, 10);
-    // Create Leader User account with isFirstLogin: true
+    // Create Leader User account
     const newUser = await User.create({
-        name: leader.name.trim(),
-        email: normalizedEmail,
+        name: leaderName,
+        email: leaderEmail,
         passwordHash,
         role: 'student',
         isFirstLogin: true,
     });
-    // Create Team Application with status 'Pending' (Carnival Ticket)
+    const formattedMembers = members.map((m, idx) => ({
+        name: m.name.trim(),
+        rollNo: (m.rollNo || m.rollNumber || '').trim(),
+        deptMailId: (m.deptMailId || m.email || '').toLowerCase().trim(),
+        phone: (m.phone || '').trim(),
+        gender: m.gender || 'Other',
+        residenceType: (m.residenceType === 'Day Scholar' ? 'DayScholar' : m.residenceType) || 'Hosteller',
+        email: (m.deptMailId || m.email || '').toLowerCase().trim(),
+        rollNumber: (m.rollNo || m.rollNumber || '').trim(),
+        role: idx === 0 ? 'Leader' : `Member ${idx + 1}`,
+        userId: idx === 0 ? newUser._id : undefined,
+    }));
+    // Create Team Application with status 'Pending'
     const newTeam = await Team.create({
-        teamName: normalizedTeamName,
+        teamName: trimmedTeamName,
         themeColor: themeColor || '#FF0055',
         logoUrl: logoUrl || '',
-        residenceType: residenceType || 'Hosteller',
+        residenceType: residenceType || formattedMembers[0].residenceType || 'Hosteller',
         status: 'Pending',
         leader: {
-            name: leader.name.trim(),
-            email: normalizedEmail,
-            phone: leader.phone ? leader.phone.trim() : '',
+            name: leaderName,
+            email: leaderEmail,
+            phone: leaderPhone,
+            rollNumber: leaderRollNumber,
+            department: '',
             userId: newUser._id,
         },
-        members: members.map((m) => ({
-            name: m.name.trim(),
-            email: m.email.toLowerCase().trim(),
-            role: m.role || 'Member',
-        })),
+        members: formattedMembers,
         advantages: [],
         immunity: false,
     });
-    // Generate JWT token including isFirstLogin boolean flag
+    // Generate JWT token
     const token = generateToken({
         userId: newUser._id.toString(),
         email: newUser.email,
@@ -75,15 +122,14 @@ export async function registerTeam(request, reply) {
         isFirstLogin: newUser.isFirstLogin,
         teamId: newTeam._id.toString(),
     });
-    // Asynchronously dispatch Team Registration Confirmation & Passcodes Email
     setImmediate(() => {
         const html = getRegistrationEmailHtml({
             teamName: newTeam.teamName,
-            leaderName: leader.name,
-            leaderEmail: normalizedEmail,
+            leaderName: leaderName,
+            leaderEmail: leaderEmail,
             passcode: `CWC4-${newTeam._id.toString().substring(18).toUpperCase()}`,
         });
-        sendCarnivalEmail(normalizedEmail, `🎪 Registration Confirmation & Passcode - Team ${newTeam.teamName}`, html);
+        sendCarnivalEmail(leaderEmail, `🎪 Registration Confirmation & Passcode - Team ${newTeam.teamName}`, html);
     });
     return reply.status(201).send({
         message: '🎪 Carnival Ticket application submitted successfully! Team status: Pending Approval.',

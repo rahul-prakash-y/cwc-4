@@ -75,7 +75,7 @@ export const RuleBook: React.FC = () => {
               {/* Category Accordion Header */}
               <button
                 onClick={() => toggleCategory(category.id)}
-                className="w-full p-6 text-left flex items-center justify-between gap-4 bg-cwc-surface/40 hover:bg-cwc-surface/80 transition-colors"
+                className="w-full p-6 text-left flex items-center justify-between gap-4 bg-cwc-surface/4 hover:bg-cwc-surface/8 transition-colors"
               >
                 <div className="flex items-center gap-4">
                   <div className="w-12 h-12 rounded-xl bg-cwc-purple/20 border border-cwc-purple/40 flex items-center justify-center text-2xl shadow-[inset_0_1px_0_rgba(255,255,255,0.1)]">

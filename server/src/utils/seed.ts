@@ -258,20 +258,60 @@ async function seedDatabase() {
       isFirstLogin: false,
     });
 
-    const memberUsers = [];
-    for (const mem of tData.members) {
+    const memberProfiles: any[] = [
+      {
+        name: tData.leader.name,
+        rollNo: '22CSE010',
+        deptMailId: tData.leader.email,
+        phone: tData.leader.phone || '+91 9876543210',
+        gender: 'Male',
+        residenceType: tData.residenceType === 'Day Scholar' ? 'DayScholar' : 'Hosteller',
+        email: tData.leader.email,
+        rollNumber: '22CSE010',
+        role: 'Leader',
+        userId: leaderUser._id,
+      },
+    ];
+
+    const additionalNames = [
+      ['Rhea Kapoor', 'Dev Patel', 'Kavya Singh'],
+      ['Ananya Rao', 'Kabir Roy', 'Zoya Ali'],
+      ['Pooja Verma', 'Rohan Gupta', 'Karan Johar'],
+      ['Arjun Singhania', 'Meera Deshmukh', 'Simran Gill'],
+      ['Karan Saxena', 'Isha Bhasin', 'Vikrant Massey'],
+      ['Divya Iyer', 'Aditya Kumar', 'Tanya Sharma'],
+      ['Sneha Reddy', 'Varun Joshi', 'Pranav Nair'],
+      ['Amit Singh', 'Simran Kaur', 'Hardik Pandya'],
+      ['Ritu Chawla', 'Gaurav Das', 'Shreya Ghoshal'],
+      ['Nikhil Agarwal', 'Kavita Pillai', 'Ayushmann Khurrana'],
+      ['Sonal Jain', 'Tarun Saxena', 'Kriti Sanon'],
+      ['Alok Mishra', 'Tanvi Shah', 'Siddhant Chaturvedi'],
+    ];
+
+    const teamIdx = createdTeams.length;
+    const extraNames = additionalNames[teamIdx % additionalNames.length];
+
+    for (let mIdx = 0; mIdx < 3; mIdx++) {
+      const mName = extraNames[mIdx];
+      const mEmail = `${mName.toLowerCase().replace(/\s+/g, '')}${teamIdx + 1}@cwc.com`;
       const u = await User.create({
-        name: mem.name,
-        email: mem.email,
+        name: mName,
+        email: mEmail,
         passwordHash: hashedStudentPassword,
         role: 'student',
         isBlocked: false,
         isFirstLogin: false,
       });
-      memberUsers.push({
-        name: mem.name,
-        email: mem.email,
-        role: mem.role,
+      memberProfiles.push({
+        name: mName,
+        rollNo: `22CSE${11 + mIdx + teamIdx * 3}`,
+        deptMailId: mEmail,
+        phone: `+91 987654${3200 + teamIdx * 3 + mIdx}`,
+        gender: (mIdx % 2 === 0 ? 'Female' : 'Male') as 'Male' | 'Female' | 'Other',
+        residenceType: mIdx % 3 === 0 ? ('DayScholar' as const) : ('Hosteller' as const),
+        email: mEmail,
+        rollNumber: `22CSE${11 + mIdx + teamIdx * 3}`,
+        role: `Member ${mIdx + 2}`,
         userId: u._id,
       });
     }
@@ -281,7 +321,7 @@ async function seedDatabase() {
       themeColor: tData.themeColor,
       logoUrl: tData.logoUrl,
       status: tData.status,
-      residenceType: tData.residenceType,
+      residenceType: tData.residenceType === 'Day Scholar' ? 'DayScholar' : tData.residenceType,
       totalPublicVotes: tData.totalPublicVotes,
       leader: {
         name: tData.leader.name,
@@ -289,7 +329,7 @@ async function seedDatabase() {
         phone: tData.leader.phone,
         userId: leaderUser._id,
       },
-      members: memberUsers,
+      members: memberProfiles,
       advantages: tData.advantages,
       immunity: tData.immunity,
     });

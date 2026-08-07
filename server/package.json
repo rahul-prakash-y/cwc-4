@@ -5,10 +5,10 @@
   "type": "module",
   "main": "dist/server.js",
   "scripts": {
-    "dev": "NODE_OPTIONS='--max-old-space-size=400' tsx watch src/server.ts",
+    "dev": "tsx watch src/server.ts",
     "seed": "tsx src/utils/seed.ts",
     "build": "tsc",
-    "start": "node --max-old-space-size=400 dist/server.js"
+    "start": "node dist/server.js"
   },
   "dependencies": {
     "@fastify/cors": "^9.0.1",

@@ -13,6 +13,11 @@ export interface ITeamLeader {
 
 export interface ITeamMember {
   name: string;
+  rollNo?: string;
+  deptMailId?: string;
+  phone?: string;
+  gender?: 'Male' | 'Female' | 'Other';
+  residenceType?: 'Hosteller' | 'DayScholar' | 'Day Scholar';
   email?: string;
   rollNumber?: string;
   role?: string;
@@ -32,7 +37,7 @@ export interface ITeam {
   themeColor: string;
   logoUrl?: string;
   status: TeamStatus;
-  residenceType?: 'Hosteller' | 'Day Scholar';
+  residenceType?: 'Hosteller' | 'DayScholar' | 'Day Scholar';
   advantages: IAdvantageItem[];
   immunity: boolean;
   isBlocked?: boolean;
@@ -68,9 +73,22 @@ const leaderSchema = new Schema<ITeamLeader>(
 
 const memberSchema = new Schema<ITeamMember>(
   {
-    name: { type: String, required: true, trim: true },
+    name: { type: String, required: [true, 'Member name is required'], trim: true },
+    rollNo: { type: String, required: [true, 'Member roll number is required'], trim: true },
+    deptMailId: { type: String, required: [true, 'Member department mail ID is required'], lowercase: true, trim: true },
+    phone: { type: String, required: [true, 'Member phone number is required'], trim: true },
+    gender: {
+      type: String,
+      required: [true, 'Member gender is required'],
+      enum: ['Male', 'Female', 'Other'],
+    },
+    residenceType: {
+      type: String,
+      required: [true, 'Member residence type is required'],
+      enum: ['Hosteller', 'DayScholar'],
+    },
     email: { type: String, lowercase: true, trim: true, default: '' },
-    rollNumber: { type: String, trim: true },
+    rollNumber: { type: String, trim: true, default: '' },
     role: { type: String, trim: true, default: 'Member' },
     userId: { type: Schema.Types.ObjectId, ref: 'User' },
   },
@@ -91,7 +109,13 @@ const teamSchema = new Schema<ITeamDocument>(
     },
     members: {
       type: [memberSchema],
-      default: [],
+      validate: [
+        {
+          validator: (val: any[]) => Array.isArray(val) && val.length === 4,
+          message: 'Every team MUST contain exactly 4 complete member profile objects.',
+        },
+      ],
+      required: [true, 'Team members are required'],
     },
     themeColor: {
       type: String,
@@ -110,7 +134,7 @@ const teamSchema = new Schema<ITeamDocument>(
     },
     residenceType: {
       type: String,
-      enum: ['Hosteller', 'Day Scholar'],
+      enum: ['Hosteller', 'DayScholar', 'Day Scholar'],
       default: 'Hosteller',
     },
     advantages: {

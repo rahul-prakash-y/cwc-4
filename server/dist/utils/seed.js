@@ -7,6 +7,7 @@ import { Task } from '../models/Task.js';
 import { Score } from '../models/Score.js';
 import { Announcement } from '../models/Announcement.js';
 import { DailyVoteLog } from '../models/VoteLog.js';
+import { Gallery } from '../models/Gallery.js';
 async function seedDatabase() {
     const mongoUri = env.MONGO_URI || process.env.MONGO_URI || 'mongodb://127.0.0.1:27017/cwc-season4';
     console.log(`🎪 Connecting to MongoDB at: ${mongoUri}`);
@@ -21,6 +22,7 @@ async function seedDatabase() {
         Score.deleteMany({}),
         Announcement.deleteMany({}),
         DailyVoteLog.deleteMany({}),
+        Gallery.deleteMany({}),
     ]);
     console.log('✨ Database cleared.');
     // Password hashes
@@ -31,18 +33,18 @@ async function seedDatabase() {
     const superAdmin = await User.create({
         name: 'Ringmaster SuperAdmin',
         email: 'superadmin@cwc.com',
-        password: hashedAdminPassword,
+        passwordHash: hashedAdminPassword,
         role: 'superadmin',
         isBlocked: false,
-        isPasswordChanged: true,
+        isFirstLogin: false,
     });
     const admin = await User.create({
         name: 'Carnival Admin',
         email: 'admin@cwc.com',
-        password: hashedAdminPassword,
+        passwordHash: hashedAdminPassword,
         role: 'admin',
         isBlocked: false,
-        isPasswordChanged: true,
+        isFirstLogin: false,
     });
     console.log(`✅ Default SuperAdmin created: superadmin@cwc.com / admin123`);
     console.log(`✅ Default Admin created: admin@cwc.com / admin123`);
@@ -239,25 +241,62 @@ async function seedDatabase() {
         const leaderUser = await User.create({
             name: tData.leader.name,
             email: tData.leader.email,
-            password: hashedStudentPassword,
+            passwordHash: hashedStudentPassword,
             role: 'student',
             isBlocked: false,
-            isPasswordChanged: true,
+            isFirstLogin: false,
         });
-        const memberUsers = [];
-        for (const mem of tData.members) {
+        const memberProfiles = [
+            {
+                name: tData.leader.name,
+                rollNo: '22CSE010',
+                deptMailId: tData.leader.email,
+                phone: tData.leader.phone || '+91 9876543210',
+                gender: 'Male',
+                residenceType: tData.residenceType === 'Day Scholar' ? 'DayScholar' : 'Hosteller',
+                email: tData.leader.email,
+                rollNumber: '22CSE010',
+                role: 'Leader',
+                userId: leaderUser._id,
+            },
+        ];
+        const additionalNames = [
+            ['Rhea Kapoor', 'Dev Patel', 'Kavya Singh'],
+            ['Ananya Rao', 'Kabir Roy', 'Zoya Ali'],
+            ['Pooja Verma', 'Rohan Gupta', 'Karan Johar'],
+            ['Arjun Singhania', 'Meera Deshmukh', 'Simran Gill'],
+            ['Karan Saxena', 'Isha Bhasin', 'Vikrant Massey'],
+            ['Divya Iyer', 'Aditya Kumar', 'Tanya Sharma'],
+            ['Sneha Reddy', 'Varun Joshi', 'Pranav Nair'],
+            ['Amit Singh', 'Simran Kaur', 'Hardik Pandya'],
+            ['Ritu Chawla', 'Gaurav Das', 'Shreya Ghoshal'],
+            ['Nikhil Agarwal', 'Kavita Pillai', 'Ayushmann Khurrana'],
+            ['Sonal Jain', 'Tarun Saxena', 'Kriti Sanon'],
+            ['Alok Mishra', 'Tanvi Shah', 'Siddhant Chaturvedi'],
+        ];
+        const teamIdx = createdTeams.length;
+        const extraNames = additionalNames[teamIdx % additionalNames.length];
+        for (let mIdx = 0; mIdx < 3; mIdx++) {
+            const mName = extraNames[mIdx];
+            const mEmail = `${mName.toLowerCase().replace(/\s+/g, '')}${teamIdx + 1}@cwc.com`;
             const u = await User.create({
-                name: mem.name,
-                email: mem.email,
-                password: hashedStudentPassword,
+                name: mName,
+                email: mEmail,
+                passwordHash: hashedStudentPassword,
                 role: 'student',
                 isBlocked: false,
-                isPasswordChanged: true,
+                isFirstLogin: false,
             });
-            memberUsers.push({
-                name: mem.name,
-                email: mem.email,
-                role: mem.role,
+            memberProfiles.push({
+                name: mName,
+                rollNo: `22CSE${11 + mIdx + teamIdx * 3}`,
+                deptMailId: mEmail,
+                phone: `+91 987654${3200 + teamIdx * 3 + mIdx}`,
+                gender: (mIdx % 2 === 0 ? 'Female' : 'Male'),
+                residenceType: mIdx % 3 === 0 ? 'DayScholar' : 'Hosteller',
+                email: mEmail,
+                rollNumber: `22CSE${11 + mIdx + teamIdx * 3}`,
+                role: `Member ${mIdx + 2}`,
                 userId: u._id,
             });
         }
@@ -266,7 +305,7 @@ async function seedDatabase() {
             themeColor: tData.themeColor,
             logoUrl: tData.logoUrl,
             status: tData.status,
-            residenceType: tData.residenceType,
+            residenceType: tData.residenceType === 'Day Scholar' ? 'DayScholar' : tData.residenceType,
             totalPublicVotes: tData.totalPublicVotes,
             leader: {
                 name: tData.leader.name,
@@ -274,7 +313,7 @@ async function seedDatabase() {
                 phone: tData.leader.phone,
                 userId: leaderUser._id,
             },
-            members: memberUsers,
+            members: memberProfiles,
             advantages: tData.advantages,
             immunity: tData.immunity,
         });
@@ -302,7 +341,7 @@ async function seedDatabase() {
             dayNumber: 2,
             title: "Ring Master's Code Relay",
             description: 'Tag-team coding battle where teams pass the baton to solve string permutations.',
-            type: 'Coding',
+            type: 'Code Completion',
             points: 250,
             testCases: [
                 { input: 'abc', expectedOutput: 'abc,acb,bac,bca,cab,cba', hidden: false },
@@ -342,7 +381,7 @@ async function seedDatabase() {
             dayNumber: 5,
             title: 'Mid-Season Arena Boss Fight',
             description: 'Build a dynamic real-time multiplayer WebSocket state manager within 4 hours.',
-            type: 'Boss Fight',
+            type: 'Special',
             points: 500,
             interactiveTimeLimit: 600,
             visibility: true,
@@ -391,7 +430,7 @@ async function seedDatabase() {
             dayNumber: 9,
             title: 'Carnival Final Showdown',
             description: 'Full-stack application deployment with Cloudinary & GitHub Webhooks.',
-            type: 'Boss Fight',
+            type: 'Special',
             points: 600,
             visibility: true,
             startTime: new Date(now.getTime() - 1 * 86400000),
@@ -401,7 +440,7 @@ async function seedDatabase() {
             dayNumber: 10,
             title: 'Grand Finale & Champion Coronation',
             description: 'Live presentation to judges, score tally, and trophy awarding ceremony.',
-            type: 'Boss Fight',
+            type: 'Main',
             points: 1000,
             visibility: true,
             startTime: now,
@@ -420,12 +459,51 @@ async function seedDatabase() {
             pointsEarned: baseScores[i],
         });
     }
-    // 5. Seed Announcement
+    // 5. Seed Announcement & Gallery Media
     await Announcement.create({
-        title: '🎪 CWC Season 4 Daily Voting System is LIVE!',
-        content: 'All teams can now cast up to 100 votes daily (max 15 per team) in the Fan Favorite Voting Booth!',
+        message: '🎪 CWC Season 4 Daily Voting System is LIVE! All teams can now cast up to 100 votes daily in the Fan Favorite Booth!',
         pinned: true,
+        author: 'Ringmaster Admin',
     });
+    const galleryItems = [
+        {
+            title: 'CWC Season 4 Grand Opening Night',
+            url: 'https://images.unsplash.com/photo-1514525253161-7a46d19cd819?auto=format&fit=crop&w=1000&q=80',
+            type: 'Photo',
+            seasonNumber: 4,
+            description: 'The carnival spectacle begins as teams gather under the big top.',
+        },
+        {
+            title: 'Cyber Arena High-Wire Hackathon',
+            url: 'https://images.unsplash.com/photo-1540575467063-178a50c2df87?auto=format&fit=crop&w=1000&q=80',
+            type: 'Photo',
+            seasonNumber: 4,
+            description: 'Teams competing under high pressure in the live coding battle.',
+        },
+        {
+            title: 'Season 3 Champion Coronation Ceremony',
+            url: 'https://images.unsplash.com/photo-1492684223066-81342ee5ff30?auto=format&fit=crop&w=1000&q=80',
+            type: 'Photo',
+            seasonNumber: 3,
+            description: 'Trophy ceremony for the Season 3 victorious coders.',
+        },
+        {
+            title: 'Season 2 Ringmaster Keynote',
+            url: 'https://images.unsplash.com/photo-1511578314322-379afb476865?auto=format&fit=crop&w=1000&q=80',
+            type: 'Photo',
+            seasonNumber: 2,
+            description: 'Opening keynote from the CWC Season 2 arena.',
+        },
+        {
+            title: 'Season 1 Genesis Arena Inauguration',
+            url: 'https://images.unsplash.com/photo-1475721027785-f74eccf877e2?auto=format&fit=crop&w=1000&q=80',
+            type: 'Photo',
+            seasonNumber: 1,
+            description: 'The inaugural Code With Curious tournament.',
+        },
+    ];
+    await Gallery.insertMany(galleryItems);
+    console.log(`✅ Created ${galleryItems.length} Gallery Media items.`);
     console.log('\n🎉 ==================================================== 🎉');
     console.log('🚀 DATABASE SEEDING COMPLETED SUCCESSFULLY!');
     console.log('👑 Admin: superadmin@cwc.com / admin123');

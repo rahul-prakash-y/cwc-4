@@ -24,6 +24,7 @@ import {
 } from 'lucide-react';
 
 import { DailyTaskView, TaskDetail } from '../../components/student/DailyTaskView';
+import { MarksSection } from '../../components/student/MarksSection';
 import { TeamProgress } from '../../components/student/TeamProgress';
 import { AdvantagesLocker } from '../../components/student/AdvantagesLocker';
 import { LiveLeaderboardTable, LeaderboardTeam } from '../../components/dashboard/LiveLeaderboardTable';
@@ -570,6 +571,9 @@ export const StudentDashboard: React.FC = () => {
           <section id="daily-task-section">
             <DailyTaskView task={sampleTask} status={teamStatus} onTaskSubmitted={() => setTotalScore((prev) => prev + 500)} />
           </section>
+
+          {/* Task 3: Daywise Marks Breakdown Section */}
+          <MarksSection />
 
           <TeamProgress timeline={MOCK_TIMELINE as any} currentDayNumber={5} />
 

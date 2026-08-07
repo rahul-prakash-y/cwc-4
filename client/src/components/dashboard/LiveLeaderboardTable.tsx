@@ -26,12 +26,14 @@ export interface LeaderboardTeam extends Team {
 interface LiveLeaderboardTableProps {
   teams: LeaderboardTeam[];
   currentTeamId?: string;
+  showScores?: boolean; // Set to true ONLY in Admin Panel
   onSimulatePoints?: () => void;
 }
 
 export const LiveLeaderboardTable: React.FC<LiveLeaderboardTableProps> = ({
   teams: initialTeams,
   currentTeamId = 'team-1',
+  showScores = false, // Default to false to obey Task 4 privacy rules
 }) => {
   const [teams, setTeams] = useState<LeaderboardTeam[]>(initialTeams);
   const [searchQuery, setSearchQuery] = useState('');
@@ -232,7 +234,8 @@ export const LiveLeaderboardTable: React.FC<LiveLeaderboardTableProps> = ({
               <th className="py-2 px-4 text-center">P</th>
               <th className="py-2 px-4 text-center">W</th>
               <th className="py-2 px-4 text-center">Streak</th>
-              <th className="py-2 px-4 text-right">Points (PTS)</th>
+              <th className="py-2 px-4 text-center">Streak</th>
+              {showScores && <th className="py-2 px-4 text-right">Points (PTS)</th>}
             </tr>
           </thead>
           <tbody>
@@ -369,13 +372,15 @@ export const LiveLeaderboardTable: React.FC<LiveLeaderboardTableProps> = ({
                       </div>
                     </td>
 
-                    {/* Points (PTS) */}
-                    <td className="py-4 px-4 rounded-r-2xl text-right">
-                      <div className="font-display font-black text-lg text-cwc-gold">
-                        {team.points.toLocaleString()}
-                        <span className="text-xs text-cwc-gold/70 ml-1 font-sans">PTS</span>
-                      </div>
-                    </td>
+                    {/* Points (PTS) - Hidden when showScores is false */}
+                    {showScores && (
+                      <td className="py-4 px-4 rounded-r-2xl text-right">
+                        <div className="font-display font-black text-lg text-cwc-gold">
+                          {team.points.toLocaleString()}
+                          <span className="text-xs text-cwc-gold/70 ml-1 font-sans">PTS</span>
+                        </div>
+                      </td>
+                    )}
                   </motion.tr>
                 );
               })}

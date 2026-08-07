@@ -8,11 +8,27 @@ const leaderSchema = new Schema({
     name: { type: String, required: true, trim: true },
     email: { type: String, required: true, lowercase: true, trim: true },
     phone: { type: String, trim: true },
+    rollNumber: { type: String, trim: true },
+    department: { type: String, trim: true },
     userId: { type: Schema.Types.ObjectId, ref: 'User' },
 }, { _id: false });
 const memberSchema = new Schema({
-    name: { type: String, required: true, trim: true },
-    email: { type: String, required: true, lowercase: true, trim: true },
+    name: { type: String, required: [true, 'Member name is required'], trim: true },
+    rollNo: { type: String, required: [true, 'Member roll number is required'], trim: true },
+    deptMailId: { type: String, required: [true, 'Member department mail ID is required'], lowercase: true, trim: true },
+    phone: { type: String, required: [true, 'Member phone number is required'], trim: true },
+    gender: {
+        type: String,
+        required: [true, 'Member gender is required'],
+        enum: ['Male', 'Female', 'Other'],
+    },
+    residenceType: {
+        type: String,
+        required: [true, 'Member residence type is required'],
+        enum: ['Hosteller', 'DayScholar'],
+    },
+    email: { type: String, lowercase: true, trim: true, default: '' },
+    rollNumber: { type: String, trim: true, default: '' },
     role: { type: String, trim: true, default: 'Member' },
     userId: { type: Schema.Types.ObjectId, ref: 'User' },
 }, { _id: false });
@@ -29,7 +45,13 @@ const teamSchema = new Schema({
     },
     members: {
         type: [memberSchema],
-        default: [],
+        validate: [
+            {
+                validator: (val) => Array.isArray(val) && val.length === 4,
+                message: 'Every team MUST contain exactly 4 complete member profile objects.',
+            },
+        ],
+        required: [true, 'Team members are required'],
     },
     themeColor: {
         type: String,
@@ -48,7 +70,7 @@ const teamSchema = new Schema({
     },
     residenceType: {
         type: String,
-        enum: ['Hosteller', 'Day Scholar'],
+        enum: ['Hosteller', 'DayScholar', 'Day Scholar'],
         default: 'Hosteller',
     },
     advantages: {

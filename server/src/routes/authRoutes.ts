@@ -5,6 +5,7 @@ import {
   registerAdmin,
   getMe,
   changePassword,
+  checkTeamName,
 } from '../controllers/authController.js';
 import { verifyJWT, isStudent } from '../middleware/auth.js';
 import {
@@ -31,6 +32,7 @@ const adminRegRateLimitConfig = {
 
 export async function authRoutes(fastify: FastifyInstance) {
   // Public auth routes with pre-compiled JSON schemas & rate limiting
+  fastify.get('/check-team-name', checkTeamName);
   fastify.post('/register', { config: authRateLimitConfig, schema: registerTeamSchema }, registerTeam);
   fastify.post('/register-team', { config: authRateLimitConfig, schema: registerTeamSchema }, registerTeam);
   fastify.post('/login', { config: authRateLimitConfig, schema: loginSchema }, login);
