@@ -24,6 +24,8 @@ import {
   X,
   CheckCircle,
   Sliders,
+  Zap,
+  LogOut,
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { SiteConfig } from './SiteConfig';
@@ -98,7 +100,7 @@ export const SuperAdminDashboard: React.FC = () => {
     isOpen: boolean;
     title: string;
     description: string;
-    actionType: 'block' | 'reset-password' | 'revoke-admin';
+    actionType: 'block' | 'reset-password' | 'revoke-admin' | 'force-logout' | 'delete-user';
     targetId: string;
     targetName: string;
     targetType?: 'user' | 'team';
@@ -223,6 +225,26 @@ export const SuperAdminDashboard: React.FC = () => {
           fetchSecurityTargets();
         } else {
           showNotice('error', data.message || 'Failed to reset password.');
+        }
+      } else if (actionType === 'force-logout') {
+        const route = targetType === 'team' ? `/superadmin/teams/${targetId}/force-logout` : `/superadmin/users/${targetId}/force-logout`;
+        const res = await apiFetch(route, { method: 'PATCH' });
+        const data = await res.json();
+        if (res.ok) {
+          showNotice('success', data.message || 'User logged out across all devices! Session version incremented.');
+          fetchSecurityTargets();
+        } else {
+          showNotice('error', data.message || 'Failed to force logout user.');
+        }
+      } else if (actionType === 'delete-user') {
+        const route = targetType === 'team' ? `/superadmin/teams/${targetId}` : `/superadmin/users/${targetId}`;
+        const res = await apiFetch(route, { method: 'DELETE' });
+        const data = await res.json();
+        if (res.ok) {
+          showNotice('success', data.message || 'Account and associated records deleted permanently.');
+          fetchSecurityTargets();
+        } else {
+          showNotice('error', data.message || 'Failed to delete account.');
         }
       } else if (actionType === 'revoke-admin') {
         const res = await apiFetch(`/superadmin/manage-admins/${targetId}`, {
@@ -497,7 +519,7 @@ export const SuperAdminDashboard: React.FC = () => {
                       )}
                     </div>
 
-                    <div className="pt-3 border-t border-white/10 flex items-center gap-2">
+                    <div className="pt-3 border-t border-white/10 grid grid-cols-2 gap-2">
                       <button
                         onClick={() =>
                           setConfirmModalState({
@@ -513,7 +535,7 @@ export const SuperAdminDashboard: React.FC = () => {
                             isBlockedState: isBlocked,
                           })
                         }
-                        className={`flex-1 py-2 px-3 rounded-xl font-mono text-xs font-bold flex items-center justify-center gap-1.5 transition-all ${
+                        className={`py-2 px-3 rounded-xl font-mono text-xs font-bold flex items-center justify-center gap-1.5 transition-all ${
                           isBlocked
                             ? 'bg-emerald-600 hover:bg-emerald-500 text-white shadow-[0_0_15px_rgba(16,185,129,0.3)]'
                             : 'bg-rose-600 hover:bg-rose-500 text-white shadow-[0_0_15px_rgba(225,29,72,0.3)]'
@@ -521,6 +543,24 @@ export const SuperAdminDashboard: React.FC = () => {
                       >
                         <Ban className="w-3.5 h-3.5" />
                         <span>{isBlocked ? 'Unblock' : 'Block'}</span>
+                      </button>
+
+                      <button
+                        onClick={() =>
+                          setConfirmModalState({
+                            isOpen: true,
+                            title: 'Force Logout (Single Device Reset)',
+                            description: `Are you sure you want to force log out ${displayName}? This will increment their sessionVersion and invalidate their active JWT cookie across all devices.`,
+                            actionType: 'force-logout',
+                            targetId: target._id,
+                            targetName: displayName || '',
+                            targetType: target.type,
+                          })
+                        }
+                        className="py-2 px-3 rounded-xl glass-card border border-purple-500/40 text-purple-300 hover:bg-purple-500/20 font-mono text-xs font-bold flex items-center justify-center gap-1.5 transition-all"
+                      >
+                        <LogOut className="w-3.5 h-3.5 text-purple-400" />
+                        <span>Force Logout</span>
                       </button>
 
                       {target.type === 'user' && (
@@ -535,12 +575,30 @@ export const SuperAdminDashboard: React.FC = () => {
                               targetName: displayName || '',
                             })
                           }
-                          className="py-2 px-3 rounded-xl glass-card border border-amber-500/40 text-amber-300 hover:bg-amber-500/20 font-mono text-xs font-bold flex items-center gap-1.5 transition-all"
+                          className="py-2 px-3 rounded-xl glass-card border border-amber-500/40 text-amber-300 hover:bg-amber-500/20 font-mono text-xs font-bold flex items-center justify-center gap-1.5 transition-all"
                         >
                           <KeyRound className="w-3.5 h-3.5 text-amber-400" />
                           <span>Reset Pass</span>
                         </button>
                       )}
+
+                      <button
+                        onClick={() =>
+                          setConfirmModalState({
+                            isOpen: true,
+                            title: 'PERMANENT DELETE ACCOUNT',
+                            description: `CRITICAL CAUTION: Deleting ${displayName} will PERMANENTLY remove this record and cascade delete all associated scores, submissions, and attendance logs. This action CANNOT BE UNDONE!`,
+                            actionType: 'delete-user',
+                            targetId: target._id,
+                            targetName: displayName || '',
+                            targetType: target.type,
+                          })
+                        }
+                        className="py-2 px-3 rounded-xl bg-red-950/80 hover:bg-red-900 border border-red-500/50 text-red-300 font-mono text-xs font-bold flex items-center justify-center gap-1.5 transition-all"
+                      >
+                        <Trash2 className="w-3.5 h-3.5 text-red-400" />
+                        <span>Delete</span>
+                      </button>
                     </div>
                   </motion.div>
                 );

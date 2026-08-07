@@ -2,11 +2,13 @@ import { FastifyRequest, FastifyReply } from 'fastify';
 import jwt, { SignOptions } from 'jsonwebtoken';
 import { env } from '../config/env.js';
 import { AuditLog } from '../models/AuditLog.js';
+import { User } from '../models/User.js';
 
 export interface UserPayload {
   userId: string;
   email: string;
   role: 'student' | 'admin' | 'superadmin';
+  sessionVersion?: number;
   isFirstLogin?: boolean;
   teamId?: string;
 }
@@ -26,31 +28,54 @@ export function generateToken(payload: UserPayload, expiresIn: SignOptions['expi
 }
 
 /**
- * PreHandler Middleware to verify JWT token
+ * PreHandler Middleware to verify JWT token and enforce Single Device Login
  */
 export async function verifyJWT(request: FastifyRequest, reply: FastifyReply) {
   try {
-    const authHeader = request.headers.authorization;
+    let token: string | undefined = request.cookies?.token;
 
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    if (!token) {
+      const authHeader = request.headers.authorization;
+      if (authHeader && authHeader.startsWith('Bearer ')) {
+        token = authHeader.split(' ')[1];
+      }
+    }
+
+    if (!token) {
       return reply.status(401).send({
         error: 'Unauthorized',
         message: 'Authentication token missing or malformed',
       });
     }
 
-    if (typeof request.jwtVerify === 'function') {
-      try {
-        const decoded = await request.jwtVerify<UserPayload>();
-        request.user = decoded;
-        return;
-      } catch {
-        // Fallback to jsonwebtoken verification
-      }
+    const decoded = jwt.verify(token, env.JWT_SECRET) as UserPayload;
+
+    // Single Device Login enforcement: fetch user from DB and compare sessionVersion
+    const dbUser = await User.findById(decoded.userId).lean();
+    if (!dbUser) {
+      return reply.status(401).send({
+        error: 'Unauthorized',
+        message: 'User account not found',
+      });
     }
 
-    const token = authHeader.split(' ')[1];
-    const decoded = jwt.verify(token, env.JWT_SECRET) as UserPayload;
+    if (dbUser.isBlocked) {
+      return reply.status(403).send({
+        error: 'Forbidden',
+        message: 'Account has been blocked by SuperAdmin',
+      });
+    }
+
+    const expectedVersion = dbUser.sessionVersion ?? 0;
+    const tokenVersion = decoded.sessionVersion ?? 0;
+
+    if (tokenVersion !== expectedVersion) {
+      return reply.status(401).send({
+        error: 'Unauthorized',
+        message: 'Session expired or logged in from another device',
+      });
+    }
+
     request.user = decoded;
   } catch (err) {
     return reply.status(401).send({

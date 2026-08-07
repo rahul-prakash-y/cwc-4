@@ -12,6 +12,7 @@ import { fileURLToPath } from 'url';
 import fs from 'fs';
 
 import fastifyJwt from '@fastify/jwt';
+import fastifyCookie from '@fastify/cookie';
 import { env } from './config/env.js';
 import { setupErrorHandler } from './plugins/errorHandler.js';
 import { sanitizeNoSQLInject } from './middleware/nosqlSanitize.js';
@@ -89,6 +90,12 @@ export function buildApp(): FastifyInstance {
     secret: env.JWT_SECRET,
   });
 
+  // Register Fastify Cookie plugin
+  fastify.register(fastifyCookie, {
+    secret: env.JWT_SECRET,
+    hook: 'onRequest',
+  });
+
   // Global Rate Limit (100 requests / minute)
   fastify.register(rateLimit, {
     max: 100,
@@ -105,9 +112,19 @@ export function buildApp(): FastifyInstance {
   // Global NoSQL Injection Sanitization preHandler hook
   fastify.addHook('preHandler', sanitizeNoSQLInject);
 
-  // Register CORS
+  // Register CORS (supporting cookies with credentials)
   fastify.register(cors, {
-    origin: env.CLIENT_ORIGIN || '*',
+    origin: (origin, cb) => {
+      if (!origin || env.CLIENT_ORIGIN === '*' || origin.startsWith('http://localhost') || origin.startsWith('http://127.0.0.1')) {
+        cb(null, true);
+        return;
+      }
+      if (env.CLIENT_ORIGIN && origin === env.CLIENT_ORIGIN) {
+        cb(null, true);
+        return;
+      }
+      cb(null, true);
+    },
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
     credentials: true,
   });

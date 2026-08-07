@@ -9,6 +9,7 @@ export interface IUser {
   role: UserRole;
   isFirstLogin?: boolean;
   isBlocked?: boolean;
+  sessionVersion?: number;
   avatarUrl?: string;
   createdAt?: Date;
   updatedAt?: Date;
@@ -50,6 +51,10 @@ const userSchema = new Schema<IUserDocument>(
     isBlocked: {
       type: Boolean,
       default: false,
+    },
+    sessionVersion: {
+      type: Number,
+      default: 0,
     },
     avatarUrl: {
       type: String,

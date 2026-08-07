@@ -16,6 +16,10 @@ import {
   updateScoresBatch,
   getGrandFinale,
   toggleGrandFinale,
+  getBuzzerQuestions,
+  createBuzzerQuestion,
+  updateBuzzerQuestion,
+  deleteBuzzerQuestion,
 } from '../controllers/adminController.js';
 import {
   getGalleryItems,
@@ -89,6 +93,12 @@ export async function adminRoutes(fastify: FastifyInstance) {
   fastify.get('/gallery', getGalleryItems);
   fastify.post('/gallery', createGalleryItem);
   fastify.delete('/gallery/:id', { schema: deleteGallerySchema }, deleteGalleryItem);
+
+  // Task 4: Buzzer Questions Management
+  fastify.get('/buzzer-questions', getBuzzerQuestions);
+  fastify.post('/buzzer-questions', createBuzzerQuestion);
+  fastify.put('/buzzer-questions/:id', updateBuzzerQuestion);
+  fastify.delete('/buzzer-questions/:id', deleteBuzzerQuestion);
 }
 
 

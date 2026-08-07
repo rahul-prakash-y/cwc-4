@@ -2,6 +2,7 @@ import { FastifyInstance } from 'fastify';
 import {
   registerTeam,
   login,
+  logout,
   registerAdmin,
   getMe,
   changePassword,
@@ -37,6 +38,16 @@ export async function authRoutes(fastify: FastifyInstance) {
   fastify.post('/register-team', { config: authRateLimitConfig, schema: registerTeamSchema }, registerTeam);
   fastify.post('/login', { config: authRateLimitConfig, schema: loginSchema }, login);
   fastify.post('/register-admin', { config: adminRegRateLimitConfig, schema: registerAdminSchema }, registerAdmin);
+
+  // Logout route
+  fastify.post('/logout', async (request, reply) => {
+    try {
+      await verifyJWT(request, reply);
+    } catch {
+      // Allow logout even if token is expired
+    }
+    return logout(request, reply);
+  });
 
   // Authenticated session route protected by verifyJWT
   fastify.get('/me', { preHandler: [verifyJWT] }, getMe);

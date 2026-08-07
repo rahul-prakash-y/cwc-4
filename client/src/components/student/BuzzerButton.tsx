@@ -26,6 +26,8 @@ export const BuzzerButton: React.FC = () => {
   const teamId = user?.teamId || user?.id || 'guest-team';
   const teamName = user?.teamName || user?.name || 'Guest Team';
 
+  const [currentQuestion, setCurrentQuestion] = useState<{ title?: string; questionText?: string } | null>(null);
+
   // Sound effect generator using Web Audio API
   const playCarnivalBuzzerAudio = () => {
     if (!soundEnabled) return;
@@ -73,9 +75,16 @@ export const BuzzerButton: React.FC = () => {
     // Fetch initial state
     socket.emit('GET_BUZZER_STATE');
 
-    const handleBuzzerState = (data: { buzzerUnlockTime: number | null; buzzerQueue: BuzzerQueueItem[] }) => {
+    const handleBuzzerState = (data: {
+      buzzerUnlockTime: number | null;
+      buzzerQueue: BuzzerQueueItem[];
+      currentQuestion?: any;
+    }) => {
       const { buzzerUnlockTime, buzzerQueue } = data;
       checkQueuePosition(buzzerQueue);
+      if (data.currentQuestion) {
+        setCurrentQuestion(data.currentQuestion);
+      }
 
       if (buzzerUnlockTime && Date.now() < buzzerUnlockTime) {
         setUnlockTime(buzzerUnlockTime);
@@ -96,11 +105,19 @@ export const BuzzerButton: React.FC = () => {
       }
     };
 
-    const handleQuestionDisplayed = (data: { buzzerUnlockTime: number; questionId?: string }) => {
+    const handleQuestionDisplayed = (data: {
+      buzzerUnlockTime: number;
+      questionId?: string;
+      title?: string;
+      questionText?: string;
+    }) => {
       setUnlockTime(data.buzzerUnlockTime);
       setUserQueuePosition(null);
       setReactionTime(null);
       setBuzzerState('COUNTDOWN');
+      if (data.title || data.questionText) {
+        setCurrentQuestion({ title: data.title, questionText: data.questionText });
+      }
       toast.success('🎯 QUESTION DISPLAYED! Buzzer unlocking in 5s!', { id: 'question-displayed-toast' });
     };
 
@@ -241,9 +258,22 @@ export const BuzzerButton: React.FC = () => {
       </div>
 
       {/* Team Badge */}
-      <div className="mb-6 px-4 py-1.5 rounded-full glass-card border border-white/10 text-xs font-mono font-bold text-slate-300 z-10 text-center">
+      <div className="mb-4 px-4 py-1.5 rounded-full glass-card border border-white/10 text-xs font-mono font-bold text-slate-300 z-10 text-center">
         TEAM: <span className="text-white font-extrabold">{teamName}</span>
       </div>
+
+      {/* Broadcasted Question Card */}
+      {currentQuestion && (
+        <div className="w-full mb-4 p-4 rounded-2xl bg-red-950/50 border border-red-500/40 text-center space-y-1 z-10 shadow-lg animate-pulse">
+          <span className="text-[10px] font-mono font-bold text-red-400 uppercase tracking-widest">
+            🎯 ACTIVE QUESTION
+          </span>
+          <h4 className="text-sm font-black text-white">{currentQuestion.title}</h4>
+          {currentQuestion.questionText && (
+            <p className="text-xs text-slate-200 font-mono">{currentQuestion.questionText}</p>
+          )}
+        </div>
+      )}
 
       {/* Massive Carnival Circular Buzzer Button */}
       <div className="relative group flex items-center justify-center my-4 z-10">

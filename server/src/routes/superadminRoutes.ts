@@ -3,6 +3,8 @@ import {
   getAuditLogs,
   toggleBlockStatus,
   forceResetPassword,
+  forceLogout,
+  deleteUser,
   manageAdmins,
   getSecurityTargets,
   updateGlobalSettings,
@@ -23,6 +25,14 @@ export async function superadminRoutes(fastify: FastifyInstance) {
 
   // Task 3: Force reset password to default & set isFirstLogin: true
   fastify.post('/users/:id/reset-password', forceResetPassword);
+
+  // Task 3: Force logout user (increments sessionVersion to invalidate JWT)
+  fastify.patch('/users/:id/force-logout', forceLogout);
+  fastify.patch('/teams/:id/force-logout', forceLogout);
+
+  // Task 3: Delete user or team permanently with data cleanup
+  fastify.delete('/users/:id', deleteUser);
+  fastify.delete('/teams/:id', deleteUser);
 
   // Task 3: Manage standard 'admin' accounts (Create, list, update, revoke)
   fastify.get('/manage-admins', manageAdmins);

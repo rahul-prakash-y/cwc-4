@@ -1,7 +1,23 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Play, RotateCcw, Flame, Trophy, Clock, Users, ShieldAlert, Sparkles, Zap, Award } from 'lucide-react';
+import {
+  Play,
+  RotateCcw,
+  Flame,
+  Trophy,
+  Clock,
+  Users,
+  Sparkles,
+  Zap,
+  Plus,
+  Trash2,
+  HelpCircle,
+  X,
+  CheckCircle,
+  FileText,
+} from 'lucide-react';
 import { useSocket } from '../../context/SocketContext';
+import apiClient from '../../api/axios';
 import toast from 'react-hot-toast';
 
 export interface BuzzerQueueItem {
@@ -11,6 +27,14 @@ export interface BuzzerQueueItem {
   reactionTimeMs: number;
 }
 
+export interface BuzzerQuestionItem {
+  _id: string;
+  title: string;
+  questionText: string;
+  expectedAnswer?: string;
+  createdAt?: string;
+}
+
 export const BuzzerConsole: React.FC = () => {
   const { socket, isConnected } = useSocket();
   const [buzzerQueue, setBuzzerQueue] = useState<BuzzerQueueItem[]>([]);
@@ -18,25 +42,74 @@ export const BuzzerConsole: React.FC = () => {
   const [buzzerUnlockTime, setBuzzerUnlockTime] = useState<number | null>(null);
   const [isLive, setIsLive] = useState<boolean>(false);
 
+  // Question Management State
+  const [questions, setQuestions] = useState<BuzzerQuestionItem[]>([]);
+  const [selectedQuestionId, setSelectedQuestionId] = useState<string>('');
+  const [activeQuestion, setActiveQuestion] = useState<BuzzerQuestionItem | null>(null);
+
+  // Modal state
+  const [isAddModalOpen, setIsAddModalOpen] = useState<boolean>(false);
+  const [newTitle, setNewTitle] = useState<string>('');
+  const [newQuestionText, setNewQuestionText] = useState<string>('');
+  const [newExpectedAnswer, setNewExpectedAnswer] = useState<string>('');
+  const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
+
+  // Fetch Questions from backend
+  const fetchQuestions = async () => {
+    try {
+      const res = await apiClient.get('/admin/buzzer-questions');
+      if (res.data?.questions) {
+        setQuestions(res.data.questions);
+        if (res.data.questions.length > 0 && !selectedQuestionId) {
+          setSelectedQuestionId(res.data.questions[0]._id);
+        }
+      }
+    } catch (err) {
+      console.error('Error fetching buzzer questions:', err);
+    }
+  };
+
+  useEffect(() => {
+    fetchQuestions();
+  }, []);
+
   // Sync state with socket server
   useEffect(() => {
     if (!socket) return;
 
-    // Join admin-panel room if not already joined
     socket.emit('join-room', 'admin-panel');
     socket.emit('GET_BUZZER_STATE');
 
-    const handleBuzzerState = (data: { buzzerUnlockTime: number | null; buzzerQueue: BuzzerQueueItem[] }) => {
+    const handleBuzzerState = (data: {
+      buzzerUnlockTime: number | null;
+      buzzerQueue: BuzzerQueueItem[];
+      currentQuestion?: any;
+    }) => {
       setBuzzerQueue(data.buzzerQueue || []);
       if (data.buzzerUnlockTime) {
         setBuzzerUnlockTime(data.buzzerUnlockTime);
       }
+      if (data.currentQuestion) {
+        setActiveQuestion(data.currentQuestion);
+      }
     };
 
-    const handleQuestionDisplayed = (data: { buzzerUnlockTime: number }) => {
+    const handleQuestionDisplayed = (data: {
+      buzzerUnlockTime: number;
+      questionId?: string;
+      title?: string;
+      questionText?: string;
+    }) => {
       setBuzzerUnlockTime(data.buzzerUnlockTime);
       setBuzzerQueue([]);
-      toast.success('🎯 Question displayed! 5-second student countdown started.');
+      if (data.title || data.questionText) {
+        setActiveQuestion({
+          _id: data.questionId || '',
+          title: data.title || '',
+          questionText: data.questionText || '',
+        });
+      }
+      toast.success('🎯 Question broadcasted! 5-second student countdown active.');
     };
 
     const handleQueueUpdated = (queue: BuzzerQueueItem[]) => {
@@ -48,6 +121,7 @@ export const BuzzerConsole: React.FC = () => {
       setBuzzerUnlockTime(null);
       setAdminTimer(null);
       setIsLive(false);
+      setActiveQuestion(null);
       toast('🔄 Buzzer reset successfully', { icon: '🔄' });
     };
 
@@ -88,17 +162,27 @@ export const BuzzerConsole: React.FC = () => {
     return () => clearInterval(interval);
   }, [buzzerUnlockTime]);
 
-  // Admin Control: Show Question
-  const handleShowQuestion = () => {
+  // Admin Action: Broadcast Selected Question
+  const handleBroadcastQuestion = () => {
     if (!socket || !isConnected) {
       toast.error('Socket disconnected! Cannot broadcast question.');
       return;
     }
 
-    socket.emit('ADMIN_START_QUESTION');
+    const selectedQ = questions.find((q) => q._id === selectedQuestionId);
+    const payload = selectedQ
+      ? {
+          questionId: selectedQ._id,
+          title: selectedQ.title,
+          questionText: selectedQ.questionText,
+          expectedAnswer: selectedQ.expectedAnswer,
+        }
+      : {};
+
+    socket.emit('ADMIN_START_QUESTION', payload);
   };
 
-  // Admin Control: Reset Buzzer
+  // Admin Action: Reset Buzzer
   const handleResetBuzzer = () => {
     if (!socket || !isConnected) {
       toast.error('Socket disconnected! Cannot reset buzzer.');
@@ -108,7 +192,55 @@ export const BuzzerConsole: React.FC = () => {
     socket.emit('ADMIN_RESET_BUZZER');
   };
 
-  // Helper for rank medal / badge formatting
+  // Admin Action: Create New Question
+  const handleCreateQuestion = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newTitle.trim() || !newQuestionText.trim()) {
+      toast.error('Please fill in title and question text.');
+      return;
+    }
+
+    setIsSubmitting(true);
+    try {
+      const res = await apiClient.post('/admin/buzzer-questions', {
+        title: newTitle,
+        questionText: newQuestionText,
+        expectedAnswer: newExpectedAnswer,
+      });
+
+      toast.success('Buzzer question created!');
+      setNewTitle('');
+      setNewQuestionText('');
+      setNewExpectedAnswer('');
+      setIsAddModalOpen(false);
+      fetchQuestions();
+
+      if (res.data?.question?._id) {
+        setSelectedQuestionId(res.data.question._id);
+      }
+    } catch (err: any) {
+      toast.error(err.response?.data?.message || 'Failed to create question.');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  // Admin Action: Delete Question
+  const handleDeleteQuestion = async (id: string) => {
+    if (!window.confirm('Delete this buzzer question?')) return;
+    try {
+      await apiClient.delete(`/admin/buzzer-questions/${id}`);
+      toast.success('Question deleted.');
+      if (selectedQuestionId === id) {
+        setSelectedQuestionId('');
+      }
+      fetchQuestions();
+    } catch (err: any) {
+      toast.error('Failed to delete question.');
+    }
+  };
+
+  // Helper for rank medal formatting
   const getRankBadge = (index: number) => {
     switch (index) {
       case 0:
@@ -164,7 +296,7 @@ export const BuzzerConsole: React.FC = () => {
               Live Buzzer Console 🎪
             </h1>
             <p className="text-sm text-slate-300 mt-1 max-w-xl">
-              Broadcast questions, enforce 5-second anti-hack lockouts, and track real-time team reaction speeds down to the millisecond.
+              Select questions, enforce 5-second anti-hack lockouts, and track real-time team reaction speeds down to the millisecond.
             </p>
           </div>
 
@@ -195,40 +327,83 @@ export const BuzzerConsole: React.FC = () => {
         </div>
       </div>
 
-      {/* Admin Action Toolbar */}
-      <div className="p-6 rounded-3xl glass-card border border-white/10 flex flex-wrap items-center justify-between gap-4">
-        <div className="flex flex-wrap items-center gap-3">
-          {/* Show Question Button */}
-          <motion.button
-            whileHover={{ scale: 1.03 }}
-            whileTap={{ scale: 0.96 }}
-            onClick={handleShowQuestion}
-            className="flex items-center gap-2 px-6 py-3.5 rounded-2xl bg-gradient-to-r from-red-600 via-rose-600 to-amber-500 text-white font-mono text-sm font-black shadow-lg hover:shadow-red-500/30 transition-all border border-red-400/40 cursor-pointer"
-          >
-            <Play className="w-5 h-5 fill-white" />
-            <span>SHOW QUESTION (Start 5s Timer)</span>
-          </motion.button>
+      {/* Question Selector & Control Toolbar */}
+      <div className="p-6 rounded-3xl glass-card border border-white/10 space-y-4">
+        <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-4">
+          {/* Question Selector Dropdown */}
+          <div className="flex-1 min-w-[280px]">
+            <label className="block text-xs font-mono font-bold text-carnival-gold uppercase mb-1.5">
+              Select Rapid Fire Question:
+            </label>
+            <div className="flex items-center gap-2">
+              <select
+                value={selectedQuestionId}
+                onChange={(e) => setSelectedQuestionId(e.target.value)}
+                className="w-full px-4 py-3 rounded-2xl bg-slate-900/90 border border-white/20 text-white font-mono text-sm focus:outline-none focus:border-red-500 transition-all"
+              >
+                <option value="">-- Generic Rapid Fire Round --</option>
+                {questions.map((q) => (
+                  <option key={q._id} value={q._id}>
+                    {q.title} {q.expectedAnswer ? `(Ans: ${q.expectedAnswer})` : ''}
+                  </option>
+                ))}
+              </select>
 
-          {/* Reset Buzzer Button */}
-          <motion.button
-            whileHover={{ scale: 1.03 }}
-            whileTap={{ scale: 0.96 }}
-            onClick={handleResetBuzzer}
-            className="flex items-center gap-2 px-6 py-3.5 rounded-2xl bg-slate-800 hover:bg-slate-700 text-slate-200 font-mono text-sm font-bold border border-slate-600 transition-all cursor-pointer"
-          >
-            <RotateCcw className="w-4 h-4 text-slate-400" />
-            <span>RESET BUZZER</span>
-          </motion.button>
+              <button
+                onClick={() => setIsAddModalOpen(true)}
+                className="px-3.5 py-3 rounded-2xl bg-carnival-gold/20 hover:bg-carnival-gold/30 text-carnival-gold border border-carnival-gold/40 font-mono text-xs font-bold flex items-center gap-1 shrink-0 transition-all cursor-pointer"
+                title="Add New Question"
+              >
+                <Plus className="w-4 h-4" />
+                <span className="hidden sm:inline">New Q</span>
+              </button>
+            </div>
+          </div>
+
+          {/* Action Buttons */}
+          <div className="flex items-center gap-3 shrink-0">
+            <motion.button
+              whileHover={{ scale: 1.03 }}
+              whileTap={{ scale: 0.96 }}
+              onClick={handleBroadcastQuestion}
+              className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-6 py-3.5 rounded-2xl bg-gradient-to-r from-red-600 via-rose-600 to-amber-500 text-white font-mono text-sm font-black shadow-lg hover:shadow-red-500/30 transition-all border border-red-400/40 cursor-pointer"
+            >
+              <Play className="w-5 h-5 fill-white" />
+              <span>BROADCAST QUESTION (5s)</span>
+            </motion.button>
+
+            <motion.button
+              whileHover={{ scale: 1.03 }}
+              whileTap={{ scale: 0.96 }}
+              onClick={handleResetBuzzer}
+              className="flex items-center gap-2 px-5 py-3.5 rounded-2xl bg-slate-800 hover:bg-slate-700 text-slate-200 font-mono text-sm font-bold border border-slate-600 transition-all cursor-pointer"
+            >
+              <RotateCcw className="w-4 h-4 text-slate-400" />
+              <span>RESET</span>
+            </motion.button>
+          </div>
         </div>
 
-        {/* Live Counter */}
-        <div className="flex items-center gap-2 font-mono text-xs text-slate-400">
-          <Users className="w-4 h-4 text-carnival-gold" />
-          <span>TEAMS BUZZED IN: </span>
-          <span className="text-white font-extrabold text-base px-2.5 py-0.5 rounded-lg bg-carnival-gold/20 border border-carnival-gold/40 text-carnival-gold">
-            {buzzerQueue.length}
-          </span>
-        </div>
+        {/* Selected / Active Question Detail Banner */}
+        {activeQuestion && (
+          <div className="p-4 rounded-2xl bg-red-950/40 border border-red-500/30 flex items-start justify-between gap-4">
+            <div className="flex items-start gap-3">
+              <FileText className="w-5 h-5 text-red-400 shrink-0 mt-0.5" />
+              <div>
+                <span className="text-[10px] font-mono font-bold text-red-400 uppercase tracking-wide">
+                  CURRENT BROADCAST QUESTION
+                </span>
+                <h4 className="text-base font-black text-white">{activeQuestion.title}</h4>
+                <p className="text-xs text-slate-300 font-mono mt-0.5">{activeQuestion.questionText}</p>
+              </div>
+            </div>
+            {activeQuestion.expectedAnswer && (
+              <span className="px-3 py-1 rounded-full bg-black/40 border border-white/10 text-xs font-mono text-emerald-400 shrink-0">
+                Expected: {activeQuestion.expectedAnswer}
+              </span>
+            )}
+          </div>
+        )}
       </div>
 
       {/* Live Buzzer Feed Section */}
@@ -240,9 +415,13 @@ export const BuzzerConsole: React.FC = () => {
               Live Reaction Feed
             </h2>
           </div>
-          <span className="text-xs font-mono text-slate-400">
-            Real-Time Real-Delay Feed
-          </span>
+          <div className="flex items-center gap-2 font-mono text-xs text-slate-400">
+            <Users className="w-4 h-4 text-carnival-gold" />
+            <span>BUZZED IN: </span>
+            <span className="text-white font-extrabold text-base px-2.5 py-0.5 rounded-lg bg-carnival-gold/20 border border-carnival-gold/40 text-carnival-gold">
+              {buzzerQueue.length}
+            </span>
+          </div>
         </div>
 
         {/* Empty State */}
@@ -251,7 +430,7 @@ export const BuzzerConsole: React.FC = () => {
             <Sparkles className="w-12 h-12 text-slate-600 mx-auto animate-bounce" />
             <h3 className="text-lg font-bold text-slate-300 font-mono">No Teams Have Buzzed In Yet</h3>
             <p className="text-xs text-slate-500 font-mono max-w-sm mx-auto">
-              Click &quot;SHOW QUESTION&quot; to broadcast the 5-second countdown to all active student portals.
+              Select a question above and click &quot;BROADCAST QUESTION&quot; to trigger the 5-second countdown across all active student portals.
             </p>
           </div>
         ) : (
@@ -270,9 +449,7 @@ export const BuzzerConsole: React.FC = () => {
                     transition={{ type: 'spring', stiffness: 400, damping: 25 }}
                     className={`relative overflow-hidden p-5 sm:p-6 rounded-2xl bg-gradient-to-r ${badge.bg} ${badge.border} ${badge.shadow} border border-white/20 transition-all flex flex-col sm:flex-row sm:items-center justify-between gap-4`}
                   >
-                    {/* Left: Rank & Team Info */}
                     <div className="flex items-center gap-4">
-                      {/* Rank Emblem */}
                       <div className="flex items-center justify-center w-12 h-12 rounded-xl bg-black/40 backdrop-blur-md border border-white/20 text-white font-mono font-black text-xl shrink-0">
                         {index === 0 ? '🥇' : index === 1 ? '🥈' : index === 2 ? '🥉' : `#${index + 1}`}
                       </div>
@@ -292,7 +469,6 @@ export const BuzzerConsole: React.FC = () => {
                       </div>
                     </div>
 
-                    {/* Right: Reaction Time Badge */}
                     <div className="flex items-center gap-3 self-end sm:self-center">
                       <div className="px-4 py-2 rounded-xl bg-black/40 backdrop-blur-md border border-white/20 font-mono text-right">
                         <div className="text-[9px] text-white/70 uppercase font-bold">REACTION SPEED</div>
@@ -309,6 +485,154 @@ export const BuzzerConsole: React.FC = () => {
           </div>
         )}
       </div>
+
+      {/* Questions Bank List */}
+      <div className="p-6 rounded-3xl glass-card border border-white/10 space-y-4">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <HelpCircle className="w-5 h-5 text-carnival-gold" />
+            <h3 className="text-lg font-bold text-white font-mono uppercase">
+              Buzzer Question Bank ({questions.length})
+            </h3>
+          </div>
+          <button
+            onClick={() => setIsAddModalOpen(true)}
+            className="px-4 py-2 rounded-xl bg-gradient-to-r from-red-600 to-amber-500 text-white font-mono text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer"
+          >
+            <Plus className="w-4 h-4" />
+            <span>Create Question</span>
+          </button>
+        </div>
+
+        {questions.length === 0 ? (
+          <p className="text-xs text-slate-400 font-mono py-4">No saved questions in the question bank yet.</p>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            {questions.map((q) => (
+              <div
+                key={q._id}
+                className={`p-4 rounded-2xl border transition-all ${
+                  selectedQuestionId === q._id
+                    ? 'bg-red-950/30 border-red-500/50 shadow-lg'
+                    : 'bg-slate-900/60 border-white/10 hover:border-white/20'
+                }`}
+              >
+                <div className="flex items-start justify-between gap-3">
+                  <div>
+                    <h4 className="text-sm font-bold text-white">{q.title}</h4>
+                    <p className="text-xs text-slate-300 font-mono mt-1">{q.questionText}</p>
+                    {q.expectedAnswer && (
+                      <p className="text-[11px] text-emerald-400 font-mono mt-1">
+                        Answer: {q.expectedAnswer}
+                      </p>
+                    )}
+                  </div>
+                  <div className="flex items-center gap-1 shrink-0">
+                    <button
+                      onClick={() => setSelectedQuestionId(q._id)}
+                      className={`px-2.5 py-1 rounded-lg font-mono text-[11px] font-bold ${
+                        selectedQuestionId === q._id
+                          ? 'bg-red-500 text-white'
+                          : 'bg-slate-800 text-slate-300 hover:bg-slate-700'
+                      }`}
+                    >
+                      {selectedQuestionId === q._id ? 'Selected' : 'Select'}
+                    </button>
+                    <button
+                      onClick={() => handleDeleteQuestion(q._id)}
+                      className="p-1.5 rounded-lg bg-red-500/20 text-red-400 hover:bg-red-500/40 transition-all"
+                      title="Delete Question"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* Add New Question Modal */}
+      <AnimatePresence>
+        {isAddModalOpen && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              className="w-full max-w-lg p-6 sm:p-8 rounded-3xl glass-card border border-white/20 bg-slate-950 space-y-5 shadow-2xl"
+            >
+              <div className="flex items-center justify-between border-b border-white/10 pb-4">
+                <div className="flex items-center gap-2">
+                  <HelpCircle className="w-5 h-5 text-carnival-gold" />
+                  <h3 className="text-xl font-bold text-white font-mono">Create Rapid Fire Question</h3>
+                </div>
+                <button
+                  onClick={() => setIsAddModalOpen(false)}
+                  className="p-2 rounded-xl bg-slate-800 text-slate-400 hover:text-white"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+
+              <form onSubmit={handleCreateQuestion} className="space-y-4 font-mono text-sm">
+                <div>
+                  <label className="block text-xs font-bold text-slate-300 mb-1">Question Title:</label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="e.g. Round 1 - Q1 Algorithm Challenge"
+                    value={newTitle}
+                    onChange={(e) => setNewTitle(e.target.value)}
+                    className="w-full px-4 py-2.5 rounded-xl bg-slate-900 border border-white/15 text-white focus:outline-none focus:border-carnival-gold"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-slate-300 mb-1">Question Prompt / Text:</label>
+                  <textarea
+                    required
+                    rows={3}
+                    placeholder="What is the time complexity of QuickSort in worst case?"
+                    value={newQuestionText}
+                    onChange={(e) => setNewQuestionText(e.target.value)}
+                    className="w-full px-4 py-2.5 rounded-xl bg-slate-900 border border-white/15 text-white focus:outline-none focus:border-carnival-gold"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-slate-300 mb-1">Expected Answer (Optional):</label>
+                  <input
+                    type="text"
+                    placeholder="e.g. O(n^2)"
+                    value={newExpectedAnswer}
+                    onChange={(e) => setNewExpectedAnswer(e.target.value)}
+                    className="w-full px-4 py-2.5 rounded-xl bg-slate-900 border border-white/15 text-white focus:outline-none focus:border-carnival-gold"
+                  />
+                </div>
+
+                <div className="flex items-center justify-end gap-3 pt-4 border-t border-white/10">
+                  <button
+                    type="button"
+                    onClick={() => setIsAddModalOpen(false)}
+                    className="px-5 py-2.5 rounded-xl bg-slate-800 text-slate-300 hover:bg-slate-700 text-xs font-bold"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={isSubmitting}
+                    className="px-6 py-2.5 rounded-xl bg-gradient-to-r from-red-600 to-amber-500 text-white text-xs font-extrabold shadow-lg hover:shadow-red-500/20 transition-all cursor-pointer"
+                  >
+                    {isSubmitting ? 'Saving...' : 'Save Question'}
+                  </button>
+                </div>
+              </form>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </div>
   );
 };

@@ -5,6 +5,8 @@ import { Team } from '../models/Team.js';
 import { generateToken } from '../middleware/auth.js';
 import { sendEmail, sendCarnivalEmail } from '../utils/mailer.js';
 import { getRegistrationEmailHtml } from '../utils/emailTemplates.js';
+import { logAdminAction } from '../utils/auditLogger.js';
+import { env } from '../config/env.js';
 
 interface MemberProfileInput {
   name: string;
@@ -338,14 +340,28 @@ export async function login(request: FastifyRequest<{ Body: LoginBody }>, reply:
     }
   }
 
+  // Task 1: Single Device Login - Increment user's sessionVersion on successful login
+  user.sessionVersion = (user.sessionVersion || 0) + 1;
+  await user.save();
+
   const isFirstLoginFlag = user.isFirstLogin ?? true;
 
   const token = generateToken({
     userId: user._id.toString(),
     email: user.email,
     role: user.role,
+    sessionVersion: user.sessionVersion,
     isFirstLogin: isFirstLoginFlag,
     teamId: team ? team._id.toString() : undefined,
+  });
+
+  // Set JWT as httpOnly, secure, sameSite=strict cookie
+  reply.setCookie('token', token, {
+    path: '/',
+    httpOnly: true,
+    secure: env.NODE_ENV === 'production',
+    sameSite: 'strict',
+    maxAge: 7 * 24 * 60 * 60, // 7 days
   });
 
   return reply.send({
@@ -371,6 +387,30 @@ export async function login(request: FastifyRequest<{ Body: LoginBody }>, reply:
         }
       : null,
   });
+}
+
+/**
+ * Task 2: Logout Function & Audit Trail
+ * Clears the JWT cookie and logs audit action in AuditLogs
+ */
+export async function logout(request: FastifyRequest, reply: FastifyReply) {
+  const user = request.user;
+  if (user) {
+    if (user.role === 'admin' || user.role === 'superadmin') {
+      await logAdminAction(request, 'ADMIN_LOGGED_OUT', user.userId, { email: user.email, role: user.role });
+    } else {
+      await logAdminAction(request, 'STUDENT_LOGGED_OUT', user.userId, { email: user.email, role: user.role });
+    }
+  }
+
+  reply.clearCookie('token', {
+    path: '/',
+    httpOnly: true,
+    secure: env.NODE_ENV === 'production',
+    sameSite: 'strict',
+  });
+
+  return reply.send({ message: 'Successfully logged out 🚪' });
 }
 
 /**
