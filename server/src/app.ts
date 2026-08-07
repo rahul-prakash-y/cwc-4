@@ -20,6 +20,7 @@ import { adminRoutes } from './routes/adminRoutes.js';
 import { studentRoutes } from './routes/studentRoutes.js';
 import { publicRoutes } from './routes/publicRoutes.js';
 import { superadminRoutes } from './routes/superadminRoutes.js';
+import { settingsRoutes } from './routes/settings.js';
 import { getActiveSocketsCount } from './socket.js';
 
 
@@ -195,6 +196,8 @@ export function buildApp(): FastifyInstance {
   fastify.register(superadminRoutes, { prefix: '/api/superadmin' });
   fastify.register(studentRoutes, { prefix: '/api/v1/student' });
   fastify.register(studentRoutes, { prefix: '/api/student' });
+  fastify.register(settingsRoutes, { prefix: '/api/v1/settings' });
+  fastify.register(settingsRoutes, { prefix: '/api/settings' });
 
   // Serve Frontend Static Files in Production (Render)
   const clientDistPath = path.resolve(__dirname, '../../client/dist');

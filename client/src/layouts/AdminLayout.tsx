@@ -138,6 +138,19 @@ export const AdminLayout: React.FC = () => {
                   <span className="text-sm">👑</span>
                   <span>Admin Management</span>
                 </Link>
+
+                <Link
+                  to="/admin/superadmin?tab=cms"
+                  onClick={() => setSidebarOpen(false)}
+                  className={`flex items-center gap-3 px-4 py-2.5 rounded-xl text-xs font-bold transition-all ${
+                    location.pathname.includes('/admin/superadmin') && location.search.includes('tab=cms')
+                      ? 'bg-gradient-to-r from-cyan-500 to-blue-500 text-slate-950 shadow-neon-cyan font-black'
+                      : 'text-purple-300 hover:text-white hover:bg-purple-500/10'
+                  }`}
+                >
+                  <span className="text-sm">⚙️</span>
+                  <span>Site Config (CMS)</span>
+                </Link>
               </nav>
             </div>
           )}

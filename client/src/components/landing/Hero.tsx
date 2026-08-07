@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Sparkles, Ticket, LogIn, PartyPopper, Flame } from 'lucide-react';
+import { Sparkles, Ticket, LogIn, PartyPopper } from 'lucide-react';
 import { CircusLights } from '../hero/CircusLights';
 import { BalloonBackground } from '../hero/BalloonBackground';
 import { ConfettiEffect, triggerCarnivalConfetti } from '../hero/ConfettiEffect';
@@ -8,9 +8,56 @@ import { CountdownTimer } from '../hero/CountdownTimer';
 import { StatCounters } from '../hero/StatCounters';
 import { RegistrationModal } from './RegistrationModal';
 import { Link } from 'react-router-dom';
+import { useSocket } from '../../context/SocketContext';
 
 export const Hero: React.FC = () => {
   const [isRegisterOpen, setIsRegisterOpen] = useState(false);
+  const [eventStartDate, setEventStartDate] = useState<string | undefined>(undefined);
+  const [heroBannerText, setHeroBannerText] = useState<string>(
+    '10 Days of high-stakes algorithms, team relays, power-up advantages, and carnival glory. Step right up and claim your crown!'
+  );
+  const [currentSeason, setCurrentSeason] = useState<number>(4);
+  const { socket } = useSocket();
+
+  // Fetch initial global settings
+  useEffect(() => {
+    const fetchGlobalSettings = async () => {
+      try {
+        const metaEnv = (import.meta as any).env || {};
+        const backendUrl =
+          metaEnv.VITE_API_URL ||
+          (window.location.hostname === 'localhost' ? 'http://localhost:5000' : window.location.origin);
+
+        const res = await fetch(`${backendUrl}/api/v1/settings/global`);
+        if (res.ok) {
+          const data = await res.json();
+          if (data.eventStartDate) setEventStartDate(data.eventStartDate);
+          if (data.heroBannerText) setHeroBannerText(data.heroBannerText);
+          if (data.currentSeason) setCurrentSeason(data.currentSeason);
+        }
+      } catch (err) {
+        console.error('Failed to fetch global settings for Hero section:', err);
+      }
+    };
+
+    fetchGlobalSettings();
+  }, []);
+
+  // Listen for SETTINGS_UPDATED WebSocket event
+  useEffect(() => {
+    if (!socket) return;
+
+    const handleSettingsUpdated = (data: any) => {
+      if (data.eventStartDate) setEventStartDate(data.eventStartDate);
+      if (data.heroBannerText) setHeroBannerText(data.heroBannerText);
+      if (data.currentSeason) setCurrentSeason(data.currentSeason);
+    };
+
+    socket.on('SETTINGS_UPDATED', handleSettingsUpdated);
+    return () => {
+      socket.off('SETTINGS_UPDATED', handleSettingsUpdated);
+    };
+  }, [socket]);
 
   return (
     <section id="hero" className="relative min-h-[92vh] flex flex-col items-center justify-center pt-24 pb-16 px-4 overflow-hidden border-b border-white/10">
@@ -30,13 +77,13 @@ export const Hero: React.FC = () => {
           onClick={triggerCarnivalConfetti}
         >
           <Sparkles className="w-4 h-4 text-cwc-gold animate-spin-slow" />
-          <span className="tracking-widest uppercase font-display">CODE WITH CURIOUS • SEASON 4 CARNIVAL 🎪</span>
+          <span className="tracking-widest uppercase font-display">CODE WITH CURIOUS • SEASON {currentSeason} CARNIVAL 🎪</span>
           <span className="bg-cwc-red text-white px-2.5 py-0.5 rounded-full text-[10px] uppercase font-black tracking-widest animate-pulse">
             LIVE ARENA
           </span>
         </motion.div>
 
-        {/* Central CWC Season 4 Emblem & Main Title */}
+        {/* Central CWC Emblem & Main Title */}
         <motion.div
           initial={{ opacity: 0, scale: 0.9 }}
           animate={{ opacity: 1, scale: 1 }}
@@ -60,23 +107,23 @@ export const Hero: React.FC = () => {
           </h1>
         </motion.div>
 
-        {/* Subtitle */}
+        {/* Dynamic Subtitle / Announcement Banner */}
         <motion.p
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.25 }}
           className="text-gray-300 text-base sm:text-xl max-w-2xl font-light mb-6 leading-relaxed"
         >
-          10 Days of high-stakes algorithms, team relays, power-up advantages, and carnival glory. Step right up and claim your crown!
+          {heroBannerText}
         </motion.p>
 
-        {/* Mechanical Countdown Timer */}
+        {/* Mechanical Countdown Timer connected to eventStartDate */}
         <motion.div
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 0.6, delay: 0.3 }}
         >
-          <CountdownTimer />
+          <CountdownTimer eventStartDate={eventStartDate} />
         </motion.div>
 
         {/* Action Buttons */}

@@ -74,6 +74,7 @@ export default function App() {
                 <Route path="tasks" element={<StudentDashboard />} />
                 <Route path="advantages" element={<StudentDashboard />} />
                 <Route path="leaderboard" element={<StudentDashboard />} />
+                <Route path="voting" element={<StudentDashboard />} />
               </Route>
 
               {/* Admin Command Layout (Protected) */}

@@ -13,6 +13,10 @@ interface FlipCardUnitProps {
   label: string;
 }
 
+interface CountdownTimerProps {
+  eventStartDate?: string | Date;
+}
+
 const FlipCardUnit: React.FC<FlipCardUnitProps> = ({ value, label }) => {
   const formattedValue = value.toString().padStart(2, '0');
 
@@ -51,20 +55,24 @@ const FlipCardUnit: React.FC<FlipCardUnitProps> = ({ value, label }) => {
   );
 };
 
-export const CountdownTimer: React.FC = () => {
-  // Target date set to 10 days in future
-  const [targetDate] = useState(() => {
-    const d = new Date();
-    d.setDate(d.getDate() + 10);
-    return d.getTime();
-  });
-
-  const [timeLeft, setTimeLeft] = useState<TimeLeft>({ days: 10, hours: 0, minutes: 0, seconds: 0 });
+export const CountdownTimer: React.FC<CountdownTimerProps> = ({ eventStartDate }) => {
+  const [timeLeft, setTimeLeft] = useState<TimeLeft>({ days: 0, hours: 0, minutes: 0, seconds: 0 });
 
   useEffect(() => {
+    const getTargetTime = () => {
+      if (eventStartDate) {
+        return new Date(eventStartDate).getTime();
+      }
+      // Fallback: 10 days in future
+      const defaultDate = new Date();
+      defaultDate.setDate(defaultDate.getDate() + 10);
+      return defaultDate.getTime();
+    };
+
     const calculateTime = () => {
+      const targetTime = getTargetTime();
       const now = new Date().getTime();
-      const difference = targetDate - now;
+      const difference = targetTime - now;
 
       if (difference > 0) {
         setTimeLeft({
@@ -73,13 +81,15 @@ export const CountdownTimer: React.FC = () => {
           minutes: Math.floor((difference / 1000 / 60) % 60),
           seconds: Math.floor((difference / 1000) % 60),
         });
+      } else {
+        setTimeLeft({ days: 0, hours: 0, minutes: 0, seconds: 0 });
       }
     };
 
     calculateTime();
     const interval = setInterval(calculateTime, 1000);
     return () => clearInterval(interval);
-  }, [targetDate]);
+  }, [eventStartDate]);
 
   return (
     <div className="flex flex-col items-center my-8">

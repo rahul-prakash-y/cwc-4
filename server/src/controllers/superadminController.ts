@@ -3,8 +3,9 @@ import bcrypt from 'bcryptjs';
 import { User } from '../models/User.js';
 import { Team } from '../models/Team.js';
 import { AuditLog } from '../models/AuditLog.js';
+import { Settings, getGlobalSettings } from '../models/Settings.js';
 import { logAudit } from '../middleware/auth.js';
-import { disconnectUserSockets } from '../socket.js';
+import { disconnectUserSockets, broadcastSettingsUpdated } from '../socket.js';
 
 interface AuditLogsQuery {
   page?: string;
@@ -401,3 +402,67 @@ export async function getSecurityTargets(
     teams,
   });
 }
+
+/**
+ * Task 3: Update Global Singleton Settings (CMS)
+ */
+export async function updateGlobalSettings(
+  request: FastifyRequest<{
+    Body: {
+      eventStartDate?: string | Date;
+      currentSeason?: number;
+      isRegistrationOpen?: boolean;
+      isLeaderboardVisible?: boolean;
+      heroBannerText?: string;
+      isGrandFinale?: boolean;
+    };
+  }>,
+  reply: FastifyReply
+) {
+  const updates: any = {};
+  const body = request.body || {};
+
+  if (body.eventStartDate !== undefined) {
+    updates.eventStartDate = new Date(body.eventStartDate);
+  }
+  if (body.currentSeason !== undefined) {
+    updates.currentSeason = Number(body.currentSeason);
+  }
+  if (body.isRegistrationOpen !== undefined) {
+    updates.isRegistrationOpen = Boolean(body.isRegistrationOpen);
+  }
+  if (body.isLeaderboardVisible !== undefined) {
+    updates.isLeaderboardVisible = Boolean(body.isLeaderboardVisible);
+  }
+  if (body.heroBannerText !== undefined) {
+    updates.heroBannerText = String(body.heroBannerText);
+  }
+  if (body.isGrandFinale !== undefined) {
+    updates.isGrandFinale = Boolean(body.isGrandFinale);
+  }
+
+  let settings = await Settings.findOneAndUpdate({}, { $set: updates }, { upsert: true, new: true }).lean();
+  if (!settings) {
+    settings = await getGlobalSettings();
+  }
+
+  // Broadcast WebSocket event
+  broadcastSettingsUpdated(settings);
+
+  // Log Audit Action
+  await logAudit({
+    adminId: request.user?.userId || 'superadmin',
+    adminEmail: request.user?.email || 'superadmin@cwc.com',
+    action: 'UPDATE_SETTINGS',
+    targetId: (settings as any)._id?.toString() || 'singleton',
+    targetType: 'Settings',
+    details: updates,
+    ipAddress: request.ip,
+  });
+
+  return reply.send({
+    message: '⚙️ Global Site Configuration updated successfully!',
+    settings,
+  });
+}
+

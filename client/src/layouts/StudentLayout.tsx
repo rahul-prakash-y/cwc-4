@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Outlet, Link, useLocation, Navigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Shield, LayoutDashboard, CheckSquare, Trophy, Zap, Ticket, ArrowLeft, Menu, X, Bell, LogOut, Settings as SettingsIcon } from 'lucide-react';
+import { NotificationBell } from '../components/student/NotificationBell';
 import { AnnouncementToast } from '../components/common/AnnouncementToast';
 import { Settings } from '../components/student/Settings';
 import { useAuth } from '../context/AuthContext';
@@ -63,7 +64,9 @@ export const StudentLayout: React.FC = () => {
           {/* Nav Items */}
           <nav className="space-y-1">
             {studentNavItems.map((item) => {
-              const isActive = location.pathname === item.path;
+              const isActive =
+                location.pathname === item.path ||
+                (item.path === '/student' && (location.pathname === '/student/' || location.pathname === '/student/dashboard'));
               return (
                 <Link
                   key={item.label}
@@ -129,10 +132,7 @@ export const StudentLayout: React.FC = () => {
           </div>
 
           <div className="flex items-center gap-3">
-            <button className="p-2 rounded-xl glass-card text-slate-300 hover:text-white relative">
-              <Bell className="w-4 h-4" />
-              <span className="absolute top-1 right-1 w-2 h-2 rounded-full bg-carnival-crimson animate-ping" />
-            </button>
+            <NotificationBell />
             <button
               onClick={() => setIsSettingsOpen(true)}
               className="flex items-center gap-2 p-1.5 rounded-xl glass-card border-white/10 hover:border-carnival-gold/50 transition-all text-left"

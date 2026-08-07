@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Ticket, Sparkles, User, Mail, Shield, CheckCircle2, Send, ArrowRight } from 'lucide-react';
 import { triggerCarnivalConfetti } from '../hero/ConfettiEffect';
+import { useSocket } from '../../context/SocketContext';
 
 interface RegistrationModalProps {
   isOpen: boolean;
@@ -20,6 +21,44 @@ export const RegistrationModal: React.FC<RegistrationModalProps> = ({ isOpen, on
   const [ticketId, setTicketId] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
+  const [isRegistrationOpen, setIsRegistrationOpen] = useState<boolean>(true);
+  const [currentSeason, setCurrentSeason] = useState<number>(4);
+  const { socket } = useSocket();
+
+  useEffect(() => {
+    const fetchGlobalSettings = async () => {
+      try {
+        const metaEnv = (import.meta as any).env || {};
+        const backendUrl =
+          metaEnv.VITE_API_URL ||
+          (window.location.hostname === 'localhost' ? 'http://localhost:5000' : window.location.origin);
+
+        const res = await fetch(`${backendUrl}/api/v1/settings/global`);
+        if (res.ok) {
+          const data = await res.json();
+          if (data.isRegistrationOpen !== undefined) setIsRegistrationOpen(Boolean(data.isRegistrationOpen));
+          if (data.currentSeason) setCurrentSeason(data.currentSeason);
+        }
+      } catch (err) {
+        console.error('Failed to fetch settings in Registration Modal:', err);
+      }
+    };
+
+    fetchGlobalSettings();
+  }, []);
+
+  useEffect(() => {
+    if (!socket) return;
+    const handleSettingsUpdated = (data: any) => {
+      if (data.isRegistrationOpen !== undefined) setIsRegistrationOpen(Boolean(data.isRegistrationOpen));
+      if (data.currentSeason) setCurrentSeason(data.currentSeason);
+    };
+
+    socket.on('SETTINGS_UPDATED', handleSettingsUpdated);
+    return () => {
+      socket.off('SETTINGS_UPDATED', handleSettingsUpdated);
+    };
+  }, [socket]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -54,12 +93,30 @@ export const RegistrationModal: React.FC<RegistrationModalProps> = ({ isOpen, on
           {/* Close button */}
           <button
             onClick={resetForm}
-            className="absolute top-4 right-4 p-2 rounded-full glass-card text-slate-400 hover:text-white hover:border-white/20 transition-all"
+            className="absolute top-4 right-4 p-2 rounded-full glass-card text-slate-400 hover:text-white hover:border-white/20 transition-all z-10"
           >
             <X className="w-5 h-5" />
           </button>
 
-          {!isSuccess ? (
+          {!isRegistrationOpen ? (
+            <div className="text-center py-6 space-y-4">
+              <div className="w-16 h-16 rounded-full bg-carnival-crimson/20 border border-carnival-crimson/40 flex items-center justify-center mx-auto text-3xl">
+                🚫
+              </div>
+              <h3 className="text-2xl font-black text-white">
+                Registrations Closed
+              </h3>
+              <p className="text-sm text-slate-300 font-sans max-w-md mx-auto">
+                Registrations for Code With Curious Season {currentSeason} are currently closed by the Super Admin.
+              </p>
+              <button
+                onClick={resetForm}
+                className="mt-4 px-6 py-2.5 rounded-xl bg-white/10 text-white font-bold text-xs hover:bg-white/20 transition"
+              >
+                Close Window
+              </button>
+            </div>
+          ) : !isSuccess ? (
             <div>
               {/* Header */}
               <div className="flex items-center gap-3 mb-6">
@@ -72,7 +129,7 @@ export const RegistrationModal: React.FC<RegistrationModalProps> = ({ isOpen, on
                   <h2 className="text-2xl font-black text-white tracking-tight flex items-center gap-2">
                     <span>Carnival Entry Ticket</span>
                     <span className="text-xs px-2.5 py-0.5 rounded-full bg-carnival-gold/20 text-carnival-gold border border-carnival-gold/30 font-mono">
-                      SEASON 4
+                      SEASON {currentSeason}
                     </span>
                   </h2>
                   <p className="text-xs text-slate-400 font-mono">Register your 2-3 member team for the Grand Coding Arena</p>
@@ -243,7 +300,7 @@ export const RegistrationModal: React.FC<RegistrationModalProps> = ({ isOpen, on
               </div>
 
               <h3 className="text-2xl font-black text-white mb-1">Registration Confirmed!</h3>
-              <p className="text-xs text-slate-300 font-mono mb-6">Welcome to Code With Curious Season 4 Arena</p>
+              <p className="text-xs text-slate-300 font-mono mb-6">Welcome to Code With Curious Season {currentSeason} Arena</p>
 
               {/* Admission Ticket Badge */}
               <div className="p-6 rounded-2xl bg-gradient-to-b from-[#1C173B] to-[#151329] border border-carnival-gold/60 shadow-neon-gold relative overflow-hidden mb-6 text-left">

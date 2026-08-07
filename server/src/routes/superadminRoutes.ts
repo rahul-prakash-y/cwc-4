@@ -5,6 +5,7 @@ import {
   forceResetPassword,
   manageAdmins,
   getSecurityTargets,
+  updateGlobalSettings,
 } from '../controllers/superadminController.js';
 import { verifyJWT, isSuperAdmin } from '../middleware/auth.js';
 
@@ -30,6 +31,9 @@ export async function superadminRoutes(fastify: FastifyInstance) {
 
   // Security Center targets search helper
   fastify.get('/targets', getSecurityTargets);
+
+  // Task 3: Update Global Singleton CMS Settings
+  fastify.put('/settings/global', updateGlobalSettings);
 }
 
 export default superadminRoutes;

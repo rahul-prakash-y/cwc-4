@@ -89,6 +89,15 @@ export function broadcastVotesUpdated(payload: any): void {
   }
 }
 
+export function broadcastSettingsUpdated(payload: any): void {
+  if (ioInstance) {
+    ioInstance.emit('SETTINGS_UPDATED', {
+      timestamp: new Date().toISOString(),
+      ...payload,
+    });
+  }
+}
+
 export function disconnectUserSockets(targetId: string): void {
   if (!ioInstance) return;
 

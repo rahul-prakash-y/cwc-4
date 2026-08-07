@@ -23,8 +23,10 @@ import {
   Sparkles,
   X,
   CheckCircle,
+  Sliders,
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
+import { SiteConfig } from './SiteConfig';
 
 interface AuditLog {
   _id: string;
@@ -340,6 +342,18 @@ export const SuperAdminDashboard: React.FC = () => {
           >
             <UserCheck className="w-4 h-4" />
             <span>Admin Management</span>
+          </button>
+
+          <button
+            onClick={() => setSearchParams({ tab: 'cms' })}
+            className={`flex items-center gap-2 px-4 py-2.5 rounded-xl font-mono text-xs font-bold transition-all ${
+              activeTab === 'cms'
+                ? 'bg-gradient-to-r from-cyan-500 to-blue-500 text-slate-950 shadow-neon-cyan font-black'
+                : 'glass-card text-slate-300 hover:text-white'
+            }`}
+          >
+            <Sliders className="w-4 h-4" />
+            <span>Site Configuration (CMS)</span>
           </button>
         </div>
       </div>
@@ -801,6 +815,11 @@ export const SuperAdminDashboard: React.FC = () => {
           )}
         </div>
       )}
+
+      {/* ========================================================================= */}
+      {/* TAB 4: SITE CONFIGURATION (CMS) */}
+      {/* ========================================================================= */}
+      {activeTab === 'cms' && <SiteConfig />}
 
       {/* ========================================================================= */}
       {/* MODAL 1: CONFIRM DESTRUCTIVE ACTION MODAL */}

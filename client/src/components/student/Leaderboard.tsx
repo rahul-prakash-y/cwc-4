@@ -109,7 +109,45 @@ export const Leaderboard: React.FC<StudentLeaderboardProps> = ({
 }) => {
   const [teams, setTeams] = useState<LeaderboardItem[]>(initialTeams);
   const [searchQuery, setSearchQuery] = useState('');
+  const [isLeaderboardVisible, setIsLeaderboardVisible] = useState<boolean>(true);
   const { socket } = useSocket();
+
+  useEffect(() => {
+    const fetchGlobalSettings = async () => {
+      try {
+        const metaEnv = (import.meta as any).env || {};
+        const backendUrl =
+          metaEnv.VITE_API_URL ||
+          (window.location.hostname === 'localhost' ? 'http://localhost:5000' : window.location.origin);
+
+        const res = await fetch(`${backendUrl}/api/v1/settings/global`);
+        if (res.ok) {
+          const data = await res.json();
+          if (data.isLeaderboardVisible !== undefined) {
+            setIsLeaderboardVisible(Boolean(data.isLeaderboardVisible));
+          }
+        }
+      } catch (err) {
+        console.error('Failed to fetch settings in Leaderboard:', err);
+      }
+    };
+
+    fetchGlobalSettings();
+  }, []);
+
+  useEffect(() => {
+    if (!socket) return;
+    const handleSettingsUpdated = (data: any) => {
+      if (data.isLeaderboardVisible !== undefined) {
+        setIsLeaderboardVisible(Boolean(data.isLeaderboardVisible));
+      }
+    };
+
+    socket.on('SETTINGS_UPDATED', handleSettingsUpdated);
+    return () => {
+      socket.off('SETTINGS_UPDATED', handleSettingsUpdated);
+    };
+  }, [socket]);
 
   // Task 4: Real-time Socket listener for SCORE_UPDATED & STATUS_CHANGED
   useEffect(() => {
@@ -181,6 +219,24 @@ export const Leaderboard: React.FC<StudentLeaderboardProps> = ({
   }, [socket]);
 
   const filteredTeams = teams.filter((t) => t.name.toLowerCase().includes(searchQuery.toLowerCase()));
+
+  if (!isLeaderboardVisible && !showScores) {
+    return (
+      <div className="p-8 sm:p-12 rounded-3xl glass-card border border-carnival-gold/30 shadow-2xl text-center space-y-4 bg-black/60 my-6">
+        <div className="w-16 h-16 rounded-full bg-slate-800/80 border border-slate-700 flex items-center justify-center mx-auto text-slate-400 text-2xl shadow-inner">
+          <EyeOff className="w-8 h-8 text-carnival-gold" />
+        </div>
+        <div className="space-y-2">
+          <h3 className="text-xl sm:text-2xl font-black text-white">
+            Leaderboard Hidden
+          </h3>
+          <p className="text-sm text-slate-300 max-w-md mx-auto font-sans leading-relaxed">
+            The leaderboard is currently hidden by the event organizers. Check back soon for updated live rankings!
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="p-6 sm:p-8 rounded-3xl glass-card border border-white/10 shadow-2xl space-y-6 relative overflow-hidden bg-gradient-to-b from-[#18132B]/95 via-[#130E24]/95 to-[#0F0A1D]/95">

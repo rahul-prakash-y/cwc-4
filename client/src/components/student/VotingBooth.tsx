@@ -28,6 +28,7 @@ export const VotingBooth: React.FC<VotingBoothProps> = ({
   onVotesUpdated,
 }) => {
   const { apiFetch, user } = useAuth();
+  const [internalOpen, setInternalOpen] = useState<boolean>(isOpen);
   const [teams, setTeams] = useState<TeamVoteInfo[]>([]);
   const [voterTeamId, setVoterTeamId] = useState<string | null>(userTeamId || null);
   const [dailyVotesRemaining, setDailyVotesRemaining] = useState<number>(100);
@@ -36,6 +37,17 @@ export const VotingBooth: React.FC<VotingBoothProps> = ({
   const [loading, setLoading] = useState<boolean>(true);
   const [submitting, setSubmitting] = useState<boolean>(false);
   const [toastMessage, setToastMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+
+  useEffect(() => {
+    setInternalOpen(isOpen);
+  }, [isOpen]);
+
+  const handleClose = () => {
+    setInternalOpen(false);
+    if (onClose) {
+      onClose();
+    }
+  };
 
   // Fetch Teams & Student Voting Status
   const fetchData = async () => {
@@ -152,11 +164,15 @@ export const VotingBooth: React.FC<VotingBoothProps> = ({
     setSubmitting(false);
   };
 
-  if (!isOpen) return null;
+  if (!isOpen || !internalOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md overflow-y-auto">
+    <div
+      onClick={handleClose}
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md overflow-y-auto"
+    >
       <motion.div
+        onClick={(e) => e.stopPropagation()}
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
         exit={{ opacity: 0, scale: 0.95 }}
@@ -175,14 +191,14 @@ export const VotingBooth: React.FC<VotingBoothProps> = ({
               </p>
             </div>
           </div>
-          {onClose && (
-            <button
-              onClick={onClose}
-              className="p-2 rounded-lg bg-slate-800/80 hover:bg-amber-500/20 text-gray-400 hover:text-amber-400 transition"
-            >
-              ✕
-            </button>
-          )}
+          <button
+            onClick={handleClose}
+            className="w-9 h-9 rounded-xl bg-slate-800/80 hover:bg-amber-500/20 text-gray-300 hover:text-amber-400 transition flex items-center justify-center font-bold text-base border border-white/10"
+            title="Close Voting Booth"
+            aria-label="Close Voting Booth"
+          >
+            ✕
+          </button>
         </div>
 
         {/* Progress Bar & Status Section */}
@@ -344,14 +360,12 @@ export const VotingBooth: React.FC<VotingBoothProps> = ({
           </div>
 
           <div className="flex space-x-3">
-            {onClose && (
-              <button
-                onClick={onClose}
-                className="px-5 py-2.5 rounded-xl border border-slate-700 text-gray-300 hover:bg-slate-800 font-medium transition text-sm"
-              >
-                Cancel
-              </button>
-            )}
+            <button
+              onClick={handleClose}
+              className="px-5 py-2.5 rounded-xl border border-slate-700 text-gray-300 hover:bg-slate-800 font-medium transition text-sm"
+            >
+              Close
+            </button>
             <button
               onClick={handleCastVotes}
               disabled={totalPendingAllocated === 0 || submitting}

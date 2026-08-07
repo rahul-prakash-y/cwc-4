@@ -204,9 +204,11 @@ export const MarksSection: React.FC<MarksSectionProps> = ({ records = DEFAULT_MO
 
             {/* Overall Total Calculation Footer Row */}
             <tr className="bg-gradient-to-r from-carnival-gold/20 via-black/60 to-carnival-gold/20 border-2 border-carnival-gold/60 rounded-2xl text-sm font-mono font-bold">
-              <td className="py-4 px-4 rounded-l-2xl text-white font-extrabold flex items-center gap-2">
-                <Calculator className="w-4 h-4 text-carnival-gold" />
-                <span>OVERALL TOTAL</span>
+              <td className="py-4 px-4 rounded-l-2xl text-white font-extrabold">
+                <div className="flex items-center gap-2">
+                  <Calculator className="w-4 h-4 text-carnival-gold" />
+                  <span>OVERALL TOTAL</span>
+                </div>
               </td>
               <td className="py-4 px-4 text-center text-carnival-purple font-black text-base">
                 +{totalAdv.toLocaleString()}

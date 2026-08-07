@@ -45,12 +45,29 @@ export interface TaskDetail {
 }
 
 interface DailyTaskViewProps {
-  task: TaskDetail;
+  task?: TaskDetail;
   onTaskSubmitted?: (data: any) => void;
   status?: string;
 }
 
-export const DailyTaskView: React.FC<DailyTaskViewProps> = ({ task, onTaskSubmitted, status = 'Safe' }) => {
+const DEFAULT_TASK: TaskDetail = {
+  id: 'task-1',
+  dayNumber: 1,
+  title: 'Day 1: Carnival Arena Initialization & Algorithmic Relay',
+  category: 'Algorithm Relay',
+  points: 500,
+  duration: '4 Hours',
+  startTime: '10:00 AM',
+  endTime: '02:00 PM',
+  deadline: '2026-08-15T14:00:00.000Z',
+  description: 'Welcome to Code With Curious Season 4! Implement an optimized sliding window algorithm for dynamic crowd flow modeling at the Carnival main gate.',
+  requirements: [
+    'Sub-millisecond latency for 100,000 concurrent ticket entries.',
+    'Clean code architecture with comprehensive comments.',
+  ],
+};
+
+export const DailyTaskView: React.FC<DailyTaskViewProps> = ({ task = DEFAULT_TASK, onTaskSubmitted, status = 'Safe' }) => {
   const [isStarted, setIsStarted] = useState(false);
 
   // Hook 1: Draft Saving (auto 30s + localStorage)

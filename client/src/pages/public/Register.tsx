@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -6,6 +6,7 @@ import { z } from 'zod';
 import { motion, AnimatePresence } from 'framer-motion';
 import confetti from 'canvas-confetti';
 import toast from 'react-hot-toast';
+import { useSocket } from '../../context/SocketContext';
 import {
   Ticket,
   User,
@@ -127,6 +128,44 @@ export const Register: React.FC = () => {
     teamName: string;
     leaderEmail: string;
   } | null>(null);
+  const [isRegistrationOpen, setIsRegistrationOpen] = useState<boolean>(true);
+  const [currentSeason, setCurrentSeason] = useState<number>(4);
+  const { socket } = useSocket();
+
+  useEffect(() => {
+    const fetchGlobalSettings = async () => {
+      try {
+        const metaEnv = (import.meta as any).env || {};
+        const backendUrl =
+          metaEnv.VITE_API_URL ||
+          (window.location.hostname === 'localhost' ? 'http://localhost:5000' : window.location.origin);
+
+        const res = await fetch(`${backendUrl}/api/v1/settings/global`);
+        if (res.ok) {
+          const data = await res.json();
+          if (data.isRegistrationOpen !== undefined) setIsRegistrationOpen(Boolean(data.isRegistrationOpen));
+          if (data.currentSeason) setCurrentSeason(data.currentSeason);
+        }
+      } catch (err) {
+        console.error('Failed to fetch settings in Register page:', err);
+      }
+    };
+
+    fetchGlobalSettings();
+  }, []);
+
+  useEffect(() => {
+    if (!socket) return;
+    const handleSettingsUpdated = (data: any) => {
+      if (data.isRegistrationOpen !== undefined) setIsRegistrationOpen(Boolean(data.isRegistrationOpen));
+      if (data.currentSeason) setCurrentSeason(data.currentSeason);
+    };
+
+    socket.on('SETTINGS_UPDATED', handleSettingsUpdated);
+    return () => {
+      socket.off('SETTINGS_UPDATED', handleSettingsUpdated);
+    };
+  }, [socket]);
 
   const defaultPassword = 'CWC4-Student-2026';
 
@@ -304,14 +343,42 @@ export const Register: React.FC = () => {
           </p>
         </div>
 
-        {/* Ticket Registration Form Card */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="rounded-3xl glass-card border border-carnival-gold/30 shadow-2xl p-6 sm:p-10 bg-gradient-to-b from-[#161226]/95 via-[#120E22]/95 to-[#0E0B1A]/95 relative overflow-hidden"
-        >
-          {/* Top Ticket Punch Strip */}
-          <div className="absolute top-0 left-0 right-0 h-2 bg-gradient-to-r from-carnival-crimson via-carnival-gold to-carnival-cyan" />
+        {/* Ticket Registration Form Card or Closed Message */}
+        {!isRegistrationOpen ? (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="rounded-3xl glass-card border border-carnival-crimson/40 shadow-2xl p-10 text-center space-y-6 bg-gradient-to-b from-[#180E22] via-[#120B1F] to-[#0E0B1A] relative overflow-hidden"
+          >
+            <div className="w-20 h-20 rounded-full bg-carnival-crimson/20 border border-carnival-crimson/50 flex items-center justify-center mx-auto text-3xl shadow-neon-crimson">
+              🚫
+            </div>
+            <div className="space-y-3">
+              <h2 className="text-2xl sm:text-3xl lg:text-4xl font-black text-white">
+                Registrations for Season {currentSeason} are currently closed.
+              </h2>
+              <p className="text-sm text-slate-300 max-w-lg mx-auto font-sans leading-relaxed">
+                The carnival arena gates have closed for squad entry. Stay tuned for live event updates, leaderboard action, and upcoming power-up rounds!
+              </p>
+            </div>
+            <div className="pt-4 flex justify-center">
+              <Link
+                to="/"
+                className="inline-flex items-center gap-2 px-8 py-3.5 rounded-xl bg-cwc-surface backdrop-blur-lg border border-white/15 text-white font-bold text-sm hover:border-cwc-gold/50 hover:text-cwc-gold transition duration-300"
+              >
+                <Home className="w-4 h-4 text-cwc-gold" />
+                <span>Return to Landing Page</span>
+              </Link>
+            </div>
+          </motion.div>
+        ) : (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="rounded-3xl glass-card border border-carnival-gold/30 shadow-2xl p-6 sm:p-10 bg-gradient-to-b from-[#161226]/95 via-[#120E22]/95 to-[#0E0B1A]/95 relative overflow-hidden"
+          >
+            {/* Top Ticket Punch Strip */}
+            <div className="absolute top-0 left-0 right-0 h-2 bg-gradient-to-r from-carnival-crimson via-carnival-gold to-carnival-cyan" />
 
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-10">
             {/* SECTION 1: Team Details & Theme Color */}
@@ -688,6 +755,7 @@ export const Register: React.FC = () => {
             </div>
           </form>
         </motion.div>
+        )}
       </div>
 
       {/* Celebratory Post-Submission Modal */}
