@@ -209,26 +209,26 @@ export const RuleBook: React.FC = () => {
 
       {/* Header */}
       <div className="text-center mb-12">
-        <div className="inline-flex items-center gap-2 text-cwc-gold font-display text-xs uppercase tracking-widest mb-3 font-semibold px-4 py-1.5 rounded-full bg-cwc-gold/10 border border-cwc-gold/30">
-          <BookOpen className="w-4 h-4 text-cwc-gold" />
+        <div className="inline-flex items-center gap-2 text-amber-600 dark:text-cwc-gold font-display text-xs uppercase tracking-widest mb-3 font-semibold px-4 py-1.5 rounded-full bg-amber-500/10 dark:bg-cwc-gold/10 border border-amber-500/30 dark:border-cwc-gold/30">
+          <BookOpen className="w-4 h-4 text-amber-500 dark:text-cwc-gold" />
           <span>8 Core Rule Categories • Official Codex</span>
         </div>
-        <h2 className="text-3xl sm:text-5xl font-black font-display tracking-tight mb-4">
-          Carnival <span className="bg-gradient-to-r from-cwc-gold via-yellow-200 to-cwc-gold bg-clip-text text-transparent">Rule Book</span>
+        <h2 className="text-3xl sm:text-5xl font-black font-display tracking-tight text-slate-900 dark:text-white mb-4">
+          Carnival <span className="bg-gradient-to-r from-amber-500 via-amber-400 to-amber-600 dark:from-cwc-gold dark:via-yellow-200 dark:to-cwc-gold bg-clip-text text-transparent">Rule Book</span>
         </h2>
-        <p className="text-gray-300 text-sm sm:text-base max-w-xl mx-auto leading-relaxed">
+        <p className="text-slate-600 dark:text-gray-300 text-sm sm:text-base max-w-xl mx-auto leading-relaxed">
           Interactive regulations across Eligibility, Attendance, Scoring, Elimination, Immunity, Advantages, Bonus, and Finale.
         </p>
 
         {/* Search Bar */}
         <div className="relative max-w-md mx-auto mt-6">
-          <Search className="w-4 h-4 text-gray-400 absolute left-4 top-1/2 -translate-y-1/2" />
+          <Search className="w-4 h-4 text-slate-400 dark:text-gray-400 absolute left-4 top-1/2 -translate-y-1/2" />
           <input
             type="text"
             placeholder="Search rules, power-ups, penalties..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-11 pr-4 py-3 rounded-xl bg-cwc-bg/80 backdrop-blur-md text-sm text-white placeholder-gray-400 border border-white/10 focus:border-cwc-gold focus:outline-none transition-all shadow-[inset_0_1px_0_rgba(255,255,255,0.05)]"
+            className="w-full pl-11 pr-4 py-3 rounded-xl glass-card bg-white/90 dark:bg-cwc-bg/80 text-sm text-slate-900 dark:text-white placeholder-slate-400 border border-slate-200 dark:border-white/10 focus:border-amber-500 dark:focus:border-cwc-gold focus:outline-none transition-all shadow-sm"
           />
         </div>
       </div>
@@ -254,32 +254,32 @@ export const RuleBook: React.FC = () => {
           return (
             <div
               key={category.id}
-              className="bg-white/5 backdrop-blur-lg rounded-2xl border border-white/10 hover:border-white/30 hover:shadow-glow-gold hover:-translate-y-0.5 overflow-hidden shadow-[inset_0_1px_0_rgba(255,255,255,0.1),0_10px_30px_rgba(0,0,0,0.5)] transition-all duration-300 ease-out"
+              className="glass-card bg-white/90 dark:bg-white/5 rounded-2xl border border-slate-200 dark:border-white/10 hover:border-amber-500/40 dark:hover:border-white/30 hover:shadow-lg hover:-translate-y-0.5 overflow-hidden shadow-xl transition-all duration-300 ease-out"
             >
               {/* Category Accordion Header */}
               <button
                 onClick={() => toggleCategory(category.id)}
-                className="w-full p-6 text-left flex items-center justify-between gap-4 bg-cwc-surface/4 hover:bg-cwc-surface/8 transition-colors"
+                className="w-full p-6 text-left flex items-center justify-between gap-4 hover:bg-slate-100/50 dark:hover:bg-cwc-surface/8 transition-colors"
               >
                 <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 rounded-xl bg-cwc-purple/20 border border-cwc-purple/40 flex items-center justify-center text-2xl shadow-[inset_0_1px_0_rgba(255,255,255,0.1)]">
+                  <div className="w-12 h-12 rounded-xl bg-purple-500/10 dark:bg-cwc-purple/20 border border-purple-500/30 dark:border-cwc-purple/40 flex items-center justify-center text-2xl shadow-inner">
                     {category.iconName}
                   </div>
                   <div>
                     <div className="flex items-center gap-2">
-                      <h3 className="font-bold font-display text-xl text-white">{category.title}</h3>
-                      <span className="px-2.5 py-0.5 rounded-full text-[11px] font-display font-bold bg-cwc-gold/20 text-cwc-gold border border-cwc-gold/30">
+                      <h3 className="font-bold font-display text-xl text-slate-900 dark:text-white">{category.title}</h3>
+                      <span className="px-2.5 py-0.5 rounded-full text-[11px] font-display font-bold bg-amber-500/15 dark:bg-cwc-gold/20 text-amber-700 dark:text-cwc-gold border border-amber-500/30 dark:border-cwc-gold/30">
                         {category.badgeText}
                       </span>
                     </div>
-                    <p className="text-xs text-gray-400 mt-1">{category.description}</p>
+                    <p className="text-xs text-slate-600 dark:text-gray-400 mt-1">{category.description}</p>
                   </div>
                 </div>
 
                 <motion.div
                   animate={{ rotate: isOpen ? 180 : 0 }}
                   transition={{ duration: 0.3 }}
-                  className="p-2 rounded-lg bg-white/5 text-gray-300"
+                  className="p-2 rounded-lg bg-slate-100 dark:bg-white/5 text-slate-600 dark:text-gray-300"
                 >
                   <ChevronDown className="w-5 h-5" />
                 </motion.div>
@@ -293,32 +293,32 @@ export const RuleBook: React.FC = () => {
                     animate={{ height: 'auto', opacity: 1 }}
                     exit={{ height: 0, opacity: 0 }}
                     transition={{ duration: 0.3, ease: 'easeInOut' }}
-                    className="overflow-hidden border-t border-white/10"
+                    className="overflow-hidden border-t border-slate-200 dark:border-white/10"
                   >
-                    <div className="p-6 space-y-3 bg-cwc-bg/60">
+                    <div className="p-6 space-y-3 bg-slate-50/80 dark:bg-cwc-bg/60">
                       {rulesToDisplay.map((rule, idx) => {
                         const isRuleOpen = openRuleIndex === idx || searchQuery.length > 0;
 
                         return (
                           <div
                             key={idx}
-                            className="rounded-xl border border-white/10 bg-white/5 overflow-hidden hover:border-white/20 transition-all"
+                            className="rounded-xl border border-slate-200 dark:border-white/10 bg-white dark:bg-white/5 overflow-hidden hover:border-slate-300 dark:hover:border-white/20 transition-all"
                           >
                             <button
                               onClick={() => toggleRule(idx)}
-                              className="w-full p-4 text-left flex items-center justify-between gap-3 hover:bg-white/5 transition-colors"
+                              className="w-full p-4 text-left flex items-center justify-between gap-3 hover:bg-slate-50 dark:hover:bg-white/5 transition-colors"
                             >
                               <div className="flex items-center gap-3">
-                                <ShieldCheck className="w-5 h-5 text-cwc-gold flex-shrink-0" />
-                                <span className="font-bold text-sm text-gray-100 font-display">{rule.title}</span>
+                                <ShieldCheck className="w-5 h-5 text-amber-600 dark:text-cwc-gold flex-shrink-0" />
+                                <span className="font-bold text-sm text-slate-900 dark:text-gray-100 font-display">{rule.title}</span>
                                 {rule.tag && (
-                                  <span className="px-2 py-0.5 rounded text-[10px] font-display uppercase bg-cwc-purple/20 text-cwc-purple border border-cwc-purple/30 font-semibold">
+                                  <span className="px-2 py-0.5 rounded text-[10px] font-display uppercase bg-purple-500/15 dark:bg-cwc-purple/20 text-purple-700 dark:text-cwc-purple border border-purple-500/30 dark:border-cwc-purple/30 font-semibold">
                                     {rule.tag}
                                   </span>
                                 )}
                               </div>
                               <ChevronDown
-                                className={`w-4 h-4 text-gray-400 transition-transform duration-300 ${
+                                className={`w-4 h-4 text-slate-500 dark:text-gray-400 transition-transform duration-300 ${
                                   isRuleOpen ? 'rotate-180' : ''
                                 }`}
                               />
@@ -333,7 +333,7 @@ export const RuleBook: React.FC = () => {
                                   transition={{ duration: 0.25 }}
                                   className="overflow-hidden"
                                 >
-                                  <div className="p-4 pt-0 text-xs sm:text-sm text-gray-300 leading-relaxed border-t border-white/5 bg-cwc-bg/40">
+                                  <div className="p-4 pt-0 text-xs sm:text-sm text-slate-600 dark:text-gray-300 leading-relaxed border-t border-slate-200 dark:border-white/5 bg-slate-50 dark:bg-cwc-bg/40">
                                     {rule.content}
                                   </div>
                                 </motion.div>
@@ -352,10 +352,10 @@ export const RuleBook: React.FC = () => {
       </div>
 
       {/* Disqualification Warning Note */}
-      <div className="mt-8 p-6 rounded-2xl bg-cwc-red/10 backdrop-blur-lg border border-cwc-red/30 shadow-[inset_0_1px_0_rgba(255,255,255,0.1)] flex items-start gap-3 text-xs text-gray-300">
-        <AlertCircle className="w-5 h-5 text-cwc-red flex-shrink-0 mt-0.5" />
+      <div className="mt-8 p-6 rounded-2xl bg-rose-500/10 border border-rose-500/30 shadow-sm flex items-start gap-3 text-xs text-slate-700 dark:text-gray-300">
+        <AlertCircle className="w-5 h-5 text-rose-600 dark:text-cwc-red flex-shrink-0 mt-0.5" />
         <div>
-          <strong className="text-white font-semibold font-display">Note on Code Integrity:</strong> Code submissions are checked automatically for originality. Disqualification occurs immediately if unapproved AI solvers or plagiarized code bases are identified.
+          <strong className="text-slate-900 dark:text-white font-semibold font-display">Note on Code Integrity:</strong> Code submissions are checked automatically for originality. Disqualification occurs immediately if unapproved AI solvers or plagiarized code bases are identified.
         </div>
       </div>
     </section>

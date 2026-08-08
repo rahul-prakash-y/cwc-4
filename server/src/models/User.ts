@@ -11,6 +11,7 @@ export interface IUser {
   isBlocked?: boolean;
   sessionVersion?: number;
   avatarUrl?: string;
+  themePreference?: 'light' | 'dark';
   createdAt?: Date;
   updatedAt?: Date;
 }
@@ -43,6 +44,11 @@ const userSchema = new Schema<IUserDocument>(
       enum: ['student', 'admin', 'superadmin'],
       default: 'student',
       required: true,
+    },
+    themePreference: {
+      type: String,
+      enum: ['light', 'dark'],
+      default: 'dark',
     },
     isFirstLogin: {
       type: Boolean,

@@ -8,7 +8,7 @@ export const PublicLayout: React.FC = () => {
   const location = useLocation();
 
   return (
-    <div className="min-h-screen bg-[#0B0A16] text-slate-100 flex flex-col font-sans selection:bg-carnival-crimson selection:text-white">
+    <div className="min-h-screen bg-slate-50 dark:bg-[#0B0A16] text-slate-900 dark:text-slate-100 flex flex-col font-sans selection:bg-rose-600 dark:selection:bg-carnival-crimson selection:text-white transition-colors duration-300">
       <Navbar />
       <main className="flex-1 overflow-x-hidden">
         <motion.div

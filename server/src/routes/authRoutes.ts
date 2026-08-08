@@ -7,6 +7,7 @@ import {
   getMe,
   changePassword,
   checkTeamName,
+  updateTheme,
 } from '../controllers/authController.js';
 import { verifyJWT, isStudent } from '../middleware/auth.js';
 import {
@@ -14,6 +15,7 @@ import {
   loginSchema,
   registerAdminSchema,
   changePasswordSchema,
+  updateThemeSchema,
 } from '../schemas/authSchemas.js';
 
 // Stricter rate limits for authentication endpoints to prevent brute-force attacks
@@ -52,8 +54,12 @@ export async function authRoutes(fastify: FastifyInstance) {
   // Authenticated session route protected by verifyJWT
   fastify.get('/me', { preHandler: [verifyJWT] }, getMe);
 
+  // Protected route for updating user theme preference
+  fastify.patch('/theme', { preHandler: [verifyJWT], schema: updateThemeSchema }, updateTheme);
+
   // Protected route for student password change
   fastify.post('/change-password', { preHandler: [verifyJWT, isStudent], schema: changePasswordSchema }, changePassword);
 }
+
 
 

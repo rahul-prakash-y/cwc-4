@@ -82,16 +82,16 @@ export const Sponsors: React.FC = () => {
   const marqueeItems = [...sponsorsList, ...sponsorsList, ...sponsorsList, ...sponsorsList];
 
   return (
-    <section id="sponsors" className="py-20 relative overflow-hidden bg-[#0A0816]/70 border-y border-white/10">
+    <section id="sponsors" className="py-20 relative overflow-hidden bg-white/80 dark:bg-[#0A0816]/70 border-y border-slate-200 dark:border-white/10">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-10 text-center">
-        <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full glass-card border border-carnival-cyan/40 text-carnival-cyan text-xs font-mono font-bold tracking-widest uppercase mb-3 shadow-neon-cyan">
-          <Sparkles className="w-4 h-4 text-carnival-cyan" />
+        <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full glass-card border border-cyan-500/40 dark:border-carnival-cyan/40 text-cyan-700 dark:text-carnival-cyan text-xs font-mono font-bold tracking-widest uppercase mb-3 shadow-sm dark:shadow-neon-cyan">
+          <Sparkles className="w-4 h-4 text-cyan-600 dark:text-carnival-cyan" />
           <span>Powered By Tech Industry Leaders</span>
         </div>
-        <h2 className="text-3xl sm:text-5xl font-black text-white tracking-tight font-heading uppercase">
+        <h2 className="text-3xl sm:text-5xl font-black text-slate-900 dark:text-white tracking-tight font-heading uppercase">
           Carnival <span className="text-gradient-cyan">Sponsors & Partners</span>
         </h2>
-        <p className="text-xs sm:text-sm text-slate-300 max-w-xl mx-auto mt-3">
+        <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-300 max-w-xl mx-auto mt-3">
           Empowering coders with developer tools, cloud infrastructure, mentorship, and career fast-track opportunities.
         </p>
       </div>
@@ -99,33 +99,33 @@ export const Sponsors: React.FC = () => {
       {/* Infinite Horizontal Marquee Container */}
       <div className="relative w-full overflow-hidden group py-4">
         {/* Gradient edge masks to smoothly fade content at left and right edges */}
-        <div className="absolute top-0 bottom-0 left-0 w-32 bg-gradient-to-r from-[#0C0A1A] to-transparent z-10 pointer-events-none" />
-        <div className="absolute top-0 bottom-0 right-0 w-32 bg-gradient-to-l from-[#0C0A1A] to-transparent z-10 pointer-events-none" />
+        <div className="absolute top-0 bottom-0 left-0 w-32 bg-gradient-to-r from-slate-50 dark:from-[#0C0A1A] to-transparent z-10 pointer-events-none" />
+        <div className="absolute top-0 bottom-0 right-0 w-32 bg-gradient-to-l from-slate-50 dark:from-[#0C0A1A] to-transparent z-10 pointer-events-none" />
 
         {/* Marquee Track: animate-marquee with smooth continuous movement, pauses on hover */}
         <div className="flex gap-6 w-max animate-marquee group-hover:[animation-play-state:paused]">
           {marqueeItems.map((sponsor, idx) => (
             <div
               key={`${sponsor.name}-${idx}`}
-              className="glass-card rounded-2xl px-6 py-5 border border-white/10 hover:border-carnival-cyan/60 flex items-center gap-4 transition-all duration-300 hover:scale-105 shrink-0 bg-[#14112e]/90 shadow-xl group/card cursor-pointer"
+              className="glass-card rounded-2xl px-6 py-5 border border-slate-200 dark:border-white/10 hover:border-cyan-500/60 dark:hover:border-carnival-cyan/60 flex items-center gap-4 transition-all duration-300 hover:scale-105 shrink-0 bg-white dark:bg-[#14112e]/90 shadow-xl group/card cursor-pointer"
             >
               {/* Logo icon converted to grayscale by default, transitioning to full color on hover */}
               <div
-                className={`p-3 rounded-xl bg-white/5 border border-white/10 filter grayscale opacity-60 group-hover/card:grayscale-0 group-hover/card:opacity-100 transition-all duration-300 ${sponsor.brandColor}`}
+                className={`p-3 rounded-xl bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 filter grayscale opacity-60 group-hover/card:grayscale-0 group-hover/card:opacity-100 transition-all duration-300 ${sponsor.brandColor}`}
               >
                 {sponsor.icon}
               </div>
 
               <div className="space-y-1">
                 <div className="flex items-center gap-2">
-                  <span className="font-extrabold text-white text-base tracking-tight group-hover/card:text-carnival-cyan transition-colors">
+                  <span className="font-extrabold text-slate-900 dark:text-white text-base tracking-tight group-hover/card:text-cyan-600 dark:group-hover/card:text-carnival-cyan transition-colors">
                     {sponsor.name}
                   </span>
                   <span className={`text-[9px] font-mono font-bold px-2 py-0.5 rounded-full border ${sponsor.tierBadgeColor}`}>
                     {sponsor.tier}
                   </span>
                 </div>
-                <div className="text-xs text-slate-400 font-mono">{sponsor.category}</div>
+                <div className="text-xs text-slate-600 dark:text-slate-400 font-mono">{sponsor.category}</div>
               </div>
             </div>
           ))}

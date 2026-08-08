@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Crown, Users, CheckSquare, Grid, Download, ArrowLeft, Menu, X, ShieldAlert, Sparkles, Flame, Trophy, LogOut } from 'lucide-react';
 import { useGrandFinale } from '../context/GrandFinaleContext';
 import { useAuth } from '../context/AuthContext';
+import { ThemeToggle } from '../components/layout/ThemeToggle';
 
 export const AdminLayout: React.FC = () => {
   const location = useLocation();
@@ -25,10 +26,10 @@ export const AdminLayout: React.FC = () => {
   ];
 
   return (
-    <div className={`min-h-screen bg-[#0B0A16] text-slate-100 flex font-sans selection:bg-carnival-gold selection:text-black ${isGrandFinale ? 'grand-finale-gold' : ''}`}>
+    <div className={`min-h-screen bg-slate-50 dark:bg-[#0B0A16] text-slate-900 dark:text-slate-100 flex font-sans transition-colors duration-300 selection:bg-carnival-gold selection:text-black ${isGrandFinale ? 'grand-finale-gold' : ''}`}>
       {/* Admin Sidebar */}
       <aside
-        className={`fixed lg:sticky top-0 left-0 z-40 w-64 h-screen bg-[#1A1228]/95 backdrop-blur-2xl border-r border-carnival-crimson/30 flex flex-col justify-between p-4 transition-transform duration-300 ${
+        className={`fixed lg:sticky top-0 left-0 z-40 w-64 h-screen bg-white/95 dark:bg-[#1A1228]/95 backdrop-blur-2xl border-r border-slate-200 dark:border-carnival-crimson/30 flex flex-col justify-between p-4 transition-transform duration-300 ${
           sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
         }`}
       >
@@ -178,7 +179,7 @@ export const AdminLayout: React.FC = () => {
       {/* Main Content Area */}
       <div className="flex-1 flex flex-col min-w-0">
         {/* Top Navigation Bar with Admin Toggle */}
-        <header className="h-16 bg-[#1A1228]/80 backdrop-blur-xl border-b border-carnival-crimson/30 px-4 sm:px-6 flex items-center justify-between sticky top-0 z-30">
+        <header className="h-16 bg-white/80 dark:bg-[#1A1228]/80 backdrop-blur-xl border-b border-slate-200 dark:border-carnival-crimson/30 px-4 sm:px-6 flex items-center justify-between sticky top-0 z-30 transition-colors duration-300">
           <div className="flex items-center gap-3">
             <button
               onClick={() => setSidebarOpen(!sidebarOpen)}
@@ -198,8 +199,9 @@ export const AdminLayout: React.FC = () => {
             </h1>
           </div>
 
-          {/* TASK 1: Global State Toggle (Admin controlled) called "isGrandFinale" */}
+          {/* TASK 1: Global State Toggle (Admin controlled) & Theme Toggle */}
           <div className="flex items-center gap-3">
+            <ThemeToggle />
             <div className={`flex items-center gap-3 px-3 py-1.5 rounded-2xl border transition-all ${
               isGrandFinale ? 'bg-amber-500/20 border-yellow-400 text-yellow-300 shadow-[0_0_20px_rgba(234,179,8,0.4)]' : 'glass-card border-white/10 text-slate-300'
             }`}>

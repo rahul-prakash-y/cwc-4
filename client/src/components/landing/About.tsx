@@ -122,25 +122,25 @@ export const About: React.FC = () => {
         {/* Section Header with Circus Tent Flair */}
         <div className="text-center space-y-4 mb-16 relative">
           {/* Top Vintage Marquee Badge */}
-          <div className="inline-flex items-center gap-2 px-5 py-2 rounded-full glass-card border border-carnival-gold/40 text-carnival-gold text-xs font-mono font-bold tracking-widest uppercase shadow-neon-gold">
-            <Sparkles className="w-4 h-4 text-carnival-gold animate-spin" style={{ animationDuration: '6s' }} />
+          <div className="inline-flex items-center gap-2 px-5 py-2 rounded-full glass-card border border-amber-500/40 dark:border-carnival-gold/40 text-amber-700 dark:text-carnival-gold text-xs font-mono font-bold tracking-widest uppercase shadow-sm dark:shadow-neon-gold">
+            <Sparkles className="w-4 h-4 text-amber-500 dark:text-carnival-gold animate-spin" style={{ animationDuration: '6s' }} />
             <span>🎪 Step Right Up to CWC Season 4 🎪</span>
           </div>
 
-          <h2 className="text-3xl sm:text-5xl font-black tracking-tight text-white uppercase font-heading">
+          <h2 className="text-3xl sm:text-5xl font-black tracking-tight text-slate-900 dark:text-white uppercase font-heading">
             About The <span className="text-gradient-carnival">Carnival Experience</span>
           </h2>
-          <p className="max-w-2xl mx-auto text-slate-300 text-base sm:text-lg">
+          <p className="max-w-2xl mx-auto text-slate-600 dark:text-slate-300 text-base sm:text-lg">
             Where competitive engineering meets high-energy carnival excitement. Explore the official guidelines, 10-day sprint progression, and glory awaiting top coders.
           </p>
 
           {/* Decorative Circus Stars Row */}
-          <div className="flex justify-center items-center gap-3 pt-2 text-carnival-gold/60">
-            <Star className="w-4 h-4 fill-carnival-gold/40" />
-            <div className="w-16 h-[2px] bg-gradient-to-r from-transparent via-carnival-gold/40 to-transparent" />
-            <Flame className="w-5 h-5 text-carnival-crimson" />
-            <div className="w-16 h-[2px] bg-gradient-to-r from-transparent via-carnival-gold/40 to-transparent" />
-            <Star className="w-4 h-4 fill-carnival-gold/40" />
+          <div className="flex justify-center items-center gap-3 pt-2 text-amber-500/60 dark:text-carnival-gold/60">
+            <Star className="w-4 h-4 fill-amber-400/40 dark:fill-carnival-gold/40" />
+            <div className="w-16 h-[2px] bg-gradient-to-r from-transparent via-amber-400/40 dark:via-carnival-gold/40 to-transparent" />
+            <Flame className="w-5 h-5 text-rose-600 dark:text-carnival-crimson" />
+            <div className="w-16 h-[2px] bg-gradient-to-r from-transparent via-amber-400/40 dark:via-carnival-gold/40 to-transparent" />
+            <Star className="w-4 h-4 fill-amber-400/40 dark:fill-carnival-gold/40" />
           </div>
         </div>
 
@@ -156,7 +156,7 @@ export const About: React.FC = () => {
               viewport={{ once: true }}
               transition={{ duration: 0.5, delay: index * 0.15 }}
               className={`relative rounded-3xl p-6 sm:p-8 border-2 transition-all duration-300 flex flex-col justify-between overflow-hidden group ${poster.posterTheme.border} ${poster.posterTheme.glow} ${
-                hoveredCard === index ? 'bg-[#161233]/95 scale-[1.02]' : 'bg-[#110E26]/80'
+                hoveredCard === index ? 'bg-white dark:bg-[#161233]/95 scale-[1.02] shadow-xl' : 'glass-card bg-white/90 dark:bg-[#110E26]/80'
               }`}
             >
               {/* Vintage Circus Poster Striped Top Banner Accent */}
@@ -165,7 +165,7 @@ export const About: React.FC = () => {
               <div>
                 {/* Poster Act Label */}
                 <div className="flex items-center justify-between gap-3 mb-6 pt-2">
-                  <span className="text-[10px] font-mono font-black tracking-widest text-slate-400 uppercase">
+                  <span className="text-[10px] font-mono font-black tracking-widest text-slate-500 dark:text-slate-400 uppercase">
                     {poster.act}
                   </span>
                   <span className={`text-[10px] font-mono font-bold px-3 py-1 rounded-full border ${poster.badgeBg}`}>
@@ -174,15 +174,15 @@ export const About: React.FC = () => {
                 </div>
 
                 {/* Poster Card Header */}
-                <div className={`p-4 rounded-2xl ${poster.posterTheme.headerBg} border border-white/10 mb-6 flex items-start gap-4`}>
-                  <div className="p-3 rounded-xl bg-black/40 border border-white/10 group-hover:scale-110 transition-transform">
+                <div className={`p-4 rounded-2xl ${poster.posterTheme.headerBg} border border-slate-200 dark:border-white/10 mb-6 flex items-start gap-4`}>
+                  <div className="p-3 rounded-xl bg-slate-100 dark:bg-black/40 border border-slate-200 dark:border-white/10 group-hover:scale-110 transition-transform">
                     {poster.icon}
                   </div>
                   <div>
-                    <h3 className={`text-xl font-extrabold text-white group-hover:${poster.posterTheme.accentText} transition-colors`}>
+                    <h3 className={`text-xl font-extrabold text-slate-900 dark:text-white group-hover:${poster.posterTheme.accentText} transition-colors`}>
                       {poster.title}
                     </h3>
-                    <p className="text-xs text-slate-300 mt-1 leading-relaxed">
+                    <p className="text-xs text-slate-600 dark:text-slate-300 mt-1 leading-relaxed">
                       {poster.subtitle}
                     </p>
                   </div>
@@ -192,12 +192,12 @@ export const About: React.FC = () => {
                 <div className="space-y-4 mb-6">
                   {poster.points.map((point) => (
                     <div key={point.title} className="flex items-start gap-3">
-                      <div className="mt-1 p-1 rounded-full bg-carnival-gold/10 text-carnival-gold border border-carnival-gold/30 shrink-0">
+                      <div className="mt-1 p-1 rounded-full bg-amber-500/10 text-amber-600 dark:text-carnival-gold border border-amber-500/30 shrink-0">
                         <Zap className="w-3 h-3" />
                       </div>
                       <div>
-                        <h4 className="text-sm font-bold text-slate-100">{point.title}</h4>
-                        <p className="text-xs text-slate-400 leading-normal">{point.desc}</p>
+                        <h4 className="text-sm font-bold text-slate-900 dark:text-slate-100">{point.title}</h4>
+                        <p className="text-xs text-slate-600 dark:text-slate-400 leading-normal">{point.desc}</p>
                       </div>
                     </div>
                   ))}
@@ -205,16 +205,16 @@ export const About: React.FC = () => {
               </div>
 
               {/* Bottom Poster Footer & Highlight */}
-              <div className="pt-4 border-t border-white/10 flex items-center justify-between text-xs font-mono text-slate-300">
-                <span className="flex items-center gap-1.5 text-carnival-gold font-semibold">
-                  <ShieldCheck className="w-4 h-4 shrink-0 text-carnival-gold" />
+              <div className="pt-4 border-t border-slate-200 dark:border-white/10 flex items-center justify-between text-xs font-mono text-slate-600 dark:text-slate-300">
+                <span className="flex items-center gap-1.5 text-amber-600 dark:text-carnival-gold font-semibold">
+                  <ShieldCheck className="w-4 h-4 shrink-0 text-amber-500 dark:text-carnival-gold" />
                   <span className="truncate">{poster.highlight}</span>
                 </span>
-                <ChevronRight className="w-4 h-4 text-slate-400 group-hover:text-white group-hover:translate-x-1 transition-all shrink-0" />
+                <ChevronRight className="w-4 h-4 text-slate-400 group-hover:text-slate-900 dark:group-hover:text-white group-hover:translate-x-1 transition-all shrink-0" />
               </div>
 
               {/* Subtle Circus Corner Flourishes */}
-              <div className="absolute bottom-2 right-2 text-white/5 font-mono text-xs select-none">
+              <div className="absolute bottom-2 right-2 text-slate-300 dark:text-white/5 font-mono text-xs select-none">
                 ✦ CWC-S4 ✦
               </div>
             </motion.div>
@@ -222,22 +222,22 @@ export const About: React.FC = () => {
         </div>
 
         {/* Quick Carnival Stats Bar */}
-        <div className="mt-12 glass-card rounded-2xl p-6 border border-white/10 grid grid-cols-2 md:grid-cols-4 gap-6 text-center shadow-xl">
+        <div className="mt-12 glass-card rounded-2xl p-6 border border-slate-200 dark:border-white/10 grid grid-cols-2 md:grid-cols-4 gap-6 text-center shadow-xl">
           <div className="space-y-1">
             <div className="text-2xl sm:text-3xl font-extrabold text-gradient-gold">10 Days</div>
-            <div className="text-xs font-mono text-slate-400 uppercase">Non-Stop Sprints</div>
+            <div className="text-xs font-mono text-slate-500 dark:text-slate-400 uppercase">Non-Stop Sprints</div>
           </div>
           <div className="space-y-1">
             <div className="text-2xl sm:text-3xl font-extrabold text-gradient-carnival">50+ Squads</div>
-            <div className="text-xs font-mono text-slate-400 uppercase font-bold">Battling Live</div>
+            <div className="text-xs font-mono text-slate-500 dark:text-slate-400 uppercase font-bold">Battling Live</div>
           </div>
           <div className="space-y-1">
             <div className="text-2xl sm:text-3xl font-extrabold text-gradient-cyan">₹1,00,000+</div>
-            <div className="text-xs font-mono text-slate-400 uppercase">Total Prize Pool</div>
+            <div className="text-xs font-mono text-slate-500 dark:text-slate-400 uppercase">Total Prize Pool</div>
           </div>
           <div className="space-y-1">
-            <div className="text-2xl sm:text-3xl font-extrabold text-carnival-crimson">7 Awards</div>
-            <div className="text-xs font-mono text-slate-400 uppercase">Trophies & Badges</div>
+            <div className="text-2xl sm:text-3xl font-extrabold text-rose-600 dark:text-carnival-crimson">7 Awards</div>
+            <div className="text-xs font-mono text-slate-500 dark:text-slate-400 uppercase">Trophies & Badges</div>
           </div>
         </div>
       </div>

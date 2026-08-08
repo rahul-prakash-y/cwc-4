@@ -12,6 +12,7 @@ export interface User {
   teamName?: string;
   ticketId?: string;
   avatar?: string;
+  themePreference?: 'light' | 'dark';
 }
 
 interface AuthContextType {

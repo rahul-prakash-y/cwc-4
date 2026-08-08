@@ -53,24 +53,24 @@ export const StudentDashboard: React.FC = () => {
       <VotingBooth isOpen={isVotingOpen} onClose={() => setIsVotingOpen(false)} />
 
       {/* Student Arena Header */}
-      <div className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-[#170E28] via-[#241338] to-[#120B20] p-6 sm:p-8 border border-carnival-gold/30 shadow-2xl">
+      <div className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-slate-100 via-white to-slate-100 dark:from-[#170E28] dark:via-[#241338] dark:to-[#120B20] p-6 sm:p-8 border border-slate-200 dark:border-carnival-gold/30 shadow-sm dark:shadow-2xl">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-carnival-gold/20 border border-carnival-gold/40 text-carnival-gold text-xs font-mono font-bold mb-2">
-              <Flame className="w-3.5 h-3.5 text-carnival-gold animate-bounce" />
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-500/10 dark:bg-carnival-gold/20 border border-amber-500/30 dark:border-carnival-gold/40 text-amber-700 dark:text-carnival-gold text-xs font-mono font-bold mb-2">
+              <Flame className="w-3.5 h-3.5 text-amber-600 dark:text-carnival-gold animate-bounce" />
               <span>CARNIVAL ARENA • STUDENT PORTAL</span>
             </div>
-            <h1 className="text-3xl font-black text-white">Student Dashboard 🎪</h1>
-            <p className="text-xs text-slate-300 mt-1 font-sans">
+            <h1 className="text-3xl font-black text-slate-900 dark:text-white">Student Dashboard 🎪</h1>
+            <p className="text-xs text-slate-600 dark:text-slate-300 mt-1 font-sans">
               Track squad points, tackle interactive daily coding challenges, lock in power-up advantages, and cast daily votes.
             </p>
           </div>
 
           <div className="flex items-center gap-2">
-            <div className="px-4 py-2 rounded-2xl glass-card border border-carnival-gold/30 font-mono text-xs text-right">
-              <div className="text-[10px] text-carnival-gold uppercase font-bold">STATUS</div>
-              <div className="font-extrabold text-emerald-400 text-sm flex items-center gap-1.5">
-                <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping" />
+            <div className="px-4 py-2 rounded-2xl glass-card border border-slate-200 dark:border-carnival-gold/30 font-mono text-xs text-right bg-white/80 dark:bg-white/5">
+              <div className="text-[10px] text-amber-600 dark:text-carnival-gold uppercase font-bold">STATUS</div>
+              <div className="font-extrabold text-emerald-600 dark:text-emerald-400 text-sm flex items-center gap-1.5">
+                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-ping" />
                 <span>ARENA ACTIVE</span>
               </div>
             </div>
@@ -78,13 +78,13 @@ export const StudentDashboard: React.FC = () => {
         </div>
 
         {/* Tab Navigation */}
-        <div className="flex items-center gap-2 mt-6 overflow-x-auto pb-1 border-t border-white/10 pt-4 scrollbar-none">
+        <div className="flex items-center gap-2 mt-6 overflow-x-auto pb-1 border-t border-slate-200 dark:border-white/10 pt-4 scrollbar-none">
           <button
             onClick={() => handleTabClick('overview')}
             className={`flex items-center gap-2 px-4 py-2.5 rounded-xl font-mono text-xs font-bold transition-all whitespace-nowrap shrink-0 ${
               currentTab === 'overview'
-                ? 'bg-gradient-to-r from-carnival-gold to-amber-500 text-slate-950 font-black shadow-neon-gold'
-                : 'glass-card text-slate-300 hover:text-white'
+                ? 'bg-gradient-to-r from-amber-500 to-amber-600 dark:from-carnival-gold dark:to-amber-500 text-white dark:text-slate-950 font-black shadow-md dark:shadow-neon-gold'
+                : 'glass-card text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white'
             }`}
           >
             <LayoutDashboard className="w-4 h-4" />
@@ -95,11 +95,11 @@ export const StudentDashboard: React.FC = () => {
             onClick={() => handleTabClick('buzzer')}
             className={`flex items-center gap-2 px-4 py-2.5 rounded-xl font-mono text-xs font-bold transition-all whitespace-nowrap shrink-0 ${
               currentTab === 'buzzer'
-                ? 'bg-gradient-to-r from-red-600 via-rose-600 to-amber-500 text-white font-black shadow-[0_0_15px_rgba(239,68,68,0.5)] animate-pulse'
-                : 'glass-card text-rose-300 hover:text-white border-rose-500/30'
+                ? 'bg-gradient-to-r from-rose-600 to-rose-700 text-white font-black shadow-md animate-pulse'
+                : 'glass-card text-rose-600 dark:text-rose-300 hover:text-slate-900 dark:hover:text-white border-rose-300 dark:border-rose-500/30'
             }`}
           >
-            <Radio className="w-4 h-4 text-red-400" />
+            <Radio className="w-4 h-4 text-rose-600 dark:text-red-400" />
             <span>Rapid Fire Buzzer</span>
           </button>
 
@@ -107,8 +107,8 @@ export const StudentDashboard: React.FC = () => {
             onClick={() => handleTabClick('tasks')}
             className={`flex items-center gap-2 px-4 py-2.5 rounded-xl font-mono text-xs font-bold transition-all whitespace-nowrap shrink-0 ${
               currentTab === 'tasks'
-                ? 'bg-gradient-to-r from-purple-600 to-indigo-600 text-white font-black shadow-neon-purple'
-                : 'glass-card text-slate-300 hover:text-white'
+                ? 'bg-gradient-to-r from-violet-600 to-indigo-600 text-white font-black shadow-md dark:shadow-neon-purple'
+                : 'glass-card text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white'
             }`}
           >
             <CheckSquare className="w-4 h-4" />
@@ -119,8 +119,8 @@ export const StudentDashboard: React.FC = () => {
             onClick={() => handleTabClick('advantages')}
             className={`flex items-center gap-2 px-4 py-2.5 rounded-xl font-mono text-xs font-bold transition-all whitespace-nowrap shrink-0 ${
               currentTab === 'advantages'
-                ? 'bg-gradient-to-r from-cyan-500 to-blue-500 text-slate-950 font-black shadow-neon-cyan'
-                : 'glass-card text-slate-300 hover:text-white'
+                ? 'bg-gradient-to-r from-cyan-600 to-blue-600 dark:from-cyan-500 dark:to-blue-500 text-white dark:text-slate-950 font-black shadow-md dark:shadow-neon-cyan'
+                : 'glass-card text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white'
             }`}
           >
             <Zap className="w-4 h-4" />
@@ -131,8 +131,8 @@ export const StudentDashboard: React.FC = () => {
             onClick={() => handleTabClick('leaderboard')}
             className={`flex items-center gap-2 px-4 py-2.5 rounded-xl font-mono text-xs font-bold transition-all whitespace-nowrap shrink-0 ${
               currentTab === 'leaderboard'
-                ? 'bg-gradient-to-r from-emerald-500 to-teal-500 text-slate-950 font-black shadow-[0_0_15px_rgba(16,185,129,0.4)]'
-                : 'glass-card text-slate-300 hover:text-white'
+                ? 'bg-gradient-to-r from-emerald-600 to-teal-600 dark:from-emerald-500 dark:to-teal-500 text-white dark:text-slate-950 font-black shadow-md'
+                : 'glass-card text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white'
             }`}
           >
             <Trophy className="w-4 h-4" />
@@ -143,8 +143,8 @@ export const StudentDashboard: React.FC = () => {
             onClick={() => setIsVotingOpen(true)}
             className={`flex items-center gap-2 px-4 py-2.5 rounded-xl font-mono text-xs font-bold transition-all whitespace-nowrap shrink-0 ${
               isVotingOpen
-                ? 'bg-gradient-to-r from-rose-600 to-pink-600 text-white font-black shadow-[0_0_15px_rgba(225,29,72,0.4)]'
-                : 'glass-card text-slate-300 hover:text-white'
+                ? 'bg-gradient-to-r from-rose-600 to-pink-600 text-white font-black shadow-md'
+                : 'glass-card text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white'
             }`}
           >
             <Heart className="w-4 h-4" />

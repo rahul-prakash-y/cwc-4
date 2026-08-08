@@ -312,7 +312,7 @@ export const Register: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen pt-24 pb-20 px-4 sm:px-6 lg:px-8 relative overflow-hidden bg-[#0B0A16]">
+    <div className="min-h-screen pt-24 pb-20 px-4 sm:px-6 lg:px-8 relative overflow-hidden bg-slate-50 dark:bg-[#0B0A16]">
       {/* Background Decorative Neon Orbs */}
       <div className="absolute top-20 left-1/4 w-[500px] h-[500px] bg-carnival-crimson/10 rounded-full blur-[120px] pointer-events-none -z-10" />
       <div className="absolute bottom-20 right-1/4 w-[500px] h-[500px] bg-carnival-cyan/10 rounded-full blur-[120px] pointer-events-none -z-10" />
@@ -325,20 +325,20 @@ export const Register: React.FC = () => {
           <motion.div
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
-            className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full glass-card border border-carnival-gold/40 text-carnival-gold text-xs font-mono font-bold uppercase tracking-widest shadow-neon-gold"
+            className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full glass-card bg-white/80 dark:bg-transparent border border-amber-500/40 dark:border-carnival-gold/40 text-amber-700 dark:text-carnival-gold text-xs font-mono font-bold uppercase tracking-widest shadow-sm dark:shadow-neon-gold"
           >
-            <Ticket className="w-4 h-4 text-carnival-gold" />
+            <Ticket className="w-4 h-4 text-amber-600 dark:text-carnival-gold" />
             <span>🎪 Code With Curious Season 4 Admission Gate 🎪</span>
           </motion.div>
 
           <motion.h1
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
-            className="text-4xl sm:text-5xl lg:text-6xl font-black text-white tracking-tight"
+            className="text-4xl sm:text-5xl lg:text-6xl font-black text-slate-900 dark:text-white tracking-tight"
           >
             Carnival Ticket <span className="text-gradient-carnival">Squad Registration</span>
           </motion.h1>
-          <p className="text-slate-300 text-sm sm:text-base max-w-2xl mx-auto">
+          <p className="text-slate-600 dark:text-slate-300 text-sm sm:text-base max-w-2xl mx-auto">
             Register your 4-member team to enter the CWC Season 4 Coding Arena. Fill in complete member profiles below!
           </p>
         </div>
@@ -348,25 +348,25 @@ export const Register: React.FC = () => {
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="rounded-3xl glass-card border border-carnival-crimson/40 shadow-2xl p-10 text-center space-y-6 bg-gradient-to-b from-[#180E22] via-[#120B1F] to-[#0E0B1A] relative overflow-hidden"
+            className="rounded-3xl glass-card bg-white/95 dark:bg-gradient-to-b dark:from-[#180E22] dark:via-[#120B1F] dark:to-[#0E0B1A] border border-rose-200 dark:border-carnival-crimson/40 shadow-xl dark:shadow-2xl p-10 text-center space-y-6 relative overflow-hidden"
           >
-            <div className="w-20 h-20 rounded-full bg-carnival-crimson/20 border border-carnival-crimson/50 flex items-center justify-center mx-auto text-3xl shadow-neon-crimson">
+            <div className="w-20 h-20 rounded-full bg-rose-100 dark:bg-carnival-crimson/20 border border-rose-300 dark:border-carnival-crimson/50 flex items-center justify-center mx-auto text-3xl shadow-sm dark:shadow-neon-crimson">
               🚫
             </div>
             <div className="space-y-3">
-              <h2 className="text-2xl sm:text-3xl lg:text-4xl font-black text-white">
+              <h2 className="text-2xl sm:text-3xl lg:text-4xl font-black text-slate-900 dark:text-white">
                 Registrations for Season {currentSeason} are currently closed.
               </h2>
-              <p className="text-sm text-slate-300 max-w-lg mx-auto font-sans leading-relaxed">
+              <p className="text-sm text-slate-600 dark:text-slate-300 max-w-lg mx-auto font-sans leading-relaxed">
                 The carnival arena gates have closed for squad entry. Stay tuned for live event updates, leaderboard action, and upcoming power-up rounds!
               </p>
             </div>
             <div className="pt-4 flex justify-center">
               <Link
                 to="/"
-                className="inline-flex items-center gap-2 px-8 py-3.5 rounded-xl bg-cwc-surface backdrop-blur-lg border border-white/15 text-white font-bold text-sm hover:border-cwc-gold/50 hover:text-cwc-gold transition duration-300"
+                className="inline-flex items-center gap-2 px-8 py-3.5 rounded-xl bg-slate-900 dark:bg-cwc-surface backdrop-blur-lg border border-slate-700 dark:border-white/15 text-white font-bold text-sm hover:border-amber-400 transition duration-300"
               >
-                <Home className="w-4 h-4 text-cwc-gold" />
+                <Home className="w-4 h-4 text-amber-400" />
                 <span>Return to Landing Page</span>
               </Link>
             </div>
@@ -375,7 +375,7 @@ export const Register: React.FC = () => {
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="rounded-3xl glass-card border border-carnival-gold/30 shadow-2xl p-6 sm:p-10 bg-gradient-to-b from-[#161226]/95 via-[#120E22]/95 to-[#0E0B1A]/95 relative overflow-hidden"
+            className="rounded-3xl glass-card bg-white/95 dark:bg-gradient-to-b dark:from-[#161226]/95 dark:via-[#120E22]/95 dark:to-[#0E0B1A]/95 border border-slate-200 dark:border-carnival-gold/30 shadow-xl dark:shadow-2xl p-6 sm:p-10 relative overflow-hidden"
           >
             {/* Top Ticket Punch Strip */}
             <div className="absolute top-0 left-0 right-0 h-2 bg-gradient-to-r from-carnival-crimson via-carnival-gold to-carnival-cyan" />
@@ -383,26 +383,26 @@ export const Register: React.FC = () => {
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-10">
             {/* SECTION 1: Team Details & Theme Color */}
             <div className="space-y-6">
-              <div className="flex items-center gap-3 border-b border-white/10 pb-3">
-                <div className="w-10 h-10 rounded-xl bg-carnival-gold/20 border border-carnival-gold/40 flex items-center justify-center text-carnival-gold font-bold">
+              <div className="flex items-center gap-3 border-b border-slate-200 dark:border-white/10 pb-3">
+                <div className="w-10 h-10 rounded-xl bg-amber-100 dark:bg-carnival-gold/20 border border-amber-300 dark:border-carnival-gold/40 flex items-center justify-center text-amber-700 dark:text-carnival-gold font-bold">
                   1
                 </div>
                 <div>
-                  <h2 className="text-xl font-bold text-white flex items-center gap-2">
-                    <Shield className="w-5 h-5 text-carnival-gold" />
+                  <h2 className="text-xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                    <Shield className="w-5 h-5 text-amber-600 dark:text-carnival-gold" />
                     Team Identity & Theme
                   </h2>
-                  <p className="text-xs text-slate-400">Choose your carnival team name and badge color</p>
+                  <p className="text-xs text-slate-500 dark:text-slate-400">Choose your carnival team name and badge color</p>
                 </div>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {/* Team Name Input */}
                 <div className="space-y-2">
-                  <label className="text-xs font-mono font-bold text-slate-300 uppercase tracking-wider flex items-center justify-between">
+                  <label className="text-xs font-mono font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider flex items-center justify-between">
                     <span>Carnival Team Name *</span>
                     {isCheckingTeamName && (
-                      <span className="text-[10px] text-carnival-cyan flex items-center gap-1">
+                      <span className="text-[10px] text-cyan-600 dark:text-carnival-cyan flex items-center gap-1">
                         <Loader2 className="w-3 h-3 animate-spin" /> Checking availability...
                       </span>
                     )}
@@ -413,20 +413,20 @@ export const Register: React.FC = () => {
                       type="text"
                       placeholder="e.g. Cyber Circus Kings"
                       onBlur={(e) => handleCheckTeamName(e.target.value)}
-                      className={`w-full px-4 py-3.5 rounded-xl bg-black/50 text-white text-sm border focus:outline-none transition ${
+                      className={`w-full px-4 py-3.5 rounded-xl bg-slate-50 dark:bg-black/50 text-slate-900 dark:text-white text-sm border focus:outline-none transition ${
                         errors.teamName || teamNameError
-                          ? 'border-carnival-crimson focus:border-carnival-crimson'
-                          : 'border-white/15 focus:border-carnival-gold'
+                          ? 'border-red-500 focus:border-red-500'
+                          : 'border-slate-300 dark:border-white/15 focus:border-amber-500 dark:focus:border-carnival-gold focus:bg-white dark:focus:bg-black/40'
                       }`}
                     />
-                    <Users className="w-4 h-4 text-slate-500 absolute right-3.5 top-1/2 -translate-y-1/2" />
+                    <Users className="w-4 h-4 text-slate-400 absolute right-3.5 top-1/2 -translate-y-1/2" />
                   </div>
                   {/* Real-time inline error message */}
                   {(errors.teamName || teamNameError) && (
                     <motion.p
                       initial={{ opacity: 0, y: -4 }}
                       animate={{ opacity: 1, y: 0 }}
-                      className="text-xs text-carnival-crimson flex items-center gap-1 font-semibold"
+                      className="text-xs text-red-500 dark:text-carnival-crimson flex items-center gap-1 font-semibold"
                     >
                       <AlertCircle className="w-3.5 h-3.5 shrink-0" />
                       <span>{errors.teamName?.message || teamNameError}</span>
@@ -436,8 +436,8 @@ export const Register: React.FC = () => {
 
                 {/* Theme Color Picker */}
                 <div className="space-y-2">
-                  <label className="text-xs font-mono font-bold text-slate-300 uppercase tracking-wider flex items-center gap-1.5">
-                    <Palette className="w-3.5 h-3.5 text-carnival-gold" />
+                  <label className="text-xs font-mono font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider flex items-center gap-1.5">
+                    <Palette className="w-3.5 h-3.5 text-amber-600 dark:text-carnival-gold" />
                     <span>Squad Theme Color</span>
                   </label>
                   <div className="flex flex-wrap items-center gap-3 pt-1">
@@ -448,13 +448,13 @@ export const Register: React.FC = () => {
                         onClick={() => setValue('themeColor', color.value)}
                         className={`w-9 h-9 rounded-xl transition-all duration-200 flex items-center justify-center border-2 ${
                           selectedColor === color.value
-                            ? 'scale-110 border-white shadow-[0_0_15px_rgba(255,255,255,0.5)]'
+                            ? 'scale-110 border-slate-900 dark:border-white shadow-md'
                             : 'border-transparent opacity-70 hover:opacity-100'
                         }`}
                         style={{ backgroundColor: color.value }}
                         title={color.name}
                       >
-                        {selectedColor === color.value && <Check className="w-4 h-4 text-slate-950 font-bold" />}
+                        {selectedColor === color.value && <Check className="w-4 h-4 text-white font-bold drop-shadow" />}
                       </button>
                     ))}
                   </div>
@@ -464,29 +464,29 @@ export const Register: React.FC = () => {
 
             {/* SECTION 2: 4 Team Members Profiles */}
             <div className="space-y-6">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-white/10 pb-3">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-200 dark:border-white/10 pb-3">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-xl bg-carnival-cyan/20 border border-carnival-cyan/40 flex items-center justify-center text-carnival-cyan font-bold">
+                  <div className="w-10 h-10 rounded-xl bg-cyan-100 dark:bg-carnival-cyan/20 border border-cyan-300 dark:border-carnival-cyan/40 flex items-center justify-center text-cyan-700 dark:text-carnival-cyan font-bold">
                     2
                   </div>
                   <div>
-                    <h2 className="text-xl font-bold text-white flex items-center gap-2">
-                      <Users className="w-5 h-5 text-carnival-cyan" />
+                    <h2 className="text-xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                      <Users className="w-5 h-5 text-cyan-600 dark:text-carnival-cyan" />
                       4 Squad Member Profiles
                     </h2>
-                    <p className="text-xs text-slate-400">
+                    <p className="text-xs text-slate-500 dark:text-slate-400">
                       Member 1 is designated as Team Leader • All 4 profiles required
                     </p>
                   </div>
                 </div>
 
                 {/* View Switcher: Tabs vs Grid */}
-                <div className="flex items-center p-1 rounded-xl bg-black/40 border border-white/10 text-xs">
+                <div className="flex items-center p-1 rounded-xl bg-slate-100 dark:bg-black/40 border border-slate-200 dark:border-white/10 text-xs">
                   <button
                     type="button"
                     onClick={() => setLayoutMode('tabs')}
                     className={`px-3 py-1.5 rounded-lg font-bold flex items-center gap-1.5 transition ${
-                      layoutMode === 'tabs' ? 'bg-carnival-cyan/30 text-carnival-cyan border border-carnival-cyan/40' : 'text-slate-400'
+                      layoutMode === 'tabs' ? 'bg-cyan-500 dark:bg-carnival-cyan/30 text-white dark:text-carnival-cyan border border-cyan-600 dark:border-carnival-cyan/40 shadow-sm' : 'text-slate-600 dark:text-slate-400'
                     }`}
                   >
                     <Layers className="w-3.5 h-3.5" /> Tabbed View
@@ -495,7 +495,7 @@ export const Register: React.FC = () => {
                     type="button"
                     onClick={() => setLayoutMode('grid')}
                     className={`px-3 py-1.5 rounded-lg font-bold flex items-center gap-1.5 transition ${
-                      layoutMode === 'grid' ? 'bg-carnival-cyan/30 text-carnival-cyan border border-carnival-cyan/40' : 'text-slate-400'
+                      layoutMode === 'grid' ? 'bg-cyan-500 dark:bg-carnival-cyan/30 text-white dark:text-carnival-cyan border border-cyan-600 dark:border-carnival-cyan/40 shadow-sm' : 'text-slate-600 dark:text-slate-400'
                     }`}
                   >
                     <Grid className="w-3.5 h-3.5" /> 4-Grid View
@@ -516,28 +516,28 @@ export const Register: React.FC = () => {
                         onClick={() => setActiveTab(idx)}
                         className={`p-3 rounded-xl border text-left transition relative overflow-hidden flex items-center gap-2.5 ${
                           activeTab === idx
-                            ? 'bg-gradient-to-r from-carnival-cyan/20 to-carnival-purple/20 border-carnival-cyan text-white shadow-neon-cyan'
-                            : 'bg-black/40 border-white/10 text-slate-400 hover:border-white/30'
+                            ? 'bg-gradient-to-r from-cyan-100 via-indigo-100 to-purple-100 dark:from-carnival-cyan/20 dark:to-carnival-purple/20 border-cyan-500 dark:border-carnival-cyan text-slate-900 dark:text-white shadow-sm dark:shadow-neon-cyan'
+                            : 'bg-slate-100/80 dark:bg-black/40 border-slate-200 dark:border-white/10 text-slate-600 dark:text-slate-400 hover:border-slate-300 dark:hover:border-white/30'
                         }`}
                       >
                         <div
                           className={`w-7 h-7 rounded-lg flex items-center justify-center text-xs font-bold shrink-0 ${
                             isLeader
-                              ? 'bg-amber-400/20 text-amber-300 border border-amber-400/40'
-                              : 'bg-white/10 text-white'
+                              ? 'bg-amber-100 dark:bg-amber-400/20 text-amber-800 dark:text-amber-300 border border-amber-300 dark:border-amber-400/40'
+                              : 'bg-slate-200 dark:bg-white/10 text-slate-700 dark:text-white'
                           }`}
                         >
-                          {isLeader ? <Crown className="w-3.5 h-3.5 text-amber-400" /> : idx + 1}
+                          {isLeader ? <Crown className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400" /> : idx + 1}
                         </div>
                         <div className="min-w-0 flex-1">
                           <div className="text-xs font-bold truncate">
                             {membersWatch[idx]?.name || (isLeader ? 'Leader' : `Member ${idx + 1}`)}
                           </div>
-                          <div className="text-[10px] text-slate-400 font-mono uppercase">
+                          <div className="text-[10px] text-slate-500 dark:text-slate-400 font-mono uppercase">
                             {isLeader ? 'Leader' : `Member ${idx + 1}`}
                           </div>
                         </div>
-                        {hasError && <AlertCircle className="w-4 h-4 text-carnival-crimson shrink-0" />}
+                        {hasError && <AlertCircle className="w-4 h-4 text-red-500 dark:text-carnival-crimson shrink-0" />}
                       </button>
                     );
                   })}
@@ -556,44 +556,44 @@ export const Register: React.FC = () => {
                       initial={{ opacity: 0, x: 10 }}
                       animate={{ opacity: 1, x: 0 }}
                       transition={{ duration: 0.2 }}
-                      className={`p-5 sm:p-6 rounded-2xl border space-y-5 bg-black/40 relative ${
+                      className={`p-5 sm:p-6 rounded-2xl border space-y-5 bg-slate-50/90 dark:bg-black/40 relative ${
                         isLeader
-                          ? 'border-amber-400/40 shadow-[0_0_20px_rgba(251,191,36,0.15)]'
-                          : 'border-white/10'
+                          ? 'border-amber-400/80 dark:border-amber-400/40 shadow-sm dark:shadow-[0_0_20px_rgba(251,191,36,0.15)]'
+                          : 'border-slate-200 dark:border-white/10'
                       }`}
                     >
                       {/* Card Member Header */}
-                      <div className="flex items-center justify-between border-b border-white/10 pb-3">
+                      <div className="flex items-center justify-between border-b border-slate-200 dark:border-white/10 pb-3">
                         <div className="flex items-center gap-2">
                           <div
                             className={`px-3 py-1 rounded-full text-xs font-mono font-bold flex items-center gap-1.5 ${
                               isLeader
-                                ? 'bg-amber-400/20 text-amber-300 border border-amber-400/50 shadow-neon-gold'
-                                : 'bg-carnival-cyan/20 text-carnival-cyan border border-carnival-cyan/40'
+                                ? 'bg-amber-100 dark:bg-amber-400/20 text-amber-800 dark:text-amber-300 border border-amber-300 dark:border-amber-400/50 shadow-sm dark:shadow-neon-gold'
+                                : 'bg-cyan-100 dark:bg-carnival-cyan/20 text-cyan-800 dark:text-carnival-cyan border border-cyan-300 dark:border-carnival-cyan/40'
                             }`}
                           >
-                            {isLeader ? <Crown className="w-3.5 h-3.5 text-amber-400" /> : <User className="w-3.5 h-3.5" />}
+                            {isLeader ? <Crown className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400" /> : <User className="w-3.5 h-3.5" />}
                             <span>{isLeader ? 'MEMBER 1 (TEAM LEADER)' : `MEMBER ${idx + 1}`}</span>
                           </div>
                         </div>
-                        <span className="text-[11px] font-mono text-slate-400">Profile {idx + 1} of 4</span>
+                        <span className="text-[11px] font-mono text-slate-500 dark:text-slate-400">Profile {idx + 1} of 4</span>
                       </div>
 
                       {/* Card Inputs Grid */}
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         {/* Member Full Name */}
                         <div className="space-y-1.5">
-                          <label className="text-xs font-mono text-slate-300 flex items-center gap-1">
+                          <label className="text-xs font-mono text-slate-700 dark:text-slate-300 flex items-center gap-1">
                             <User className="w-3.5 h-3.5 text-slate-400" /> Full Name *
                           </label>
                           <input
                             {...register(`members.${idx}.name`)}
                             type="text"
                             placeholder="e.g. Aarav Sharma"
-                            className="w-full px-3.5 py-2.5 rounded-xl bg-black/60 text-white text-xs border border-white/15 focus:border-carnival-cyan focus:outline-none"
+                            className="w-full px-3.5 py-2.5 rounded-xl bg-white dark:bg-black/60 text-slate-900 dark:text-white text-xs border border-slate-300 dark:border-white/15 focus:border-cyan-500 dark:focus:border-carnival-cyan focus:outline-none"
                           />
                           {errors.members?.[idx]?.name && (
-                            <p className="text-[11px] text-carnival-crimson font-semibold">
+                            <p className="text-[11px] text-red-500 dark:text-carnival-crimson font-semibold">
                               {errors.members[idx]?.name?.message}
                             </p>
                           )}
@@ -601,17 +601,17 @@ export const Register: React.FC = () => {
 
                         {/* Member Roll Number */}
                         <div className="space-y-1.5">
-                          <label className="text-xs font-mono text-slate-300 flex items-center gap-1">
+                          <label className="text-xs font-mono text-slate-700 dark:text-slate-300 flex items-center gap-1">
                             <Hash className="w-3.5 h-3.5 text-slate-400" /> Roll Number *
                           </label>
                           <input
                             {...register(`members.${idx}.rollNo`)}
                             type="text"
                             placeholder="e.g. 22CSE042"
-                            className="w-full px-3.5 py-2.5 rounded-xl bg-black/60 text-white text-xs border border-white/15 focus:border-carnival-cyan focus:outline-none font-mono"
+                            className="w-full px-3.5 py-2.5 rounded-xl bg-white dark:bg-black/60 text-slate-900 dark:text-white text-xs border border-slate-300 dark:border-white/15 focus:border-cyan-500 dark:focus:border-carnival-cyan focus:outline-none font-mono"
                           />
                           {errors.members?.[idx]?.rollNo && (
-                            <p className="text-[11px] text-carnival-crimson font-semibold">
+                            <p className="text-[11px] text-red-500 dark:text-carnival-crimson font-semibold">
                               {errors.members[idx]?.rollNo?.message}
                             </p>
                           )}
@@ -619,17 +619,17 @@ export const Register: React.FC = () => {
 
                         {/* Department Mail ID */}
                         <div className="space-y-1.5">
-                          <label className="text-xs font-mono text-slate-300 flex items-center gap-1">
+                          <label className="text-xs font-mono text-slate-700 dark:text-slate-300 flex items-center gap-1">
                             <Mail className="w-3.5 h-3.5 text-slate-400" /> Department Mail ID *
                           </label>
                           <input
                             {...register(`members.${idx}.deptMailId`)}
                             type="email"
                             placeholder="e.g. student@college.edu"
-                            className="w-full px-3.5 py-2.5 rounded-xl bg-black/60 text-white text-xs border border-white/15 focus:border-carnival-cyan focus:outline-none"
+                            className="w-full px-3.5 py-2.5 rounded-xl bg-white dark:bg-black/60 text-slate-900 dark:text-white text-xs border border-slate-300 dark:border-white/15 focus:border-cyan-500 dark:focus:border-carnival-cyan focus:outline-none"
                           />
                           {errors.members?.[idx]?.deptMailId && (
-                            <p className="text-[11px] text-carnival-crimson font-semibold">
+                            <p className="text-[11px] text-red-500 dark:text-carnival-crimson font-semibold">
                               {errors.members[idx]?.deptMailId?.message}
                             </p>
                           )}
@@ -637,17 +637,17 @@ export const Register: React.FC = () => {
 
                         {/* Phone Number */}
                         <div className="space-y-1.5">
-                          <label className="text-xs font-mono text-slate-300 flex items-center gap-1">
+                          <label className="text-xs font-mono text-slate-700 dark:text-slate-300 flex items-center gap-1">
                             <Phone className="w-3.5 h-3.5 text-slate-400" /> Phone Number *
                           </label>
                           <input
                             {...register(`members.${idx}.phone`)}
                             type="tel"
                             placeholder="e.g. +91 9876543210"
-                            className="w-full px-3.5 py-2.5 rounded-xl bg-black/60 text-white text-xs border border-white/15 focus:border-carnival-cyan focus:outline-none font-mono"
+                            className="w-full px-3.5 py-2.5 rounded-xl bg-white dark:bg-black/60 text-slate-900 dark:text-white text-xs border border-slate-300 dark:border-white/15 focus:border-cyan-500 dark:focus:border-carnival-cyan focus:outline-none font-mono"
                           />
                           {errors.members?.[idx]?.phone && (
-                            <p className="text-[11px] text-carnival-crimson font-semibold">
+                            <p className="text-[11px] text-red-500 dark:text-carnival-crimson font-semibold">
                               {errors.members[idx]?.phone?.message}
                             </p>
                           )}
@@ -655,7 +655,7 @@ export const Register: React.FC = () => {
 
                         {/* Gender selection */}
                         <div className="space-y-1.5">
-                          <label className="text-xs font-mono text-slate-300">Gender *</label>
+                          <label className="text-xs font-mono text-slate-700 dark:text-slate-300">Gender *</label>
                           <div className="grid grid-cols-3 gap-2">
                             {(['Male', 'Female', 'Other'] as const).map((g) => {
                               const isSelected = membersWatch[idx]?.gender === g;
@@ -666,8 +666,8 @@ export const Register: React.FC = () => {
                                   onClick={() => setValue(`members.${idx}.gender`, g)}
                                   className={`py-2 rounded-xl text-xs font-bold transition border ${
                                     isSelected
-                                      ? 'bg-carnival-cyan/20 border-carnival-cyan text-carnival-cyan'
-                                      : 'bg-black/40 border-white/10 text-slate-400 hover:text-white'
+                                      ? 'bg-cyan-500 text-white dark:bg-carnival-cyan/20 dark:border-carnival-cyan dark:text-carnival-cyan border-cyan-600 shadow-sm'
+                                      : 'bg-white dark:bg-black/40 border-slate-200 dark:border-white/10 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
                                   }`}
                                 >
                                   {g}
@@ -679,7 +679,7 @@ export const Register: React.FC = () => {
 
                         {/* Residence Type selection */}
                         <div className="space-y-1.5">
-                          <label className="text-xs font-mono text-slate-300">Residence Type *</label>
+                          <label className="text-xs font-mono text-slate-700 dark:text-slate-300">Residence Type *</label>
                           <div className="grid grid-cols-2 gap-2">
                             {[
                               { label: '🏠 Hosteller', val: 'Hosteller' },
@@ -693,8 +693,8 @@ export const Register: React.FC = () => {
                                   onClick={() => setValue(`members.${idx}.residenceType`, r.val as any)}
                                   className={`py-2 rounded-xl text-xs font-bold transition border ${
                                     isSelected
-                                      ? 'bg-carnival-gold/20 border-carnival-gold text-carnival-gold'
-                                      : 'bg-black/40 border-white/10 text-slate-400 hover:text-white'
+                                      ? 'bg-amber-500 text-white dark:bg-carnival-gold/20 dark:border-carnival-gold dark:text-carnival-gold border-amber-600 shadow-sm'
+                                      : 'bg-white dark:bg-black/40 border-slate-200 dark:border-white/10 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
                                   }`}
                                 >
                                   {r.label}
@@ -711,23 +711,23 @@ export const Register: React.FC = () => {
             </div>
 
             {/* SECTION 3: Rulebook Terms & Submit Action */}
-            <div className="space-y-6 border-t border-white/10 pt-6">
-              <div className="p-4 rounded-2xl bg-black/40 border border-white/10 space-y-3">
+            <div className="space-y-6 border-t border-slate-200 dark:border-white/10 pt-6">
+              <div className="p-4 rounded-2xl bg-slate-50/90 dark:bg-black/40 border border-slate-200 dark:border-white/10 space-y-3">
                 <label className="flex items-start gap-3 cursor-pointer">
                   <input
                     {...register('acceptRules')}
                     type="checkbox"
-                    className="mt-1 w-4 h-4 rounded border-white/20 text-carnival-crimson focus:ring-carnival-crimson bg-black/60"
+                    className="mt-1 w-4 h-4 rounded border-slate-300 dark:border-white/20 text-rose-600 dark:text-carnival-crimson focus:ring-rose-500 dark:focus:ring-carnival-crimson bg-white dark:bg-black/60"
                   />
-                  <div className="text-xs text-slate-300 space-y-1">
-                    <span className="font-bold text-white block">Accept Carnival Rules & Regulations</span>
+                  <div className="text-xs text-slate-600 dark:text-slate-300 space-y-1">
+                    <span className="font-bold text-slate-900 dark:text-white block">Accept Carnival Rules & Regulations</span>
                     <span>
                       I certify that all 4 member details provided are accurate and belong to enrolled students.
                     </span>
                   </div>
                 </label>
                 {errors.acceptRules && (
-                  <p className="text-xs text-carnival-crimson font-semibold pl-7 flex items-center gap-1">
+                  <p className="text-xs text-red-500 dark:text-carnival-crimson font-semibold pl-7 flex items-center gap-1">
                     <AlertCircle className="w-3.5 h-3.5" />
                     <span>{errors.acceptRules.message}</span>
                   </p>
@@ -738,7 +738,7 @@ export const Register: React.FC = () => {
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className="w-full py-4 rounded-2xl bg-gradient-to-r from-carnival-crimson via-carnival-gold to-carnival-cyan text-slate-950 font-black text-base uppercase tracking-wider shadow-neon-crimson hover:brightness-110 transition duration-300 flex items-center justify-center gap-3 disabled:opacity-50"
+                className="w-full py-4 rounded-2xl bg-gradient-to-r from-rose-600 via-amber-500 to-cyan-500 text-white dark:text-slate-950 font-black text-base uppercase tracking-wider shadow-md dark:shadow-neon-crimson hover:brightness-110 transition duration-300 flex items-center justify-center gap-3 disabled:opacity-50"
               >
                 {isSubmitting ? (
                   <>
@@ -765,40 +765,40 @@ export const Register: React.FC = () => {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[999] bg-black/85 backdrop-blur-md flex items-center justify-center p-4"
+            className="fixed inset-0 z-[999] bg-slate-900/60 dark:bg-black/85 backdrop-blur-md flex items-center justify-center p-4"
           >
             <motion.div
               initial={{ scale: 0.9, y: 20 }}
               animate={{ scale: 1, y: 0 }}
-              className="p-8 sm:p-10 rounded-3xl glass-card border-2 border-carnival-gold/60 shadow-2xl max-w-lg w-full text-center space-y-6 bg-gradient-to-b from-[#1E1730] to-[#120F24] relative overflow-hidden"
+              className="p-8 sm:p-10 rounded-3xl glass-card bg-white dark:bg-gradient-to-b dark:from-[#1E1730] dark:to-[#120F24] border-2 border-amber-500/60 dark:border-carnival-gold/60 shadow-2xl max-w-lg w-full text-center space-y-6 relative overflow-hidden"
             >
-              <div className="w-20 h-20 rounded-3xl bg-carnival-gold/20 border border-carnival-gold/40 flex items-center justify-center mx-auto text-4xl shadow-neon-gold">
+              <div className="w-20 h-20 rounded-3xl bg-amber-100 dark:bg-carnival-gold/20 border border-amber-300 dark:border-carnival-gold/40 flex items-center justify-center mx-auto text-4xl shadow-sm dark:shadow-neon-gold">
                 🎟️
               </div>
 
               <div className="space-y-2">
-                <h3 className="text-2xl sm:text-3xl font-black text-white">Ticket Punched! 🎉</h3>
-                <p className="text-sm text-slate-300">
-                  Team <strong className="text-carnival-gold">{registeredData?.teamName}</strong> has been registered with 4 complete member profiles. Status: <span className="text-amber-400 font-bold font-mono">Pending Approval</span>.
+                <h3 className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white">Ticket Punched! 🎉</h3>
+                <p className="text-sm text-slate-600 dark:text-slate-300">
+                  Team <strong className="text-amber-700 dark:text-carnival-gold">{registeredData?.teamName}</strong> has been registered with 4 complete member profiles. Status: <span className="text-amber-600 dark:text-amber-400 font-bold font-mono">Pending Approval</span>.
                 </p>
               </div>
 
-              <div className="p-4 rounded-2xl bg-black/50 border border-white/10 space-y-3 text-left">
-                <div className="text-xs text-slate-400 font-mono">Default Student Credentials</div>
-                <div className="flex items-center justify-between text-xs font-mono text-slate-200">
+              <div className="p-4 rounded-2xl bg-slate-50 dark:bg-black/50 border border-slate-200 dark:border-white/10 space-y-3 text-left">
+                <div className="text-xs text-slate-500 dark:text-slate-400 font-mono">Default Student Credentials</div>
+                <div className="flex items-center justify-between text-xs font-mono text-slate-700 dark:text-slate-200">
                   <span>Leader Email:</span>
-                  <span className="text-white font-bold">{registeredData?.leaderEmail}</span>
+                  <span className="text-slate-900 dark:text-white font-bold">{registeredData?.leaderEmail}</span>
                 </div>
-                <div className="flex items-center justify-between text-xs font-mono text-slate-200">
+                <div className="flex items-center justify-between text-xs font-mono text-slate-700 dark:text-slate-200">
                   <span>Default Password:</span>
                   <div className="flex items-center gap-2">
-                    <span className="text-carnival-gold font-bold">{defaultPassword}</span>
+                    <span className="text-amber-600 dark:text-carnival-gold font-bold">{defaultPassword}</span>
                     <button
                       onClick={handleCopyPassword}
-                      className="p-1 rounded bg-white/10 hover:bg-white/20 text-slate-300"
+                      className="p-1 rounded bg-slate-200 dark:bg-white/10 hover:bg-slate-300 dark:hover:bg-white/20 text-slate-700 dark:text-slate-300"
                       title="Copy Password"
                     >
-                      {copiedPassword ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
+                      {copiedPassword ? <Check className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
                     </button>
                   </div>
                 </div>
@@ -807,14 +807,14 @@ export const Register: React.FC = () => {
               <div className="pt-2 flex flex-col sm:flex-row gap-3">
                 <button
                   onClick={() => navigate('/login')}
-                  className="flex-1 py-3 rounded-xl bg-carnival-gold text-slate-950 font-extrabold text-sm hover:brightness-110 transition flex items-center justify-center gap-2"
+                  className="flex-1 py-3 rounded-xl bg-amber-500 dark:bg-carnival-gold text-white dark:text-slate-950 font-extrabold text-sm hover:brightness-110 transition flex items-center justify-center gap-2 shadow-sm"
                 >
                   <LogIn className="w-4 h-4" />
                   <span>Proceed to Student Login</span>
                 </button>
                 <button
                   onClick={() => navigate('/')}
-                  className="py-3 px-4 rounded-xl bg-white/10 text-white font-bold text-sm hover:bg-white/20 transition flex items-center justify-center gap-2"
+                  className="py-3 px-4 rounded-xl bg-slate-100 dark:bg-white/10 text-slate-700 dark:text-white font-bold text-sm hover:bg-slate-200 dark:hover:bg-white/20 transition flex items-center justify-center gap-2"
                 >
                   <Home className="w-4 h-4" />
                   <span>Home</span>

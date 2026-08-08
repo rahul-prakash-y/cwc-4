@@ -1,5 +1,6 @@
 /** @type {import('tailwindcss').Config} */
 export default {
+  darkMode: 'class',
   content: [
     "./index.html",
     "./src/**/*.{js,ts,jsx,tsx}",
@@ -8,19 +9,29 @@ export default {
     extend: {
       colors: {
         'cwc-bg': '#05050A',
+        'cwc-bg-light': '#F8FAFC',
         'cwc-surface': 'rgba(255, 255, 255, 0.03)',
+        'cwc-surface-light': 'rgba(255, 255, 255, 0.9)',
         'cwc-gold': '#FFD700',
+        'cwc-gold-light': '#F59E0B',
         'cwc-red': '#E11D48',
+        'cwc-red-light': '#E11D48',
         'cwc-purple': '#8B5CF6',
+        'cwc-purple-light': '#7C3AED',
         carnival: {
           dark: '#05050A',
+          light: '#F8FAFC',
           card: 'rgba(255, 255, 255, 0.03)',
+          'card-light': '#FFFFFF',
           border: 'rgba(255, 255, 255, 0.1)',
+          'border-light': '#E2E8F0',
           crimson: '#E11D48',
+          rose: '#E11D48',
           gold: '#FFD700',
+          amber: '#F59E0B',
           purple: '#8B5CF6',
+          violet: '#7C3AED',
           cyan: '#00F0FF',
-          amber: '#FF7700',
           pink: '#FF007F',
           lime: '#39FF14',
         },
@@ -31,6 +42,7 @@ export default {
       },
       backgroundImage: {
         'carnival-gradient': 'linear-gradient(135deg, #E11D48 0%, #8B5CF6 50%, #FFD700 100%)',
+        'carnival-gradient-light': 'linear-gradient(135deg, #E11D48 0%, #7C3AED 50%, #F59E0B 100%)',
         'carnival-glow': 'radial-gradient(circle at 50% 0%, rgba(225, 29, 72, 0.25), transparent 70%)',
         'gold-gradient': 'linear-gradient(135deg, #FFD700 0%, #FF7700 100%)',
         'red-gradient': 'linear-gradient(135deg, #E11D48 0%, #9F1239 100%)',

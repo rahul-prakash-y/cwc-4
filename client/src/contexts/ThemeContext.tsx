@@ -1,9 +1,19 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import confetti from 'canvas-confetti';
+import toast from 'react-hot-toast';
 import { useSocket } from '../context/SocketContext';
+import { useAuth } from '../context/AuthContext';
 import apiClient from '@/api/axios';
 
+export type EventMode = 'standard' | 'carnival' | 'finale';
+export type ThemeMode = 'light' | 'dark';
+
 interface ThemeContextType {
+  theme: ThemeMode;
+  setTheme: (theme: ThemeMode) => Promise<void>;
+  toggleTheme: () => Promise<void>;
+  eventMode: EventMode;
+  setEventMode: (mode: EventMode) => void;
   isGrandFinale: boolean;
   setIsGrandFinale: (val: boolean) => void;
   toggleGrandFinale: () => Promise<void>;
@@ -12,6 +22,11 @@ interface ThemeContextType {
 }
 
 const ThemeContext = createContext<ThemeContextType>({
+  theme: 'dark',
+  setTheme: async () => {},
+  toggleTheme: async () => {},
+  eventMode: 'standard',
+  setEventMode: () => {},
   isGrandFinale: false,
   setIsGrandFinale: () => {},
   toggleGrandFinale: async () => {},
@@ -53,88 +68,222 @@ export const triggerGrandFinaleFireworks = () => {
 };
 
 export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [isGrandFinale, setIsGrandFinaleState] = useState<boolean>(() => {
-    return localStorage.getItem('cwc_isGrandFinale') === 'true';
-  });
-  const [loading, setLoading] = useState<boolean>(false);
+  const { user, updateUser } = useAuth();
   const { socket } = useSocket();
+
+  // 1. Authenticated User's theme preference (database-driven)
+  const [theme, setThemeState] = useState<ThemeMode>(() => user?.themePreference || 'dark');
+
+  // 2. Global Event Mode (from Global Settings API / WebSockets)
+  const [eventMode, setEventModeState] = useState<EventMode>('standard');
+  const [loading, setLoading] = useState<boolean>(false);
+
+  const isGrandFinale = eventMode === 'finale';
+
+  // Sync state when user object updates from DB
+  useEffect(() => {
+    if (user?.themePreference) {
+      setThemeState(user.themePreference);
+    }
+  }, [user?.themePreference]);
+
+  // Task 3: Listen to user.themePreference & manually add/remove 'dark' class on <html> element
+  useEffect(() => {
+    const root = window.document.documentElement;
+    if (theme === 'dark') {
+      root.classList.add('dark');
+      root.classList.remove('light');
+    } else {
+      root.classList.remove('dark');
+      root.classList.add('light');
+    }
+  }, [theme]);
+
+  // Task 3: Listen to global eventMode to swap out CSS textures
+  useEffect(() => {
+    const root = window.document.documentElement;
+    root.classList.remove('mode-standard', 'mode-carnival', 'mode-finale', 'grand-finale-gold');
+    root.removeAttribute('data-event-mode');
+    root.removeAttribute('data-theme');
+
+    root.classList.add(`mode-${eventMode}`);
+    root.setAttribute('data-event-mode', eventMode);
+
+    if (eventMode === 'finale') {
+      root.classList.add('grand-finale-gold');
+      root.setAttribute('data-theme', 'gold');
+    }
+  }, [eventMode]);
 
   const triggerFireworks = useCallback(() => {
     triggerGrandFinaleFireworks();
   }, []);
 
-  const fetchFinaleSettings = useCallback(async () => {
+  // Fetch global event mode settings from backend DB
+  const fetchGlobalSettings = useCallback(async () => {
     try {
-      const publicEndpoints = [
-        '/api/v1/settings/grand-finale',
-        '/api/settings/grand-finale',
-        '/api/public/settings/finale',
+      const endpoints = [
         '/api/settings/global',
+        '/api/v1/settings/global',
+        '/api/settings/grand-finale',
+        '/api/v1/settings/grand-finale',
       ];
-      for (const endpoint of publicEndpoints) {
+      for (const endpoint of endpoints) {
         try {
           const res = await apiClient.get(endpoint);
           const data = res.data;
-          let active: boolean | null = null;
-          if (typeof data.isGrandFinale === 'boolean') {
-            active = data.isGrandFinale;
-          } else if (data.data && typeof data.data.isGrandFinale === 'boolean') {
-            active = data.data.isGrandFinale;
+          let mode: EventMode | null = null;
+
+          if (data?.eventMode && ['standard', 'carnival', 'finale'].includes(data.eventMode)) {
+            mode = data.eventMode as EventMode;
+          } else if (data?.isGrandFinale || data?.data?.isGrandFinale) {
+            mode = 'finale';
+          } else if (data?.eventMode === undefined && data?.isGrandFinale === false) {
+            mode = 'carnival';
           }
-          if (active !== null) {
-            setIsGrandFinaleState(active);
-            localStorage.setItem('cwc_isGrandFinale', String(active));
+
+          if (mode) {
+            setEventModeState(mode);
             break;
           }
         } catch {
-          // Continue trying public fallback endpoints
+          // Continue trying fallback endpoints
         }
       }
-    } catch {
-      // Retain localStorage state if offline
+    } catch (e) {
+      console.warn('Failed to fetch global event mode settings:', e);
     }
   }, []);
 
   useEffect(() => {
-    fetchFinaleSettings();
-  }, [fetchFinaleSettings]);
+    fetchGlobalSettings();
+  }, [fetchGlobalSettings]);
 
-  // Listen for FINALE_TRIGGERED WebSocket event
+  // WebSocket listeners for real-time Event Mode & Grand Finale updates
   useEffect(() => {
     if (!socket) return;
 
-    const handleFinaleTriggered = (data: { isGrandFinale: boolean }) => {
+    const handleFinaleTriggered = (data: { isGrandFinale: boolean; eventMode?: EventMode }) => {
       const active = Boolean(data.isGrandFinale);
-      setIsGrandFinaleState(active);
-      localStorage.setItem('cwc_isGrandFinale', String(active));
-
-      if (active) {
+      const newMode = data.eventMode || (active ? 'finale' : 'carnival');
+      setEventModeState(newMode);
+      if (active || newMode === 'finale') {
         triggerGrandFinaleFireworks();
       }
     };
 
+    const handleEventModeChanged = (data: { eventMode: EventMode }) => {
+      if (data.eventMode && ['standard', 'carnival', 'finale'].includes(data.eventMode)) {
+        setEventModeState(data.eventMode);
+        if (data.eventMode === 'finale') {
+          triggerGrandFinaleFireworks();
+        }
+      }
+    };
+
     socket.on('FINALE_TRIGGERED', handleFinaleTriggered);
+    socket.on('EVENT_MODE_CHANGED', handleEventModeChanged);
 
     return () => {
       socket.off('FINALE_TRIGGERED', handleFinaleTriggered);
+      socket.off('EVENT_MODE_CHANGED', handleEventModeChanged);
     };
   }, [socket]);
 
-  // Apply Theme CSS Class to document body/html globally
-  useEffect(() => {
-    if (isGrandFinale) {
-      document.documentElement.classList.add('grand-finale-gold');
-      document.documentElement.setAttribute('data-theme', 'gold');
+  // Task 4: Optimistic Theme Toggle with async DB sync & rollback on failure
+  const toggleTheme = async () => {
+    const previousTheme = theme;
+    const nextTheme: ThemeMode = previousTheme === 'dark' ? 'light' : 'dark';
+
+    // 1. Optimistically update UI
+    setThemeState(nextTheme);
+    const root = window.document.documentElement;
+    if (nextTheme === 'dark') {
+      root.classList.add('dark');
+      root.classList.remove('light');
     } else {
-      document.documentElement.classList.remove('grand-finale-gold');
-      document.documentElement.removeAttribute('data-theme');
+      root.classList.remove('dark');
+      root.classList.add('light');
     }
-  }, [isGrandFinale]);
+
+    if (!user) {
+      // Guest mode: UI update complete, no backend sync required
+      return;
+    }
+
+    updateUser({ themePreference: nextTheme });
+
+    // 2. Asynchronous API call to PATCH /api/auth/theme for authenticated user
+    try {
+      const res = await apiClient.patch('/auth/theme', { theme: nextTheme });
+      if (res.data?.user) {
+        updateUser(res.data.user);
+      }
+    } catch (err: any) {
+      // 3. Revert optimistic UI update and show Toast error on API failure
+      console.error('Failed to sync theme preference with server:', err);
+      setThemeState(previousTheme);
+      if (previousTheme === 'dark') {
+        root.classList.add('dark');
+        root.classList.remove('light');
+      } else {
+        root.classList.remove('dark');
+        root.classList.add('light');
+      }
+      updateUser({ themePreference: previousTheme });
+      const errMsg = err.response?.data?.message || err.message || 'Failed to save theme preference to server';
+      toast.error(errMsg);
+      throw err;
+    }
+  };
+
+  const setTheme = async (newTheme: ThemeMode) => {
+    if (newTheme === theme) return;
+    const previousTheme = theme;
+
+    setThemeState(newTheme);
+    const root = window.document.documentElement;
+    if (newTheme === 'dark') {
+      root.classList.add('dark');
+      root.classList.remove('light');
+    } else {
+      root.classList.remove('dark');
+      root.classList.add('light');
+    }
+
+    if (!user) return;
+
+    updateUser({ themePreference: newTheme });
+
+    try {
+      const res = await apiClient.patch('/auth/theme', { theme: newTheme });
+      if (res.data?.user) {
+        updateUser(res.data.user);
+      }
+    } catch (err: any) {
+      setThemeState(previousTheme);
+      if (previousTheme === 'dark') {
+        root.classList.add('dark');
+        root.classList.remove('light');
+      } else {
+        root.classList.remove('dark');
+        root.classList.add('light');
+      }
+      updateUser({ themePreference: previousTheme });
+      toast.error('Failed to update theme on server');
+    }
+  };
+
+  const setEventMode = (mode: EventMode) => {
+    setEventModeState(mode);
+    if (mode === 'finale') {
+      triggerGrandFinaleFireworks();
+    }
+  };
 
   const setIsGrandFinale = (val: boolean) => {
-    setIsGrandFinaleState(val);
-    localStorage.setItem('cwc_isGrandFinale', String(val));
-    if (val) triggerGrandFinaleFireworks();
+    const mode: EventMode = val ? 'finale' : 'carnival';
+    setEventMode(mode);
   };
 
   const toggleGrandFinale = async () => {
@@ -154,6 +303,11 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   return (
     <ThemeContext.Provider
       value={{
+        theme,
+        setTheme,
+        toggleTheme,
+        eventMode,
+        setEventMode,
         isGrandFinale,
         setIsGrandFinale,
         toggleGrandFinale,

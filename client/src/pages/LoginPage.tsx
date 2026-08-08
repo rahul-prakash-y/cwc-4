@@ -128,30 +128,30 @@ export const LoginPage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen pt-28 pb-16 px-4 sm:px-6 lg:px-8 flex flex-col justify-center items-center relative overflow-hidden bg-[#0B0A16]">
+    <div className="min-h-screen pt-28 pb-16 px-4 sm:px-6 lg:px-8 flex flex-col justify-center items-center relative overflow-hidden bg-slate-50 dark:bg-[#0B0A16]">
       {/* Background Decorative Carnival Elements */}
-      <div className="absolute top-1/4 left-10 w-80 h-80 bg-carnival-crimson/15 rounded-full blur-3xl -z-10 pointer-events-none" />
-      <div className="absolute bottom-10 right-10 w-96 h-96 bg-carnival-cyan/15 rounded-full blur-3xl -z-10 pointer-events-none" />
+      <div className="absolute top-1/4 left-10 w-80 h-80 bg-carnival-crimson/10 dark:bg-carnival-crimson/15 rounded-full blur-3xl -z-10 pointer-events-none" />
+      <div className="absolute bottom-10 right-10 w-96 h-96 bg-carnival-cyan/10 dark:bg-carnival-cyan/15 rounded-full blur-3xl -z-10 pointer-events-none" />
 
       {/* Main Container */}
       <div className="w-full max-w-xl space-y-8">
         {/* Header Section */}
         <div className="text-center space-y-3">
-          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full glass-card border border-carnival-gold/40 text-carnival-gold text-xs font-mono font-bold tracking-widest uppercase">
-            <Ticket className="w-4 h-4 text-carnival-gold" />
+          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full glass-card bg-white/80 dark:bg-transparent border border-amber-500/40 dark:border-carnival-gold/40 text-amber-700 dark:text-carnival-gold text-xs font-mono font-bold tracking-widest uppercase">
+            <Ticket className="w-4 h-4 text-amber-600 dark:text-carnival-gold" />
             <span>Carnival Gate Authentication</span>
           </div>
 
-          <h1 className="text-3xl sm:text-5xl font-black text-white tracking-tight">
+          <h1 className="text-3xl sm:text-5xl font-black text-slate-900 dark:text-white tracking-tight">
             Enter <span className="text-gradient-carnival">CWC Season 4</span>
           </h1>
-          <p className="text-sm text-slate-300">
+          <p className="text-sm text-slate-600 dark:text-slate-300">
             Select your entrance portal pass below to log in.
           </p>
         </div>
 
         {/* Role Toggle Selector */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 p-2 rounded-3xl glass-card border border-white/10 shadow-2xl">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 p-2 rounded-3xl glass-card bg-white/90 dark:bg-white/5 border border-slate-200 dark:border-white/10 shadow-lg dark:shadow-2xl">
           {/* Student Login Button */}
           <button
             type="button"
@@ -161,30 +161,30 @@ export const LoginPage: React.FC = () => {
             }}
             className={`relative group overflow-hidden p-5 rounded-2xl border transition-all duration-300 text-left flex items-center justify-between cursor-pointer ${
               activeRole === 'student'
-                ? 'bg-gradient-to-r from-carnival-cyan/20 via-indigo-900/60 to-carnival-purple/30 border-carnival-cyan shadow-[0_0_30px_rgba(0,240,255,0.35)] scale-[1.02]'
-                : 'bg-white/5 border-white/10 hover:border-carnival-cyan/50 hover:bg-white/10 opacity-70 hover:opacity-100'
+                ? 'bg-gradient-to-r from-cyan-100/90 via-indigo-100/50 to-purple-100/90 dark:from-carnival-cyan/20 dark:via-indigo-900/60 dark:to-carnival-purple/30 border-cyan-500 dark:border-carnival-cyan shadow-md dark:shadow-[0_0_30px_rgba(0,240,255,0.35)] scale-[1.02]'
+                : 'bg-slate-100/80 dark:bg-white/5 border-slate-200 dark:border-white/10 hover:border-cyan-400 dark:hover:border-carnival-cyan/50 hover:bg-slate-200/50 dark:hover:bg-white/10 opacity-80 hover:opacity-100'
             }`}
           >
             <div className="flex items-center gap-3.5 z-10">
               <div
                 className={`p-3 rounded-xl transition-transform group-hover:scale-110 ${
                   activeRole === 'student'
-                    ? 'bg-carnival-cyan text-black font-bold shadow-neon-cyan'
-                    : 'bg-white/10 text-carnival-cyan'
+                    ? 'bg-cyan-500 text-white dark:bg-carnival-cyan dark:text-black font-bold shadow-sm dark:shadow-neon-cyan'
+                    : 'bg-slate-200/80 dark:bg-white/10 text-cyan-700 dark:text-carnival-cyan'
                 }`}
               >
                 <User className="w-6 h-6" />
               </div>
               <div>
-                <div className="text-base font-extrabold text-white group-hover:text-carnival-cyan transition-colors">
+                <div className="text-base font-extrabold text-slate-900 dark:text-white group-hover:text-cyan-600 dark:group-hover:text-carnival-cyan transition-colors">
                   Student Portal
                 </div>
-                <div className="text-[11px] font-mono text-slate-400">Team & Tasks Dashboard</div>
+                <div className="text-[11px] font-mono text-slate-500 dark:text-slate-400">Team & Tasks Dashboard</div>
               </div>
             </div>
 
             {activeRole === 'student' && (
-              <div className="w-3 h-3 rounded-full bg-carnival-cyan shadow-[0_0_12px_#00F0FF] animate-pulse" />
+              <div className="w-3 h-3 rounded-full bg-cyan-500 dark:bg-carnival-cyan shadow-[0_0_12px_#00F0FF] animate-pulse" />
             )}
           </button>
 
@@ -197,48 +197,48 @@ export const LoginPage: React.FC = () => {
             }}
             className={`relative group overflow-hidden p-5 rounded-2xl border transition-all duration-300 text-left flex items-center justify-between cursor-pointer ${
               activeRole === 'admin'
-                ? 'bg-gradient-to-r from-carnival-crimson/20 via-rose-950/60 to-carnival-gold/20 border-carnival-crimson shadow-[0_0_30px_rgba(255,0,85,0.35)] scale-[1.02]'
-                : 'bg-white/5 border-white/10 hover:border-carnival-crimson/50 hover:bg-white/10 opacity-70 hover:opacity-100'
+                ? 'bg-gradient-to-r from-rose-100/90 via-pink-100/50 to-amber-100/90 dark:from-carnival-crimson/20 dark:via-rose-950/60 dark:to-carnival-gold/20 border-rose-500 dark:border-carnival-crimson shadow-md dark:shadow-[0_0_30px_rgba(255,0,85,0.35)] scale-[1.02]'
+                : 'bg-slate-100/80 dark:bg-white/5 border-slate-200 dark:border-white/10 hover:border-rose-400 dark:hover:border-carnival-crimson/50 hover:bg-slate-200/50 dark:hover:bg-white/10 opacity-80 hover:opacity-100'
             }`}
           >
             <div className="flex items-center gap-3.5 z-10">
               <div
                 className={`p-3 rounded-xl transition-transform group-hover:scale-110 ${
                   activeRole === 'admin'
-                    ? 'bg-carnival-crimson text-white font-bold shadow-neon-crimson'
-                    : 'bg-white/10 text-carnival-crimson'
+                    ? 'bg-rose-600 text-white dark:bg-carnival-crimson dark:text-white font-bold shadow-sm dark:shadow-neon-crimson'
+                    : 'bg-slate-200/80 dark:bg-white/10 text-rose-700 dark:text-carnival-crimson'
                 }`}
               >
                 <Shield className="w-6 h-6" />
               </div>
               <div>
-                <div className="text-base font-extrabold text-white group-hover:text-carnival-crimson transition-colors">
+                <div className="text-base font-extrabold text-slate-900 dark:text-white group-hover:text-rose-600 dark:group-hover:text-carnival-crimson transition-colors">
                   Admin Portal
                 </div>
-                <div className="text-[11px] font-mono text-slate-400">Command Center Access</div>
+                <div className="text-[11px] font-mono text-slate-500 dark:text-slate-400">Command Center Access</div>
               </div>
             </div>
 
             {activeRole === 'admin' && (
-              <div className="w-3 h-3 rounded-full bg-carnival-crimson shadow-[0_0_12px_#FF0055] animate-pulse" />
+              <div className="w-3 h-3 rounded-full bg-rose-600 dark:bg-carnival-crimson shadow-[0_0_12px_#FF0055] animate-pulse" />
             )}
           </button>
         </div>
 
-        {/* Dynamic Authentication Form - Task 1: form onSubmit */}
-        <div className="glass-card rounded-3xl p-6 sm:p-8 border border-white/10 shadow-2xl relative">
-          <div className="flex items-center justify-between border-b border-white/10 pb-4 mb-6">
+        {/* Dynamic Authentication Form */}
+        <div className="glass-card bg-white/95 dark:bg-slate-900/90 rounded-3xl p-6 sm:p-8 border border-slate-200 dark:border-white/10 shadow-xl dark:shadow-2xl relative">
+          <div className="flex items-center justify-between border-b border-slate-200 dark:border-white/10 pb-4 mb-6">
             <div className="flex items-center gap-2">
               {activeRole === 'student' ? (
-                <Ticket className="w-5 h-5 text-carnival-cyan" />
+                <Ticket className="w-5 h-5 text-cyan-600 dark:text-carnival-cyan" />
               ) : (
-                <Lock className="w-5 h-5 text-carnival-crimson" />
+                <Lock className="w-5 h-5 text-rose-600 dark:text-carnival-crimson" />
               )}
-              <h3 className="text-lg font-extrabold text-white">
+              <h3 className="text-lg font-extrabold text-slate-900 dark:text-white">
                 {activeRole === 'student' ? 'Student Portal Authentication' : 'Admin Security Access'}
               </h3>
             </div>
-            <span className="text-[10px] font-mono font-bold px-2.5 py-1 rounded-full bg-white/10 text-slate-300 uppercase">
+            <span className="text-[10px] font-mono font-bold px-2.5 py-1 rounded-full bg-slate-100 dark:bg-white/10 text-slate-700 dark:text-slate-300 uppercase">
               {activeRole === 'student' ? 'Student Mode' : 'Admin Mode'}
             </span>
           </div>
@@ -246,7 +246,7 @@ export const LoginPage: React.FC = () => {
           <form onSubmit={handleSubmit(onSubmit, onValidationError)} className="space-y-5">
             {/* Email / Username Input */}
             <div>
-              <label className="block text-xs font-mono font-semibold text-slate-300 uppercase mb-2">
+              <label className="block text-xs font-mono font-semibold text-slate-700 dark:text-slate-300 uppercase mb-2">
                 {activeRole === 'student' ? 'Student Email / Ticket Code' : 'Admin Master Email'}
               </label>
               <div className="relative">
@@ -254,15 +254,14 @@ export const LoginPage: React.FC = () => {
                   type="text"
                   {...register('email')}
                   placeholder={activeRole === 'student' ? 'e.g. leader@alpha.com' : 'e.g. admin@cwc.com'}
-                  className={`w-full bg-white/5 border ${
-                    errors.email ? 'border-red-500' : 'border-white/10'
-                  } rounded-xl px-4 py-3 pl-10 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-carnival-gold focus:ring-1 focus:ring-carnival-gold transition-all font-mono`}
+                  className={`w-full bg-slate-50 dark:bg-white/5 border ${
+                    errors.email ? 'border-red-500' : 'border-slate-300 dark:border-white/10'
+                  } rounded-xl px-4 py-3 pl-10 text-sm text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:border-amber-500 dark:focus:border-carnival-gold focus:bg-white dark:focus:bg-black/40 transition-all font-mono`}
                 />
                 <User className="w-4 h-4 text-slate-400 absolute left-3.5 top-3.5" />
               </div>
-              {/* Task 2: Visual Error State below input */}
               {errors.email && (
-                <p className="text-red-400 text-xs font-mono mt-1 flex items-center gap-1">
+                <p className="text-red-500 dark:text-red-400 text-xs font-mono mt-1 flex items-center gap-1">
                   <AlertCircle className="w-3.5 h-3.5 inline" />
                   <span>{errors.email.message}</span>
                 </p>
@@ -271,7 +270,7 @@ export const LoginPage: React.FC = () => {
 
             {/* Password Input */}
             <div>
-              <label className="block text-xs font-mono font-semibold text-slate-300 uppercase mb-2">
+              <label className="block text-xs font-mono font-semibold text-slate-700 dark:text-slate-300 uppercase mb-2">
                 Password
               </label>
               <div className="relative">
@@ -279,36 +278,35 @@ export const LoginPage: React.FC = () => {
                   type={showPassword ? 'text' : 'password'}
                   {...register('password')}
                   placeholder="••••••••"
-                  className={`w-full bg-white/5 border ${
-                    errors.password ? 'border-red-500' : 'border-white/10'
-                  } rounded-xl px-4 py-3 pl-10 pr-10 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-carnival-gold focus:ring-1 focus:ring-carnival-gold transition-all font-mono`}
+                  className={`w-full bg-slate-50 dark:bg-white/5 border ${
+                    errors.password ? 'border-red-500' : 'border-slate-300 dark:border-white/10'
+                  } rounded-xl px-4 py-3 pl-10 pr-10 text-sm text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:border-amber-500 dark:focus:border-carnival-gold focus:bg-white dark:focus:bg-black/40 transition-all font-mono`}
                 />
                 <Lock className="w-4 h-4 text-slate-400 absolute left-3.5 top-3.5" />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3.5 top-3.5 text-slate-400 hover:text-white"
+                  className="absolute right-3.5 top-3.5 text-slate-400 hover:text-slate-700 dark:hover:text-white"
                 >
                   {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                 </button>
               </div>
-              {/* Task 2: Visual Error State below input */}
               {errors.password && (
-                <p className="text-red-400 text-xs font-mono mt-1 flex items-center gap-1">
+                <p className="text-red-500 dark:text-red-400 text-xs font-mono mt-1 flex items-center gap-1">
                   <AlertCircle className="w-3.5 h-3.5 inline" />
                   <span>{errors.password.message}</span>
                 </p>
               )}
             </div>
 
-            {/* Submit Button - Task 1: explicit type="submit" */}
+            {/* Submit Button */}
             <button
               type="submit"
               disabled={isSubmitting}
               className={`w-full py-3.5 rounded-xl font-black text-sm uppercase tracking-wider transition-all flex items-center justify-center gap-2 cursor-pointer ${
                 activeRole === 'student'
-                  ? 'bg-gradient-to-r from-carnival-cyan via-indigo-500 to-carnival-purple text-black shadow-neon-cyan hover:scale-[1.02]'
-                  : 'bg-gradient-to-r from-carnival-crimson via-carnival-purple to-carnival-gold text-white shadow-neon-crimson hover:scale-[1.02]'
+                  ? 'bg-gradient-to-r from-cyan-500 via-indigo-500 to-purple-600 text-white dark:text-black shadow-md dark:shadow-neon-cyan hover:scale-[1.02]'
+                  : 'bg-gradient-to-r from-rose-600 via-purple-600 to-amber-500 text-white shadow-md dark:shadow-neon-crimson hover:scale-[1.02]'
               } ${isSubmitting ? 'opacity-70 cursor-not-allowed' : ''}`}
             >
               {isSubmitting ? (
@@ -323,12 +321,12 @@ export const LoginPage: React.FC = () => {
           </form>
 
           {/* Quick Demo Autofill Helper */}
-          <div className="mt-6 pt-4 border-t border-white/10 flex items-center justify-between text-xs font-mono text-slate-400">
+          <div className="mt-6 pt-4 border-t border-slate-200 dark:border-white/10 flex items-center justify-between text-xs font-mono text-slate-500 dark:text-slate-400">
             <span>Need immediate test access?</span>
             <button
               type="button"
               onClick={handleAutofillDemo}
-              className="text-carnival-gold hover:underline flex items-center gap-1 font-bold cursor-pointer"
+              className="text-amber-600 dark:text-carnival-gold hover:underline flex items-center gap-1 font-bold cursor-pointer"
             >
               <Sparkles className="w-3.5 h-3.5" />
               <span>Autofill Demo Credentials</span>

@@ -169,31 +169,31 @@ export const VotingBooth: React.FC<VotingBoothProps> = ({
   return (
     <div
       onClick={handleClose}
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md overflow-y-auto"
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 dark:bg-black/80 backdrop-blur-md overflow-y-auto"
     >
       <motion.div
         onClick={(e) => e.stopPropagation()}
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
         exit={{ opacity: 0, scale: 0.95 }}
-        className="relative w-full max-w-4xl bg-slate-900 border border-amber-500/40 rounded-2xl shadow-2xl shadow-amber-500/10 overflow-hidden text-white my-8 max-h-[90vh] flex flex-col"
+        className="relative w-full max-w-4xl bg-white dark:bg-slate-900 border border-amber-500/40 rounded-2xl shadow-2xl overflow-hidden text-slate-900 dark:text-white my-8 max-h-[90vh] flex flex-col"
       >
         {/* Modal Header */}
-        <div className="px-6 py-5 bg-gradient-to-r from-amber-950 via-slate-900 to-purple-950 border-b border-amber-500/30 flex items-center justify-between">
+        <div className="px-6 py-5 bg-gradient-to-r from-amber-100 via-amber-50 to-purple-100 dark:from-amber-950 dark:via-slate-900 dark:to-purple-950 border-b border-amber-500/30 flex items-center justify-between">
           <div className="flex items-center space-x-3">
             <span className="text-3xl animate-bounce">🎟️</span>
             <div>
-              <h2 className="text-xl font-extrabold tracking-wide text-transparent bg-clip-text bg-gradient-to-r from-amber-400 via-pink-400 to-cyan-400 font-serif">
+              <h2 className="text-xl font-extrabold tracking-wide text-transparent bg-clip-text bg-gradient-to-r from-amber-600 via-pink-600 to-purple-600 dark:from-amber-400 dark:via-pink-400 dark:to-cyan-400 font-serif">
                 Fan Favorite Voting Booth
               </h2>
-              <p className="text-xs text-amber-200/70">
+              <p className="text-xs text-amber-900/80 dark:text-amber-200/70 font-medium">
                 Support your favorite carnival teams! 100 Daily Votes • Max 15 per team/day
               </p>
             </div>
           </div>
           <button
             onClick={handleClose}
-            className="w-9 h-9 rounded-xl bg-slate-800/80 hover:bg-amber-500/20 text-gray-300 hover:text-amber-400 transition flex items-center justify-center font-bold text-base border border-white/10"
+            className="w-9 h-9 rounded-xl bg-slate-200 dark:bg-slate-800/80 hover:bg-amber-500/20 text-slate-700 dark:text-gray-300 hover:text-amber-600 dark:hover:text-amber-400 transition flex items-center justify-center font-bold text-base border border-slate-300 dark:border-white/10"
             title="Close Voting Booth"
             aria-label="Close Voting Booth"
           >
@@ -202,21 +202,21 @@ export const VotingBooth: React.FC<VotingBoothProps> = ({
         </div>
 
         {/* Progress Bar & Status Section */}
-        <div className="p-6 bg-slate-950/70 border-b border-slate-800">
+        <div className="p-6 bg-slate-50 dark:bg-slate-950/70 border-b border-slate-200 dark:border-slate-800">
           <div className="flex justify-between items-center text-sm font-semibold mb-2">
-            <span className="text-amber-300 flex items-center gap-2">
+            <span className="text-amber-800 dark:text-amber-300 flex items-center gap-2">
               <span>⚡ Daily Votes Remaining:</span>
-              <span className="text-lg font-black text-white px-2 py-0.5 bg-amber-500/20 rounded border border-amber-500/30">
+              <span className="text-lg font-black text-slate-900 dark:text-white px-2 py-0.5 bg-amber-500/20 rounded border border-amber-500/30">
                 {dailyVotesRemaining - totalPendingAllocated} / 100
               </span>
             </span>
-            <span className="text-xs text-gray-400">
-              Allocated Pending: <strong className="text-amber-400">{totalPendingAllocated}</strong>
+            <span className="text-xs text-slate-500 dark:text-gray-400">
+              Allocated Pending: <strong className="text-amber-600 dark:text-amber-400">{totalPendingAllocated}</strong>
             </span>
           </div>
 
           {/* Animated Progress Bar */}
-          <div className="w-full h-4 bg-slate-800 rounded-full overflow-hidden p-0.5 border border-amber-500/20">
+          <div className="w-full h-4 bg-slate-200 dark:bg-slate-800 rounded-full overflow-hidden p-0.5 border border-amber-500/20">
             <motion.div
               initial={{ width: 0 }}
               animate={{
@@ -237,8 +237,8 @@ export const VotingBooth: React.FC<VotingBoothProps> = ({
               exit={{ opacity: 0, y: -10 }}
               className={`mx-6 mt-4 p-3 rounded-xl border text-sm flex items-center justify-between ${
                 toastMessage.type === 'success'
-                  ? 'bg-emerald-950/80 border-emerald-500/50 text-emerald-200'
-                  : 'bg-rose-950/80 border-rose-500/50 text-rose-200'
+                  ? 'bg-emerald-50 dark:bg-emerald-950/80 border-emerald-500/50 text-emerald-900 dark:text-emerald-200'
+                  : 'bg-rose-50 dark:bg-rose-950/80 border-rose-500/50 text-rose-900 dark:text-rose-200'
               }`}
             >
               <span>{toastMessage.text}</span>
@@ -252,11 +252,11 @@ export const VotingBooth: React.FC<VotingBoothProps> = ({
         {/* Teams List */}
         <div className="p-6 overflow-y-auto space-y-4 flex-1">
           {loading ? (
-            <div className="text-center py-12 text-amber-300 animate-pulse">
+            <div className="text-center py-12 text-amber-600 dark:text-amber-300 animate-pulse font-bold">
               🎪 Loading Carnival Teams & Voting Records...
             </div>
           ) : opposingTeams.length === 0 ? (
-            <div className="text-center py-12 text-gray-400">
+            <div className="text-center py-12 text-slate-500 dark:text-gray-400">
               No rival teams found for voting.
             </div>
           ) : (
@@ -272,12 +272,12 @@ export const VotingBooth: React.FC<VotingBoothProps> = ({
                 <motion.div
                   key={teamId}
                   whileHover={{ scale: 1.01 }}
-                  className="p-4 bg-slate-800/60 border border-slate-700/80 hover:border-amber-500/40 rounded-xl flex flex-col md:flex-row items-center justify-between gap-4 transition shadow-md"
+                  className="p-4 bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700/80 hover:border-amber-500/40 rounded-xl flex flex-col md:flex-row items-center justify-between gap-4 transition shadow-md"
                 >
                   {/* Team Identity */}
                   <div className="flex items-center space-x-4 min-w-[220px]">
                     <div
-                      className="w-12 h-12 rounded-full flex items-center justify-center font-bold text-xl border-2 shadow-inner overflow-hidden bg-slate-900"
+                      className="w-12 h-12 rounded-full flex items-center justify-center font-bold text-xl border-2 shadow-inner overflow-hidden bg-white dark:bg-slate-900"
                       style={{ borderColor: themeColor }}
                     >
                       {team.logoUrl ? (
@@ -287,26 +287,26 @@ export const VotingBooth: React.FC<VotingBoothProps> = ({
                       )}
                     </div>
                     <div>
-                      <h3 className="font-bold text-base text-white flex items-center gap-2">
+                      <h3 className="font-bold text-base text-slate-900 dark:text-white flex items-center gap-2">
                         {team.teamName}
                         <span
                           className="w-2.5 h-2.5 rounded-full inline-block"
                           style={{ backgroundColor: themeColor }}
                         />
                       </h3>
-                      <p className="text-xs text-amber-300/80">
-                        Total Public Votes: <strong className="text-amber-400 font-mono text-sm">{team.totalPublicVotes}</strong>
+                      <p className="text-xs text-amber-800 dark:text-amber-300/80 font-medium">
+                        Total Public Votes: <strong className="text-amber-600 dark:text-amber-400 font-mono text-sm">{team.totalPublicVotes}</strong>
                       </p>
                     </div>
                   </div>
 
                   {/* Allocation Controls & Slider */}
                   <div className="flex-1 w-full md:w-auto flex flex-col gap-1">
-                    <div className="flex justify-between items-center text-xs text-gray-300">
+                    <div className="flex justify-between items-center text-xs text-slate-600 dark:text-gray-300 font-medium">
                       <span>
-                        Votes cast today: <strong className="text-amber-400">{votesCastToday}</strong> / 15
+                        Votes cast today: <strong className="text-amber-600 dark:text-amber-400">{votesCastToday}</strong> / 15
                       </span>
-                      <span className="text-cyan-300 font-semibold">
+                      <span className="text-cyan-700 dark:text-cyan-300 font-semibold">
                         Votes remaining for this team: {remainingForTeam} / 15
                       </span>
                     </div>
@@ -316,7 +316,7 @@ export const VotingBooth: React.FC<VotingBoothProps> = ({
                       <button
                         onClick={() => handleAllocationChange(teamId, allocatedNow - 1)}
                         disabled={allocatedNow <= 0 || submitting}
-                        className="w-8 h-8 rounded-lg bg-slate-700 hover:bg-slate-600 active:bg-slate-500 disabled:opacity-30 disabled:cursor-not-allowed font-bold text-lg text-amber-300 transition"
+                        className="w-8 h-8 rounded-lg bg-slate-200 dark:bg-slate-700 hover:bg-slate-300 dark:hover:bg-slate-600 active:bg-slate-400 disabled:opacity-30 disabled:cursor-not-allowed font-bold text-lg text-slate-900 dark:text-amber-300 transition"
                       >
                         -
                       </button>
@@ -329,20 +329,20 @@ export const VotingBooth: React.FC<VotingBoothProps> = ({
                         value={allocatedNow}
                         disabled={maxAllowedForTeam <= 0 || submitting}
                         onChange={(e) => handleAllocationChange(teamId, Number(e.target.value))}
-                        className="flex-1 accent-amber-500 h-2 bg-slate-700 rounded-lg cursor-pointer disabled:opacity-30"
+                        className="flex-1 accent-amber-500 h-2 bg-slate-200 dark:bg-slate-700 rounded-lg cursor-pointer disabled:opacity-30"
                       />
 
                       {/* Increment Button */}
                       <button
                         onClick={() => handleAllocationChange(teamId, allocatedNow + 1)}
                         disabled={allocatedNow >= maxAllowedForTeam || remainingBudgetForAllocations <= 0 || submitting}
-                        className="w-8 h-8 rounded-lg bg-slate-700 hover:bg-slate-600 active:bg-slate-500 disabled:opacity-30 disabled:cursor-not-allowed font-bold text-lg text-amber-300 transition"
+                        className="w-8 h-8 rounded-lg bg-slate-200 dark:bg-slate-700 hover:bg-slate-300 dark:hover:bg-slate-600 active:bg-slate-400 disabled:opacity-30 disabled:cursor-not-allowed font-bold text-lg text-slate-900 dark:text-amber-300 transition"
                       >
                         +
                       </button>
 
                       {/* Allocation Counter Badge */}
-                      <span className="w-10 text-center font-mono font-black text-amber-400 bg-amber-950/80 border border-amber-500/40 rounded-lg py-1 text-sm">
+                      <span className="w-10 text-center font-mono font-black text-amber-700 dark:text-amber-400 bg-amber-100 dark:bg-amber-950/80 border border-amber-500/40 rounded-lg py-1 text-sm">
                         {allocatedNow}
                       </span>
                     </div>
@@ -354,15 +354,15 @@ export const VotingBooth: React.FC<VotingBoothProps> = ({
         </div>
 
         {/* Modal Footer / Action Button */}
-        <div className="p-5 bg-slate-950 border-t border-slate-800 flex items-center justify-between">
-          <div className="text-xs text-gray-400">
-            Pending Votes to Cast: <strong className="text-amber-400 font-mono text-sm">{totalPendingAllocated}</strong>
+        <div className="p-5 bg-slate-100 dark:bg-slate-950 border-t border-slate-200 dark:border-slate-800 flex items-center justify-between">
+          <div className="text-xs text-slate-600 dark:text-gray-400 font-medium">
+            Pending Votes to Cast: <strong className="text-amber-600 dark:text-amber-400 font-mono text-sm">{totalPendingAllocated}</strong>
           </div>
 
           <div className="flex space-x-3">
             <button
               onClick={handleClose}
-              className="px-5 py-2.5 rounded-xl border border-slate-700 text-gray-300 hover:bg-slate-800 font-medium transition text-sm"
+              className="px-5 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 text-slate-700 dark:text-gray-300 hover:bg-slate-200 dark:hover:bg-slate-800 font-medium transition text-sm"
             >
               Close
             </button>

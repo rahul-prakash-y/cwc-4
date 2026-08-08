@@ -6,6 +6,7 @@ import { NotificationBell } from '../components/student/NotificationBell';
 import { AnnouncementToast } from '../components/common/AnnouncementToast';
 import { Settings } from '../components/student/Settings';
 import { useAuth } from '../context/AuthContext';
+import { ThemeToggle } from '../components/layout/ThemeToggle';
 
 export const StudentLayout: React.FC = () => {
   const location = useLocation();
@@ -26,37 +27,37 @@ export const StudentLayout: React.FC = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-[#0B0A16] text-slate-100 flex font-sans">
+    <div className="min-h-screen bg-slate-50 dark:bg-[#0B0A16] text-slate-900 dark:text-slate-100 flex font-sans transition-colors duration-300">
       <Settings isOpen={isSettingsOpen} onClose={() => setIsSettingsOpen(false)} />
 
       {/* Student Sidebar */}
       <aside
-        className={`fixed lg:sticky top-0 left-0 z-40 w-64 h-screen bg-[#151329]/95 backdrop-blur-2xl border-r border-white/10 flex flex-col justify-between p-4 transition-transform duration-300 ${
+        className={`fixed lg:sticky top-0 left-0 z-40 w-64 h-screen bg-white/95 dark:bg-[#151329]/95 backdrop-blur-2xl border-r border-slate-200 dark:border-white/10 flex flex-col justify-between p-4 transition-transform duration-300 ${
           sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
         }`}
       >
         <div>
           {/* Brand & Ticket Badge */}
-          <div className="flex items-center gap-3 pb-6 border-b border-white/10 mb-6">
+          <div className="flex items-center gap-3 pb-6 border-b border-slate-200 dark:border-white/10 mb-6">
             <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-carnival-cyan to-carnival-purple p-0.5">
-              <div className="w-full h-full rounded-[10px] bg-[#0B0A16] flex items-center justify-center font-mono font-bold text-carnival-cyan text-sm">
+              <div className="w-full h-full rounded-[10px] bg-slate-100 dark:bg-[#0B0A16] flex items-center justify-center font-mono font-bold text-carnival-cyan text-sm">
                 🎪
               </div>
             </div>
             <div>
-              <div className="font-extrabold text-white text-base">Student Portal</div>
-              <div className="text-[10px] text-carnival-gold font-mono flex items-center gap-1">
-                <Ticket className="w-3 h-3" />
+              <div className="font-extrabold text-slate-900 dark:text-white text-base">Student Portal</div>
+              <div className="text-[10px] text-amber-600 dark:text-carnival-gold font-mono flex items-center gap-1">
+                <Ticket className="w-3 h-3 text-amber-600 dark:text-carnival-gold" />
                 <span>Ticket #{user?.ticketId || 'CWC4-8842'}</span>
               </div>
             </div>
           </div>
 
           {/* Active Team Pill */}
-          <div className="p-3 rounded-xl bg-carnival-crimson/10 border border-carnival-crimson/30 mb-6">
-            <div className="text-[10px] uppercase font-mono text-carnival-crimson font-bold">Assigned Team</div>
-            <div className="font-extrabold text-sm text-white flex items-center gap-1.5 mt-0.5">
-              <Shield className="w-4 h-4 text-carnival-gold" />
+          <div className="p-3 rounded-xl bg-rose-500/10 border border-rose-500/30 mb-6">
+            <div className="text-[10px] uppercase font-mono text-rose-600 dark:text-carnival-crimson font-bold">Assigned Team</div>
+            <div className="font-extrabold text-sm text-slate-900 dark:text-white flex items-center gap-1.5 mt-0.5">
+              <Shield className="w-4 h-4 text-amber-600 dark:text-carnival-gold" />
               <span>{user?.teamName || 'Cyber Circus Kings'}</span>
             </div>
           </div>
@@ -74,8 +75,8 @@ export const StudentLayout: React.FC = () => {
                   onClick={() => setSidebarOpen(false)}
                   className={`flex items-center gap-3 px-4 py-3 rounded-xl text-xs font-bold transition-all ${
                     isActive
-                      ? 'bg-carnival-crimson text-white shadow-neon-crimson'
-                      : 'text-slate-300 hover:text-white hover:bg-white/5'
+                      ? 'bg-rose-600 dark:bg-carnival-crimson text-white shadow-md dark:shadow-neon-crimson'
+                      : 'text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/5'
                   }`}
                 >
                   <item.icon className="w-4 h-4" />
@@ -87,10 +88,10 @@ export const StudentLayout: React.FC = () => {
         </div>
 
         {/* Footer info & Exit */}
-        <div className="pt-4 border-t border-white/10 space-y-2">
+        <div className="pt-4 border-t border-slate-200 dark:border-white/10 space-y-2">
           <button
             onClick={() => setIsSettingsOpen(true)}
-            className="w-full flex items-center gap-2 px-4 py-2.5 rounded-xl glass-card text-xs font-semibold text-carnival-gold hover:text-white hover:bg-carnival-gold/10 transition-all"
+            className="w-full flex items-center gap-2 px-4 py-2.5 rounded-xl glass-card text-xs font-semibold text-amber-700 dark:text-carnival-gold hover:text-slate-900 dark:hover:text-white hover:bg-amber-500/10 transition-all"
           >
             <SettingsIcon className="w-4 h-4" />
             <span>Security & Settings</span>
@@ -115,7 +116,7 @@ export const StudentLayout: React.FC = () => {
       {/* Main Content Area */}
       <div className="flex-1 flex flex-col min-w-0">
         {/* Top Navigation Bar */}
-        <header className="h-16 bg-[#151329]/80 backdrop-blur-xl border-b border-white/10 px-4 sm:px-6 flex items-center justify-between sticky top-0 z-30">
+        <header className="h-16 bg-white/80 dark:bg-[#151329]/80 backdrop-blur-xl border-b border-slate-200 dark:border-white/10 px-4 sm:px-6 flex items-center justify-between sticky top-0 z-30 transition-colors duration-300">
           <div className="flex items-center gap-3">
             <button
               onClick={() => setSidebarOpen(!sidebarOpen)}
@@ -132,6 +133,7 @@ export const StudentLayout: React.FC = () => {
           </div>
 
           <div className="flex items-center gap-3">
+            <ThemeToggle />
             <NotificationBell />
             <button
               onClick={() => setIsSettingsOpen(true)}

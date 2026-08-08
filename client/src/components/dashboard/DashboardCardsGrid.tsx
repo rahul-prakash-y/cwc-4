@@ -69,31 +69,31 @@ export const DashboardCardsGrid: React.FC<DashboardCardsGridProps> = ({
       {/* Card 1: Today's Task */}
       <motion.div
         whileHover={{ y: -4 }}
-        className="p-6 rounded-2xl bg-white/5 backdrop-blur-lg border border-white/10 shadow-[inset_0_1px_0_rgba(255,255,255,0.1),0_10px_30px_rgba(0,0,0,0.5)] hover:border-white/30 hover:shadow-glow-red transition-all duration-300 ease-out flex flex-col justify-between relative overflow-hidden"
+        className="p-6 rounded-2xl glass-card border border-slate-200 dark:border-white/10 shadow-sm dark:shadow-[inset_0_1px_0_rgba(255,255,255,0.1),0_10px_30px_rgba(0,0,0,0.5)] hover:border-cwc-red/40 hover:shadow-md transition-all duration-300 ease-out flex flex-col justify-between relative overflow-hidden bg-white/80 dark:bg-white/5"
       >
         <div className="absolute top-0 right-0 w-24 h-24 bg-cwc-red/10 rounded-full blur-2xl pointer-events-none" />
 
         <div>
           <div className="flex items-center justify-between gap-2 mb-4">
-            <span className="px-3 py-1 rounded-full text-[10px] font-display font-bold bg-cwc-red/20 text-cwc-red border border-cwc-red/40 animate-pulse flex items-center gap-1.5">
+            <span className="px-3 py-1 rounded-full text-[10px] font-display font-bold bg-cwc-red/10 dark:bg-cwc-red/20 text-cwc-red border border-cwc-red/30 dark:border-cwc-red/40 animate-pulse flex items-center gap-1.5">
               <span className="w-1.5 h-1.5 rounded-full bg-cwc-red animate-ping" />
               DAY {currentDay} • LIVE
             </span>
-            <span className="text-xs font-display font-bold text-cwc-gold flex items-center gap-1">
-              <Zap className="w-3.5 h-3.5 text-cwc-gold" />
+            <span className="text-xs font-display font-bold text-amber-600 dark:text-cwc-gold flex items-center gap-1">
+              <Zap className="w-3.5 h-3.5 text-amber-600 dark:text-cwc-gold" />
               +{taskPoints} PTS
             </span>
           </div>
 
-          <h3 className="text-lg font-bold font-display text-white line-clamp-1 mb-2">{taskTitle}</h3>
-          <p className="text-xs text-gray-300 line-clamp-2 leading-relaxed">
-            Category: <strong className="text-cwc-gold">{taskCategory}</strong>. Execute live solution before the time window expires.
+          <h3 className="text-lg font-bold font-display text-slate-900 dark:text-white line-clamp-1 mb-2">{taskTitle}</h3>
+          <p className="text-xs text-slate-600 dark:text-gray-300 line-clamp-2 leading-relaxed">
+            Category: <strong className="text-amber-600 dark:text-cwc-gold">{taskCategory}</strong>. Execute live solution before the time window expires.
           </p>
         </div>
 
         <button
           onClick={onSelectTaskCard}
-          className="mt-6 w-full py-3 px-4 rounded-xl bg-gradient-to-r from-cwc-red to-[#9F1239] text-white text-xs font-bold font-display tracking-wide border border-white/15 shadow-[inset_0_1px_0_rgba(255,255,255,0.2),0_4px_15px_rgba(225,29,72,0.3)] hover:-translate-y-0.5 hover:border-white/30 hover:shadow-glow-red transition-all duration-300 ease-out flex items-center justify-center gap-2"
+          className="mt-6 w-full py-3 px-4 rounded-xl bg-gradient-to-r from-cwc-red to-[#9F1239] text-white text-xs font-bold font-display tracking-wide border border-white/15 shadow-sm hover:-translate-y-0.5 hover:shadow-glow-red transition-all duration-300 ease-out flex items-center justify-center gap-2"
         >
           <span>Open Task Arena</span>
           <ArrowRight className="w-3.5 h-3.5" />
@@ -103,52 +103,52 @@ export const DashboardCardsGrid: React.FC<DashboardCardsGridProps> = ({
       {/* Card 2: Time Remaining */}
       <motion.div
         whileHover={{ y: -4 }}
-        className="p-6 rounded-2xl bg-white/5 backdrop-blur-lg border border-white/10 shadow-[inset_0_1px_0_rgba(255,255,255,0.1),0_10px_30px_rgba(0,0,0,0.5)] hover:border-white/30 hover:shadow-glow-gold transition-all duration-300 ease-out flex flex-col justify-between relative overflow-hidden"
+        className="p-6 rounded-2xl glass-card border border-slate-200 dark:border-white/10 shadow-sm dark:shadow-[inset_0_1px_0_rgba(255,255,255,0.1),0_10px_30px_rgba(0,0,0,0.5)] hover:border-cwc-gold/40 hover:shadow-md transition-all duration-300 ease-out flex flex-col justify-between relative overflow-hidden bg-white/80 dark:bg-white/5"
       >
         <div className="absolute top-0 right-0 w-24 h-24 bg-cwc-gold/10 rounded-full blur-2xl pointer-events-none" />
 
         <div>
           <div className="flex items-center justify-between gap-2 mb-4">
-            <span className="text-xs font-display font-semibold text-gray-300 uppercase tracking-wider flex items-center gap-1.5">
-              <Clock className="w-3.5 h-3.5 text-cwc-gold" /> Time Remaining
+            <span className="text-xs font-display font-semibold text-slate-600 dark:text-gray-300 uppercase tracking-wider flex items-center gap-1.5">
+              <Clock className="w-3.5 h-3.5 text-amber-600 dark:text-cwc-gold" /> Time Remaining
             </span>
-            <span className="text-[10px] font-display px-2.5 py-0.5 rounded-full bg-cwc-gold/20 text-cwc-gold font-bold border border-cwc-gold/30">
+            <span className="text-[10px] font-display px-2.5 py-0.5 rounded-full bg-amber-500/10 dark:bg-cwc-gold/20 text-amber-700 dark:text-cwc-gold font-bold border border-amber-400/30 dark:border-cwc-gold/30">
               Arena Window
             </span>
           </div>
 
           {/* Digital Timer */}
           <div className="flex items-center justify-center gap-1.5 my-3">
-            <div className="bg-cwc-bg/80 border border-white/10 rounded-xl px-3 py-2 text-center min-w-[54px] shadow-[inset_0_1px_0_rgba(255,255,255,0.05)]">
-              <span className="text-xl font-bold font-display text-white">
+            <div className="bg-slate-100 dark:bg-cwc-bg/80 border border-slate-200 dark:border-white/10 rounded-xl px-3 py-2 text-center min-w-[54px] shadow-sm">
+              <span className="text-xl font-bold font-display text-slate-900 dark:text-white">
                 {String(timeLeft.hours).padStart(2, '0')}
               </span>
-              <span className="block text-[9px] text-gray-400 font-display font-bold">HRS</span>
+              <span className="block text-[9px] text-slate-500 dark:text-gray-400 font-display font-bold">HRS</span>
             </div>
-            <span className="text-xl font-bold text-cwc-gold animate-pulse">:</span>
-            <div className="bg-cwc-bg/80 border border-white/10 rounded-xl px-3 py-2 text-center min-w-[54px] shadow-[inset_0_1px_0_rgba(255,255,255,0.05)]">
-              <span className="text-xl font-bold font-display text-white">
+            <span className="text-xl font-bold text-amber-600 dark:text-cwc-gold animate-pulse">:</span>
+            <div className="bg-slate-100 dark:bg-cwc-bg/80 border border-slate-200 dark:border-white/10 rounded-xl px-3 py-2 text-center min-w-[54px] shadow-sm">
+              <span className="text-xl font-bold font-display text-slate-900 dark:text-white">
                 {String(timeLeft.minutes).padStart(2, '0')}
               </span>
-              <span className="block text-[9px] text-gray-400 font-display font-bold">MIN</span>
+              <span className="block text-[9px] text-slate-500 dark:text-gray-400 font-display font-bold">MIN</span>
             </div>
-            <span className="text-xl font-bold text-cwc-gold animate-pulse">:</span>
-            <div className="bg-cwc-bg/80 border border-white/10 rounded-xl px-3 py-2 text-center min-w-[54px] shadow-[inset_0_1px_0_rgba(255,255,255,0.05)]">
-              <span className="text-xl font-bold font-display text-cwc-gold">
+            <span className="text-xl font-bold text-amber-600 dark:text-cwc-gold animate-pulse">:</span>
+            <div className="bg-slate-100 dark:bg-cwc-bg/80 border border-slate-200 dark:border-white/10 rounded-xl px-3 py-2 text-center min-w-[54px] shadow-sm">
+              <span className="text-xl font-bold font-display text-amber-600 dark:text-cwc-gold">
                 {String(timeLeft.seconds).padStart(2, '0')}
               </span>
-              <span className="block text-[9px] text-gray-400 font-display font-bold">SEC</span>
+              <span className="block text-[9px] text-slate-500 dark:text-gray-400 font-display font-bold">SEC</span>
             </div>
           </div>
         </div>
 
         {/* Progress Bar */}
         <div className="mt-4 space-y-1.5">
-          <div className="flex items-center justify-between text-[10px] font-display text-gray-400">
+          <div className="flex items-center justify-between text-[10px] font-display text-slate-500 dark:text-gray-400">
             <span>Window Closing</span>
-            <span className="text-cwc-gold font-bold">{Math.round(progressPercent)}% Remaining</span>
+            <span className="text-amber-600 dark:text-cwc-gold font-bold">{Math.round(progressPercent)}% Remaining</span>
           </div>
-          <div className="h-1.5 w-full bg-white/10 rounded-full overflow-hidden">
+          <div className="h-1.5 w-full bg-slate-200 dark:bg-white/10 rounded-full overflow-hidden">
             <div
               className="h-full bg-gradient-to-r from-cwc-gold via-amber-500 to-cwc-red rounded-full transition-all duration-1000"
               style={{ width: `${progressPercent}%` }}
@@ -160,41 +160,41 @@ export const DashboardCardsGrid: React.FC<DashboardCardsGridProps> = ({
       {/* Card 3: Bonus Available */}
       <motion.div
         whileHover={{ y: -4 }}
-        className="p-6 rounded-2xl bg-white/5 backdrop-blur-lg border border-white/10 shadow-[inset_0_1px_0_rgba(255,255,255,0.1),0_10px_30px_rgba(0,0,0,0.5)] hover:border-white/30 hover:shadow-glow-gold transition-all duration-300 ease-out flex flex-col justify-between relative overflow-hidden"
+        className="p-6 rounded-2xl glass-card border border-slate-200 dark:border-white/10 shadow-sm dark:shadow-[inset_0_1px_0_rgba(255,255,255,0.1),0_10px_30px_rgba(0,0,0,0.5)] hover:border-cwc-gold/40 hover:shadow-md transition-all duration-300 ease-out flex flex-col justify-between relative overflow-hidden bg-white/80 dark:bg-white/5"
       >
         <div className="absolute top-0 right-0 w-24 h-24 bg-cwc-gold/10 rounded-full blur-2xl pointer-events-none" />
 
         <div>
           <div className="flex items-center justify-between gap-2 mb-4">
-            <span className="text-xs font-display font-semibold text-gray-300 uppercase tracking-wider flex items-center gap-1.5">
-              <Gift className="w-3.5 h-3.5 text-cwc-gold" /> Bonus Available
+            <span className="text-xs font-display font-semibold text-slate-600 dark:text-gray-300 uppercase tracking-wider flex items-center gap-1.5">
+              <Gift className="w-3.5 h-3.5 text-amber-600 dark:text-cwc-gold" /> Bonus Available
             </span>
-            <span className="text-[10px] font-display px-2.5 py-0.5 rounded-full bg-cwc-gold/20 text-cwc-gold font-bold border border-cwc-gold/30">
+            <span className="text-[10px] font-display px-2.5 py-0.5 rounded-full bg-amber-500/10 dark:bg-cwc-gold/20 text-amber-700 dark:text-cwc-gold font-bold border border-amber-400/30 dark:border-cwc-gold/30">
               Streak Boost
             </span>
           </div>
 
           <div className="space-y-2">
-            <div className="flex items-center justify-between p-2.5 rounded-xl bg-cwc-bg/60 border border-cwc-gold/20">
+            <div className="flex items-center justify-between p-2.5 rounded-xl bg-slate-100 dark:bg-cwc-bg/60 border border-slate-200 dark:border-cwc-gold/20">
               <div className="flex items-center gap-2">
                 <Flame className="w-4 h-4 text-cwc-red fill-cwc-red" />
-                <span className="text-xs font-bold font-display text-white">4-Day Streak Bonus</span>
+                <span className="text-xs font-bold font-display text-slate-900 dark:text-white">4-Day Streak Bonus</span>
               </div>
-              <span className="text-xs font-bold font-display text-cwc-gold">+200 PTS</span>
+              <span className="text-xs font-bold font-display text-amber-600 dark:text-cwc-gold">+200 PTS</span>
             </div>
 
-            <div className="flex items-center justify-between p-2.5 rounded-xl bg-cwc-bg/60 border border-cwc-purple/20">
+            <div className="flex items-center justify-between p-2.5 rounded-xl bg-slate-100 dark:bg-cwc-bg/60 border border-slate-200 dark:border-cwc-purple/20">
               <div className="flex items-center gap-2">
                 <TrendingUp className="w-4 h-4 text-cwc-purple" />
-                <span className="text-xs font-bold font-display text-white">Speed Submissions</span>
+                <span className="text-xs font-bold font-display text-slate-900 dark:text-white">Speed Submissions</span>
               </div>
               <span className="text-xs font-bold font-display text-cwc-purple">+15% Multiplier</span>
             </div>
           </div>
         </div>
 
-        <div className="mt-4 flex items-center gap-2 text-[11px] text-gray-300 font-display">
-          <Sparkles className="w-3.5 h-3.5 text-cwc-gold flex-shrink-0" />
+        <div className="mt-4 flex items-center gap-2 text-[11px] text-slate-600 dark:text-gray-300 font-display">
+          <Sparkles className="w-3.5 h-3.5 text-amber-600 dark:text-cwc-gold flex-shrink-0" />
           <span>Submit before 2h mark to claim early-bird speed multiplier!</span>
         </div>
       </motion.div>
@@ -202,16 +202,16 @@ export const DashboardCardsGrid: React.FC<DashboardCardsGridProps> = ({
       {/* Card 4: Announcements Ticker */}
       <motion.div
         whileHover={{ y: -4 }}
-        className="p-6 rounded-2xl bg-white/5 backdrop-blur-lg border border-white/10 shadow-[inset_0_1px_0_rgba(255,255,255,0.1),0_10px_30px_rgba(0,0,0,0.5)] hover:border-white/30 hover:shadow-glow-purple transition-all duration-300 ease-out flex flex-col justify-between relative overflow-hidden"
+        className="p-6 rounded-2xl glass-card border border-slate-200 dark:border-white/10 shadow-sm dark:shadow-[inset_0_1px_0_rgba(255,255,255,0.1),0_10px_30px_rgba(0,0,0,0.5)] hover:border-cwc-purple/40 hover:shadow-md transition-all duration-300 ease-out flex flex-col justify-between relative overflow-hidden bg-white/80 dark:bg-white/5"
       >
         <div className="absolute top-0 right-0 w-24 h-24 bg-cwc-purple/10 rounded-full blur-2xl pointer-events-none" />
 
         <div>
           <div className="flex items-center justify-between gap-2 mb-4">
-            <span className="text-xs font-display font-semibold text-gray-300 uppercase tracking-wider flex items-center gap-1.5">
+            <span className="text-xs font-display font-semibold text-slate-600 dark:text-gray-300 uppercase tracking-wider flex items-center gap-1.5">
               <Bell className="w-3.5 h-3.5 text-cwc-purple" /> Announcements
             </span>
-            <span className="px-2.5 py-0.5 rounded-full bg-cwc-purple/20 text-cwc-purple font-display text-[10px] font-bold border border-cwc-purple/30 flex items-center gap-1">
+            <span className="px-2.5 py-0.5 rounded-full bg-cwc-purple/10 dark:bg-cwc-purple/20 text-cwc-purple font-display text-[10px] font-bold border border-cwc-purple/30 flex items-center gap-1">
               <span className="w-1.5 h-1.5 rounded-full bg-cwc-purple animate-ping" />
               {announcements.length} Live
             </span>
@@ -221,13 +221,13 @@ export const DashboardCardsGrid: React.FC<DashboardCardsGridProps> = ({
             {announcements.map((item) => (
               <div
                 key={item.id}
-                className="p-2.5 rounded-xl bg-cwc-bg/60 border border-white/10 hover:border-cwc-purple/40 transition-colors"
+                className="p-2.5 rounded-xl bg-slate-100 dark:bg-cwc-bg/60 border border-slate-200 dark:border-white/10 hover:border-cwc-purple/40 transition-colors"
               >
                 <div className="flex items-center justify-between gap-1 mb-0.5">
-                  <span className="text-xs font-bold font-display text-white line-clamp-1">{item.title}</span>
-                  <span className="text-[9px] font-display text-gray-400 whitespace-nowrap">{item.time}</span>
+                  <span className="text-xs font-bold font-display text-slate-900 dark:text-white line-clamp-1">{item.title}</span>
+                  <span className="text-[9px] font-display text-slate-500 dark:text-gray-400 whitespace-nowrap">{item.time}</span>
                 </div>
-                <p className="text-[11px] text-gray-300 line-clamp-1">{item.message}</p>
+                <p className="text-[11px] text-slate-600 dark:text-gray-300 line-clamp-1">{item.message}</p>
               </div>
             ))}
           </div>

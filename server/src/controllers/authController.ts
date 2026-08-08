@@ -372,6 +372,7 @@ export async function login(request: FastifyRequest<{ Body: LoginBody }>, reply:
       name: user.name,
       email: user.email,
       role: user.role,
+      themePreference: user.themePreference || 'dark',
       avatarUrl: user.avatarUrl,
       isFirstLogin: isFirstLoginFlag,
     },
@@ -580,10 +581,56 @@ export async function getMe(request: FastifyRequest, reply: FastifyReply) {
       name: user.name,
       email: user.email,
       role: user.role,
+      themePreference: user.themePreference || 'dark',
       avatarUrl: user.avatarUrl,
       isFirstLogin: user.isFirstLogin ?? true,
     },
     team,
   });
 }
+
+/**
+ * Task 1: Update Theme Preference (Protected Route)
+ * PATCH /api/auth/theme
+ * Updates the authenticated user's themePreference ('light' | 'dark') in DB and returns updated user.
+ */
+export async function updateTheme(
+  request: FastifyRequest,
+  reply: FastifyReply
+) {
+  if (!request.user) {
+    return reply.status(401).send({ error: 'Unauthorized', message: 'Authentication required' });
+  }
+
+  const { theme } = (request.body as { theme?: 'light' | 'dark' }) || {};
+
+  if (!theme || !['light', 'dark'].includes(theme)) {
+    return reply.status(400).send({
+      error: 'Bad Request',
+      message: 'Theme must be either "light" or "dark"',
+    });
+  }
+
+  const user = await User.findById(request.user.userId);
+  if (!user) {
+    return reply.status(404).send({ error: 'Not Found', message: 'User not found' });
+  }
+
+  user.themePreference = theme;
+  await user.save();
+
+  return reply.send({
+    message: `Theme preference updated to ${theme} successfully`,
+    user: {
+      id: user._id,
+      name: user.name,
+      email: user.email,
+      role: user.role,
+      themePreference: user.themePreference,
+      avatarUrl: user.avatarUrl,
+      isFirstLogin: user.isFirstLogin ?? true,
+    },
+  });
+}
+
 

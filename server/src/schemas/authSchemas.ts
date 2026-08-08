@@ -77,3 +77,15 @@ export const changePasswordSchema: FastifySchema = {
   },
 };
 
+export const updateThemeSchema: FastifySchema = {
+  body: {
+    type: 'object',
+    required: ['theme'],
+    additionalProperties: false,
+    properties: {
+      theme: { type: 'string', enum: ['light', 'dark'] },
+    },
+  },
+};
+
+

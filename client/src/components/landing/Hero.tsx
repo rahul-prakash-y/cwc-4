@@ -60,7 +60,7 @@ export const Hero: React.FC = () => {
   }, [socket]);
 
   return (
-    <section id="hero" className="relative min-h-[92vh] flex flex-col items-center justify-center pt-24 pb-16 px-4 overflow-hidden border-b border-white/10">
+    <section id="hero" className="relative min-h-[92vh] flex flex-col items-center justify-center pt-24 pb-16 px-4 overflow-hidden border-b border-slate-200 dark:border-white/10">
       {/* Background Circus Lights & Effects */}
       <CircusLights />
       <BalloonBackground />
@@ -73,12 +73,12 @@ export const Hero: React.FC = () => {
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
-          className="inline-flex items-center gap-2.5 px-6 py-2 rounded-full bg-cwc-surface backdrop-blur-lg border border-cwc-gold/30 text-cwc-gold text-xs sm:text-sm font-semibold mb-8 shadow-glow-gold/20 hover:border-cwc-gold/60 hover:-translate-y-0.5 transition-all duration-300 ease-out cursor-pointer"
+          className="inline-flex items-center gap-2.5 px-6 py-2 rounded-full glass-card border border-amber-400/30 dark:border-cwc-gold/30 text-amber-600 dark:text-cwc-gold text-xs sm:text-sm font-semibold mb-8 shadow-sm dark:shadow-glow-gold/20 hover:border-amber-500 dark:hover:border-cwc-gold/60 hover:-translate-y-0.5 transition-all duration-300 ease-out cursor-pointer"
           onClick={triggerCarnivalConfetti}
         >
-          <Sparkles className="w-4 h-4 text-cwc-gold animate-spin-slow" />
+          <Sparkles className="w-4 h-4 text-amber-600 dark:text-cwc-gold animate-spin-slow" />
           <span className="tracking-widest uppercase font-display">CODE WITH CURIOUS • SEASON {currentSeason} CARNIVAL 🎪</span>
-          <span className="bg-cwc-red text-white px-2.5 py-0.5 rounded-full text-[10px] uppercase font-black tracking-widest animate-pulse">
+          <span className="bg-rose-600 dark:bg-cwc-red text-white px-2.5 py-0.5 rounded-full text-[10px] uppercase font-black tracking-widest animate-pulse shadow-sm">
             LIVE ARENA
           </span>
         </motion.div>
@@ -91,17 +91,17 @@ export const Hero: React.FC = () => {
           className="relative mb-6 flex flex-col items-center"
         >
           {/* Central Logo Ring */}
-          <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-full bg-gradient-to-tr from-cwc-red via-cwc-gold to-cwc-purple p-1 shadow-2xl mb-6 animate-float">
-            <div className="w-full h-full rounded-full bg-cwc-bg flex items-center justify-center border border-white/20">
-              <span className="text-3xl sm:text-4xl font-extrabold font-display bg-clip-text text-transparent bg-gradient-to-r from-cwc-gold to-yellow-200">
+          <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-full bg-gradient-to-tr from-rose-600 via-amber-500 to-violet-600 dark:from-cwc-red dark:via-cwc-gold dark:to-cwc-purple p-1 shadow-md dark:shadow-2xl mb-6 animate-float">
+            <div className="w-full h-full rounded-full bg-slate-50 dark:bg-cwc-bg flex items-center justify-center border border-slate-200 dark:border-white/20">
+              <span className="text-3xl sm:text-4xl font-extrabold font-display bg-clip-text text-transparent bg-gradient-to-r from-amber-600 via-rose-600 to-violet-600 dark:from-cwc-gold dark:to-yellow-200">
                 CWC
               </span>
             </div>
           </div>
 
-          <h1 className="text-5xl sm:text-7xl md:text-8xl font-black font-display tracking-tight leading-none max-w-4xl">
+          <h1 className="text-5xl sm:text-7xl md:text-8xl font-black font-display tracking-tight leading-none max-w-4xl text-slate-900 dark:text-white">
             Welcome to the <br />
-            <span className="bg-clip-text text-transparent bg-gradient-to-r from-cwc-gold to-yellow-200 font-display font-extrabold drop-shadow-[0_10px_35px_rgba(255,215,0,0.35)]">
+            <span className="bg-clip-text text-transparent bg-gradient-to-r from-amber-600 via-rose-600 to-violet-600 dark:from-cwc-gold dark:to-yellow-200 font-display font-extrabold drop-shadow-sm dark:drop-shadow-[0_10px_35px_rgba(255,215,0,0.35)]">
               Grand Coding Carnival
             </span>
           </h1>
@@ -112,7 +112,7 @@ export const Hero: React.FC = () => {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.25 }}
-          className="text-gray-300 text-base sm:text-xl max-w-2xl font-light mb-6 leading-relaxed"
+          className="text-slate-600 dark:text-gray-300 text-base sm:text-xl max-w-2xl font-light mb-6 leading-relaxed"
         >
           {heroBannerText}
         </motion.p>
@@ -136,7 +136,7 @@ export const Hero: React.FC = () => {
           {/* CTA 1: Register Team */}
           <button
             onClick={() => setIsRegisterOpen(true)}
-            className="inline-flex items-center gap-3 px-8 py-4 rounded-xl bg-gradient-to-r from-cwc-red to-[#9F1239] text-white font-bold font-display text-base tracking-wide border border-white/15 shadow-[inset_0_1px_0_rgba(255,255,255,0.2),0_4px_20px_rgba(225,29,72,0.4)] hover:-translate-y-1 hover:border-white/30 hover:shadow-glow-red transition-all duration-300 ease-out active:translate-y-0"
+            className="inline-flex items-center gap-3 px-8 py-4 rounded-xl bg-gradient-to-r from-rose-600 to-rose-700 dark:from-cwc-red dark:to-[#9F1239] text-white font-bold font-display text-base tracking-wide border border-rose-500/20 dark:border-white/15 shadow-md dark:shadow-[inset_0_1px_0_rgba(255,255,255,0.2),0_4px_20px_rgba(225,29,72,0.4)] hover:-translate-y-1 hover:shadow-lg dark:hover:shadow-glow-red transition-all duration-300 ease-out active:translate-y-0"
           >
             <Ticket className="w-5 h-5 fill-current" />
             <span>Register Team</span>
@@ -145,19 +145,19 @@ export const Hero: React.FC = () => {
           {/* CTA 2: Login */}
           <Link
             to="/login"
-            className="inline-flex items-center gap-3 px-8 py-4 rounded-xl bg-cwc-surface backdrop-blur-lg text-white font-bold font-display text-base tracking-wide border border-white/10 shadow-[inset_0_1px_0_rgba(255,255,255,0.1)] hover:-translate-y-1 hover:border-white/30 hover:shadow-glow-gold hover:text-cwc-gold transition-all duration-300 ease-out active:translate-y-0"
+            className="inline-flex items-center gap-3 px-8 py-4 rounded-xl bg-white dark:bg-cwc-surface backdrop-blur-lg text-slate-800 dark:text-white font-bold font-display text-base tracking-wide border border-slate-200 dark:border-white/10 shadow-sm dark:shadow-[inset_0_1px_0_rgba(255,255,255,0.1)] hover:-translate-y-1 hover:border-amber-500 dark:hover:border-white/30 hover:text-amber-600 dark:hover:text-cwc-gold transition-all duration-300 ease-out active:translate-y-0"
           >
-            <LogIn className="w-5 h-5 text-cwc-gold" />
+            <LogIn className="w-5 h-5 text-amber-600 dark:text-cwc-gold" />
             <span>Login to Portal</span>
           </Link>
 
           {/* Celebration trigger */}
           <button
             onClick={triggerCarnivalConfetti}
-            className="inline-flex items-center gap-2.5 px-6 py-4 rounded-xl bg-cwc-surface backdrop-blur-lg text-cwc-gold font-semibold font-display border border-cwc-gold/30 shadow-[inset_0_1px_0_rgba(255,255,255,0.1)] hover:bg-cwc-gold/10 hover:-translate-y-1 hover:border-cwc-gold/60 hover:shadow-glow-gold transition-all duration-300 ease-out"
+            className="inline-flex items-center gap-2.5 px-6 py-4 rounded-xl bg-white dark:bg-cwc-surface backdrop-blur-lg text-amber-600 dark:text-cwc-gold font-semibold font-display border border-amber-400/30 dark:border-cwc-gold/30 shadow-sm hover:bg-amber-50 dark:hover:bg-cwc-gold/10 hover:-translate-y-1 hover:border-amber-500 dark:hover:border-cwc-gold/60 transition-all duration-300 ease-out"
             title="Pop Confetti Celebration!"
           >
-            <PartyPopper className="w-5 h-5 text-cwc-gold" />
+            <PartyPopper className="w-5 h-5 text-amber-600 dark:text-cwc-gold" />
             <span className="hidden sm:inline">Celebrate 🎊</span>
           </button>
         </motion.div>

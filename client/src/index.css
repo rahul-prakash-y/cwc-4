@@ -5,23 +5,39 @@
 @tailwind utilities;
 
 @layer base {
-  body {
-    font-family: 'Plus Jakarta Sans', 'Inter', sans-serif;
-    background-color: #05050A;
+  /* Task 1 & Task 5: Dark Mode Body Styling */
+  html.dark body {
+    background-color: #05050A !important;
     background-image: 
       radial-gradient(circle at 10% 10%, rgba(139, 92, 246, 0.15) 0%, transparent 45%),
       radial-gradient(circle at 90% 10%, rgba(225, 29, 72, 0.15) 0%, transparent 45%),
       radial-gradient(circle at 50% 90%, rgba(139, 92, 246, 0.12) 0%, transparent 50%),
-      radial-gradient(circle at 85% 85%, rgba(255, 215, 0, 0.08) 0%, transparent 40%);
-    background-attachment: fixed;
-    color: #E5E7EB;
+      radial-gradient(circle at 85% 85%, rgba(255, 215, 0, 0.08) 0%, transparent 40%) !important;
+    background-attachment: fixed !important;
+    color: #E5E7EB !important;
+  }
+
+  /* Task 1 & Task 5: Light Mode Background Ambiance - Bright, Professional Mesh Gradient */
+  html.light body,
+  html:not(.dark) body {
+    background-color: #F8FAFC !important;
+    background-image: 
+      radial-gradient(circle at 10% 10%, rgba(225, 29, 72, 0.04) 0%, transparent 40%), 
+      radial-gradient(circle at 90% 90%, rgba(124, 58, 237, 0.04) 0%, transparent 40%),
+      radial-gradient(circle at 50% 50%, rgba(245, 158, 11, 0.03) 0%, transparent 50%) !important;
+    background-attachment: fixed !important;
+    color: #0F172A !important;
+  }
+
+  body {
+    font-family: 'Plus Jakarta Sans', 'Inter', sans-serif;
     overflow-x: hidden;
-    transition: background-color 0.5s ease, color 0.5s ease;
+    transition: background-color 0.4s ease, color 0.4s ease;
     position: relative;
   }
 
-  /* Fixed subtle SVG noise/grain overlay for cinematic feel */
-  body::before {
+  /* Task 4: Subtle SVG noise overlay strictly for dark mode */
+  html.dark body::before {
     content: '';
     position: fixed;
     top: 0;
@@ -34,12 +50,29 @@
     background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
   }
 
+  /* Task 4: Crisp Light Mode Engineering Grid/Dot-Matrix Texture */
+  html.light body::before,
+  html:not(.dark) body::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    opacity: 0.7;
+    pointer-events: none;
+    z-index: 9999;
+    background-image: radial-gradient(rgba(148, 163, 184, 0.15) 1.5px, transparent 1.5px);
+    background-size: 24px 24px;
+  }
+
   h1, h2, h3, h4, h5, h6, .font-display {
     font-family: 'Outfit', 'Plus Jakarta Sans', sans-serif;
   }
 }
 
-/* Grand Finale Gold Theme Class Overrides */
+/* Event Mode Texture Class Overrides */
+html.mode-finale body,
 html.grand-finale-gold body {
   background-color: #05050A !important;
   background-image: 
@@ -48,16 +81,11 @@ html.grand-finale-gold body {
     radial-gradient(circle at 80% 60%, rgba(234, 179, 8, 0.2) 0%, transparent 50%) !important;
 }
 
-html.grand-finale-gold .glass-card {
-  background: rgba(32, 25, 8, 0.85) !important;
-  border-color: rgba(255, 215, 0, 0.45) !important;
-  box-shadow: 0 0 25px rgba(255, 215, 0, 0.2);
-}
-
-html.grand-finale-gold .glass-card-glow {
-  background: rgba(45, 34, 9, 0.92) !important;
-  border-color: rgba(250, 204, 21, 0.75) !important;
-  box-shadow: 0 0 45px rgba(255, 215, 0, 0.45) !important;
+html.mode-carnival.dark body {
+  background-image: 
+    radial-gradient(circle at 15% 15%, rgba(225, 29, 72, 0.2) 0%, transparent 50%),
+    radial-gradient(circle at 85% 15%, rgba(0, 240, 255, 0.18) 0%, transparent 50%),
+    radial-gradient(circle at 50% 85%, rgba(255, 215, 0, 0.15) 0%, transparent 50%) !important;
 }
 
 /* Custom Scrollbar */
@@ -65,8 +93,12 @@ html.grand-finale-gold .glass-card-glow {
   width: 8px;
   height: 8px;
 }
-::-webkit-scrollbar-track {
+html.dark ::-webkit-scrollbar-track {
   background: #05050A;
+}
+html.light ::-webkit-scrollbar-track,
+html:not(.dark) ::-webkit-scrollbar-track {
+  background: #F1F5F9;
 }
 ::-webkit-scrollbar-thumb {
   background: linear-gradient(180deg, #E11D48, #8B5CF6);
@@ -76,8 +108,8 @@ html.grand-finale-gold .glass-card-glow {
   background: #FFD700;
 }
 
-/* Glassmorphism utility classes - Senior UI Pattern */
-.glass-card {
+/* Task 2: Glassmorphism Utility Classes - Dark Mode */
+html.dark .glass-card {
   background: rgba(255, 255, 255, 0.03);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
@@ -86,7 +118,34 @@ html.grand-finale-gold .glass-card-glow {
   transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-.glass-card-glow {
+/* Task 2: Glassmorphism Utility Classes - Professional Light Mode */
+html.light .glass-card,
+html:not(.dark) .glass-card {
+  background: rgba(255, 255, 255, 0.9) !important;
+  backdrop-filter: blur(12px) !important;
+  -webkit-backdrop-filter: blur(12px) !important;
+  border: 1px solid #E2E8F0 !important;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05), 0 1px 2px -1px rgba(0, 0, 0, 0.05) !important;
+  color: #0F172A !important;
+  transition: all 0.2s ease-in-out !important;
+}
+
+html.dark .glass-card-hover:hover {
+  background: rgba(255, 255, 255, 0.06);
+  border-color: rgba(255, 255, 255, 0.3);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.2), 0 0 25px rgba(225, 29, 72, 0.3);
+  transform: translateY(-4px);
+}
+
+html.light .glass-card-hover:hover,
+html:not(.dark) .glass-card-hover:hover {
+  background: #FFFFFF !important;
+  border-color: #CBD5E1 !important;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -2px rgba(0, 0, 0, 0.05) !important;
+  transform: translateY(-2px) !important;
+}
+
+html.dark .glass-card-glow {
   background: rgba(255, 255, 255, 0.05);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
@@ -94,19 +153,107 @@ html.grand-finale-gold .glass-card-glow {
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.2), 0 0 30px rgba(225, 29, 72, 0.25);
 }
 
-.glass-card-hover {
-  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+html.light .glass-card-glow,
+html:not(.dark) .glass-card-glow {
+  background: #FFFFFF !important;
+  backdrop-filter: blur(16px) !important;
+  border: 1px solid rgba(225, 29, 72, 0.3) !important;
+  box-shadow: 0 10px 15px -3px rgba(225, 29, 72, 0.08), 0 4px 6px -4px rgba(225, 29, 72, 0.04) !important;
+  color: #0F172A !important;
 }
 
-.glass-card-hover:hover {
-  background: rgba(255, 255, 255, 0.06);
-  border-color: rgba(255, 255, 255, 0.3);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.2), 0 0 25px rgba(225, 29, 72, 0.3);
-  transform: translateY(-4px);
+/* Task 4: High-Contrast Data Tables in Light Mode */
+html.light table th,
+html:not(.dark) table th {
+  background-color: rgba(241, 245, 249, 0.9) !important;
+  color: #1E293B !important;
+  border-bottom: 2px solid #E2E8F0 !important;
+  font-weight: 600 !important;
+}
+
+html.light table td,
+html:not(.dark) table td {
+  border-bottom: 1px solid #F1F5F9 !important;
+  color: #334155 !important;
+}
+
+html.light table tr:hover,
+html:not(.dark) table tr:hover {
+  background-color: rgba(255, 241, 242, 0.5) !important;
+}
+
+/* Task 4: High-Contrast Form Inputs & Selects in Light Mode */
+html.light input:not([type="checkbox"]):not([type="radio"]):not([type="submit"]):not([type="button"]),
+html.light select,
+html.light textarea,
+html:not(.dark) input:not([type="checkbox"]):not([type="radio"]):not([type="submit"]):not([type="button"]),
+html:not(.dark) select,
+html:not(.dark) textarea {
+  background-color: #FFFFFF !important;
+  color: #0F172A !important;
+  border-color: #CBD5E1 !important;
+}
+
+html.light input:focus,
+html.light select:focus,
+html.light textarea:focus,
+html:not(.dark) input:focus,
+html:not(.dark) select:focus,
+html:not(.dark) textarea:focus {
+  border-color: #E11D48 !important;
+  box-shadow: 0 0 0 3px rgba(225, 29, 72, 0.15) !important;
+}
+
+/* Light Mode Typography & Color Overrides */
+html.light h1:not([class*="text-transparent"]):not(.keep-white),
+html.light h2:not([class*="text-transparent"]):not(.keep-white),
+html.light h3:not([class*="text-transparent"]):not(.keep-white),
+html.light h4:not([class*="text-transparent"]):not(.keep-white),
+html.light h5:not([class*="text-transparent"]):not(.keep-white),
+html.light h6:not([class*="text-transparent"]):not(.keep-white),
+html:not(.dark) h1:not([class*="text-transparent"]):not(.keep-white),
+html:not(.dark) h2:not([class*="text-transparent"]):not(.keep-white),
+html:not(.dark) h3:not([class*="text-transparent"]):not(.keep-white),
+html:not(.dark) h4:not([class*="text-transparent"]):not(.keep-white),
+html:not(.dark) h5:not([class*="text-transparent"]):not(.keep-white),
+html:not(.dark) h6:not([class*="text-transparent"]):not(.keep-white) {
+  color: #0F172A;
+}
+
+html.light .text-gray-300,
+html.light .text-slate-300,
+html:not(.dark) .text-gray-300,
+html:not(.dark) .text-slate-300 {
+  color: #334155 !important;
+}
+
+html.light .text-gray-400,
+html.light .text-slate-400,
+html:not(.dark) .text-gray-400,
+html:not(.dark) .text-slate-400 {
+  color: #475569 !important;
+}
+
+/* Keep white text intact on gradient buttons & solid pills */
+html:not(.dark) button[class*="bg-gradient"],
+html:not(.dark) a[class*="bg-gradient"],
+html:not(.dark) .bg-cwc-red,
+html:not(.dark) .bg-carnival-crimson,
+html:not(.dark) .bg-rose-600,
+html:not(.dark) .bg-rose-500,
+html:not(.dark) .bg-purple-600,
+html:not(.dark) .bg-indigo-600,
+html:not(.dark) .keep-white {
+  color: #FFFFFF !important;
 }
 
 /* Bright Vivid Text Gradients */
 .text-gradient-carnival {
+  background: linear-gradient(135deg, #E11D48 0%, #D97706 35%, #0284C7 75%, #16A34A 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+html.dark .text-gradient-carnival {
   background: linear-gradient(135deg, #FF007F 0%, #FFD700 35%, #00F0FF 75%, #39FF14 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
@@ -114,23 +261,15 @@ html.grand-finale-gold .glass-card-glow {
 }
 
 .text-gradient-gold {
+  background: linear-gradient(135deg, #D97706 0%, #B45309 50%, #78350F 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+html.dark .text-gradient-gold {
   background: linear-gradient(135deg, #FFF176 0%, #FFD700 45%, #FF6D00 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   filter: drop-shadow(0 2px 10px rgba(255, 215, 0, 0.3));
-}
-
-.text-gradient-cyan {
-  background: linear-gradient(135deg, #E0F7FA 0%, #00F0FF 45%, #B388FF 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  filter: drop-shadow(0 2px 10px rgba(0, 240, 255, 0.3));
-}
-
-.text-gradient-neon {
-  background: linear-gradient(135deg, #39FF14 0%, #00F0FF 50%, #FF007F 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
 }
 
 /* Circus Light Bulbs Styling */
@@ -165,28 +304,12 @@ html.grand-finale-gold .glass-card-glow {
   animation: shimmerSweep 3s infinite linear;
 }
 
-.btn-gold-pulse {
-  position: relative;
-  overflow: hidden;
-  box-shadow: 0 0 20px rgba(255, 215, 0, 0.5);
-  animation: goldPulse 2s infinite alternate ease-in-out;
-}
-
 @keyframes carnivalPulse {
   0% {
-    box-shadow: 0 0 15px rgba(255, 0, 127, 0.5), 0 0 25px rgba(0, 240, 255, 0.3);
+    box-shadow: 0 0 15px rgba(225, 29, 72, 0.4);
   }
   100% {
-    box-shadow: 0 0 35px rgba(255, 215, 0, 0.9), 0 0 50px rgba(255, 0, 127, 0.7);
-  }
-}
-
-@keyframes goldPulse {
-  0% {
-    box-shadow: 0 0 15px rgba(255, 215, 0, 0.5), 0 0 30px rgba(250, 204, 21, 0.3);
-  }
-  100% {
-    box-shadow: 0 0 35px rgba(255, 215, 0, 0.95), 0 0 60px rgba(245, 158, 11, 0.8);
+    box-shadow: 0 0 25px rgba(225, 29, 72, 0.7);
   }
 }
 
@@ -197,70 +320,6 @@ html.grand-finale-gold .glass-card-glow {
   100% {
     transform: translateX(100%) rotate(30deg);
   }
-}
-
-/* 3D Physical Admission Ticket Card Flip */
-.ticket-flip-card {
-  perspective: 1000px;
-}
-
-.ticket-flip-inner {
-  position: relative;
-  width: 100%;
-  height: 100%;
-  transition: transform 0.8s cubic-bezier(0.4, 0, 0.2, 1);
-  transform-style: preserve-3d;
-}
-
-.ticket-flip-card:hover .ticket-flip-inner {
-  transform: rotateY(180deg);
-}
-
-.ticket-flip-front,
-.ticket-flip-back {
-  position: absolute;
-  width: 100%;
-  height: 100%;
-  -webkit-backface-visibility: hidden;
-  backface-visibility: hidden;
-  border-radius: 1.5rem;
-}
-
-.ticket-flip-back {
-  transform: rotateY(180deg);
-}
-
-/* Continuous Spotlights */
-@keyframes spotlightLeft {
-  0% {
-    transform: rotate(-45deg) translateY(0);
-  }
-  50% {
-    transform: rotate(-25deg) translateY(20px);
-  }
-  100% {
-    transform: rotate(-45deg) translateY(0);
-  }
-}
-
-@keyframes spotlightRight {
-  0% {
-    transform: rotate(45deg) translateY(0);
-  }
-  50% {
-    transform: rotate(25deg) translateY(20px);
-  }
-  100% {
-    transform: rotate(45deg) translateY(0);
-  }
-}
-
-.animate-spotlight-left {
-  animation: spotlightLeft 8s infinite ease-in-out;
-}
-
-.animate-spotlight-right {
-  animation: spotlightRight 8s infinite ease-in-out;
 }
 
 /* Marquee Ticker Animation */
@@ -276,33 +335,3 @@ html.grand-finale-gold .glass-card-glow {
 .animate-marquee {
   animation: marquee 20s linear infinite;
 }
-
-/* Glow Utilities */
-.neon-glow-gold {
-  filter: drop-shadow(0 0 14px rgba(255, 215, 0, 0.8));
-}
-
-.neon-glow-crimson {
-  filter: drop-shadow(0 0 14px rgba(255, 0, 127, 0.8));
-}
-
-.neon-glow-cyan {
-  filter: drop-shadow(0 0 14px rgba(0, 240, 255, 0.8));
-}
-
-/* Danger Status Slow Pulse Orange Border */
-@keyframes dangerPulseOrange {
-  0%, 100% {
-    border-color: rgba(249, 115, 22, 0.95);
-    box-shadow: 0 0 30px rgba(249, 115, 22, 0.65), inset 0 0 20px rgba(249, 115, 22, 0.25);
-  }
-  50% {
-    border-color: rgba(249, 115, 22, 0.35);
-    box-shadow: 0 0 12px rgba(249, 115, 22, 0.25), inset 0 0 5px rgba(249, 115, 22, 0.08);
-  }
-}
-
-.animate-pulse-orange {
-  animation: dangerPulseOrange 2.5s infinite ease-in-out;
-}
-

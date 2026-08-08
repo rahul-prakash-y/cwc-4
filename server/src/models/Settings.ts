@@ -7,6 +7,7 @@ export interface ISettings extends Document {
   isLeaderboardVisible: boolean;
   heroBannerText: string;
   isGrandFinale: boolean;
+  eventMode: 'standard' | 'carnival' | 'finale';
 }
 
 const settingsSchema = new Schema<ISettings>(
@@ -23,6 +24,11 @@ const settingsSchema = new Schema<ISettings>(
       default: 'Welcome to Code With Curious Season 4! The Ultimate Coding Carnival.',
     },
     isGrandFinale: { type: Boolean, default: false },
+    eventMode: {
+      type: String,
+      enum: ['standard', 'carnival', 'finale'],
+      default: 'standard',
+    },
   },
   { timestamps: true }
 );
@@ -42,8 +48,13 @@ export async function getGlobalSettings(): Promise<any> {
       isLeaderboardVisible: true,
       heroBannerText: 'Welcome to Code With Curious Season 4! The Ultimate Coding Carnival.',
       isGrandFinale: false,
+      eventMode: 'standard',
     });
     doc = created.toObject();
+  } else if (!doc.eventMode) {
+    const eventMode = doc.isGrandFinale ? 'finale' : 'standard';
+    await Settings.updateOne({ _id: doc._id }, { $set: { eventMode } });
+    doc.eventMode = eventMode;
   }
   return doc;
 }
