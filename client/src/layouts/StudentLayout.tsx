@@ -98,35 +98,35 @@ export const StudentLayout: React.FC = () => {
           </button>
           <button
             onClick={logout}
-            className="w-full flex items-center gap-2 px-4 py-2.5 rounded-xl glass-card text-xs font-semibold text-rose-400 hover:text-rose-300 hover:bg-rose-500/10 transition-all"
+            className="w-full flex items-center gap-2 px-4 py-2.5 rounded-xl glass-card text-xs font-semibold text-rose-600 dark:text-rose-400 hover:text-rose-700 dark:hover:text-rose-300 hover:bg-rose-500/10 transition-all"
           >
             <LogOut className="w-4 h-4" />
             <span>Logout</span>
           </button>
-          <Link
+          {/* <Link
             to="/"
-            className="flex items-center gap-2 px-4 py-2.5 rounded-xl glass-card text-xs font-semibold text-slate-300 hover:text-white transition-all"
+            className="flex items-center gap-2 px-4 py-2.5 rounded-xl glass-card text-xs font-semibold text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/5 transition-all"
           >
             <ArrowLeft className="w-4 h-4" />
             <span>Return to Landing</span>
-          </Link>
+          </Link> */}
         </div>
       </aside>
 
       {/* Main Content Area */}
       <div className="flex-1 flex flex-col min-w-0">
         {/* Top Navigation Bar */}
-        <header className="h-16 bg-white/80 dark:bg-[#151329]/80 backdrop-blur-xl border-b border-slate-200 dark:border-white/10 px-4 sm:px-6 flex items-center justify-between sticky top-0 z-30 transition-colors duration-300">
+        <header className="h-16 bg-white/90 dark:bg-[#151329]/80 backdrop-blur-xl border-b border-slate-200 dark:border-white/10 px-4 sm:px-6 flex items-center justify-between sticky top-0 z-30 transition-colors duration-300">
           <div className="flex items-center gap-3">
             <button
               onClick={() => setSidebarOpen(!sidebarOpen)}
-              className="lg:hidden p-2 rounded-xl glass-card text-slate-300 hover:text-white"
+              className="lg:hidden p-2 rounded-xl glass-card text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white"
             >
               {sidebarOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
             </button>
-            <h1 className="font-extrabold text-lg text-white font-mono flex items-center gap-2">
+            <h1 className="font-extrabold text-lg text-slate-900 dark:text-white font-mono flex items-center gap-2">
               <span>Student Arena Dashboard</span>
-              <span className="text-xs px-2 py-0.5 rounded-full bg-carnival-gold/20 text-carnival-gold border border-carnival-gold/30 font-sans">
+              <span className="text-xs px-2 py-0.5 rounded-full bg-amber-500/10 dark:bg-carnival-gold/20 text-amber-700 dark:text-carnival-gold border border-amber-500/30 dark:border-carnival-gold/30 font-sans font-bold">
                 Rank #1
               </span>
             </h1>
@@ -137,13 +137,13 @@ export const StudentLayout: React.FC = () => {
             <NotificationBell />
             <button
               onClick={() => setIsSettingsOpen(true)}
-              className="flex items-center gap-2 p-1.5 rounded-xl glass-card border-white/10 hover:border-carnival-gold/50 transition-all text-left"
+              className="flex items-center gap-2 p-1.5 rounded-xl glass-card border-slate-200 dark:border-white/10 hover:border-amber-500 dark:hover:border-carnival-gold/50 transition-all text-left"
               title="Click to open Settings & Change Password"
             >
-              <div className="w-7 h-7 rounded-lg bg-carnival-gold/20 text-carnival-gold flex items-center justify-center font-bold text-xs">
+              <div className="w-7 h-7 rounded-lg bg-amber-500/10 dark:bg-carnival-gold/20 text-amber-700 dark:text-carnival-gold flex items-center justify-center font-bold text-xs">
                 {user?.name ? user.name.slice(0, 2).toUpperCase() : 'AS'}
               </div>
-              <span className="text-xs font-bold text-white hidden sm:inline">{user?.name || 'Aarav Sharma'}</span>
+              <span className="text-xs font-bold text-slate-900 dark:text-white hidden sm:inline">{user?.name || 'Aarav Sharma'}</span>
               <SettingsIcon className="w-3.5 h-3.5 text-slate-400 ml-1 hidden sm:inline" />
             </button>
           </div>

@@ -121,28 +121,28 @@ export const SiteConfig: React.FC = () => {
   }
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-8 font-sans">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-white/10 pb-6">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-200 dark:border-white/10 pb-6">
         <div>
           <div className="flex items-center gap-2 mb-2">
-            <span className="px-3 py-1 rounded-full text-xs font-mono font-bold bg-carnival-gold/20 text-carnival-gold border border-carnival-gold/40 flex items-center gap-1.5 shadow-neon-gold">
+            <span className="px-3 py-1 rounded-full text-xs font-mono font-bold bg-amber-100 dark:bg-carnival-gold/20 text-amber-800 dark:text-carnival-gold border border-amber-300 dark:border-carnival-gold/40 flex items-center gap-1.5 shadow-sm dark:shadow-neon-gold">
               <Sliders className="w-3.5 h-3.5" />
               <span>SUPER ADMIN CMS ENGINE</span>
             </span>
-            <span className="px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 text-[10px] font-mono font-bold">
+            <span className="px-2.5 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-500/20 text-emerald-800 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-500/40 text-[10px] font-mono font-bold">
               REAL-TIME SYNC
             </span>
           </div>
-          <h1 className="text-3xl font-black text-white">Site Configuration (CMS) ⚙️</h1>
-          <p className="text-xs text-slate-300 mt-1">
+          <h1 className="text-3xl font-black text-slate-900 dark:text-white">Site Configuration (CMS) ⚙️</h1>
+          <p className="text-xs text-slate-600 dark:text-slate-300 mt-1">
             Manage global portal flags, event start timers, registration status, and leaderboard visibility.
           </p>
         </div>
 
         <button
           onClick={fetchSettings}
-          className="self-start sm:self-auto px-4 py-2 rounded-xl bg-white/10 hover:bg-white/20 text-white font-mono text-xs flex items-center gap-2 border border-white/10 transition"
+          className="self-start sm:self-auto px-4 py-2 rounded-xl bg-slate-100 dark:bg-white/10 hover:bg-slate-200 dark:hover:bg-white/20 text-slate-800 dark:text-white font-mono text-xs flex items-center gap-2 border border-slate-300 dark:border-white/10 transition cursor-pointer"
         >
           <RefreshCw className="w-3.5 h-3.5" />
           <span>Reload Config</span>
@@ -153,40 +153,40 @@ export const SiteConfig: React.FC = () => {
       <form onSubmit={handleSubmit} className="space-y-8">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {/* Card 1: Event Countdown & Season */}
-          <div className="p-6 rounded-3xl glass-card border border-white/10 bg-black/40 space-y-6 relative overflow-hidden">
-            <div className="flex items-center gap-3 border-b border-white/10 pb-4">
-              <div className="w-10 h-10 rounded-xl bg-carnival-gold/20 border border-carnival-gold/40 flex items-center justify-center text-carnival-gold">
+          <div className="p-6 rounded-3xl bg-white dark:bg-[#18122B] border border-slate-200 dark:border-white/10 shadow-sm dark:shadow-xl space-y-6 relative overflow-hidden">
+            <div className="flex items-center gap-3 border-b border-slate-200 dark:border-white/10 pb-4">
+              <div className="w-10 h-10 rounded-xl bg-amber-100 dark:bg-carnival-gold/20 border border-amber-300 dark:border-carnival-gold/40 flex items-center justify-center text-amber-600 dark:text-carnival-gold">
                 <Calendar className="w-5 h-5" />
               </div>
               <div>
-                <h3 className="text-lg font-bold text-white">Event Countdown & Season</h3>
-                <p className="text-xs text-slate-400">Configure launch timer and season number</p>
+                <h3 className="text-lg font-bold text-slate-900 dark:text-white">Event Countdown & Season</h3>
+                <p className="text-xs text-slate-500 dark:text-slate-400">Configure launch timer and season number</p>
               </div>
             </div>
 
             <div className="space-y-4">
               {/* Event Start Date */}
               <div className="space-y-2">
-                <label className="text-xs font-mono font-bold text-slate-300 uppercase tracking-wider flex items-center gap-2">
-                  <Calendar className="w-3.5 h-3.5 text-carnival-gold" />
+                <label className="text-xs font-mono font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider flex items-center gap-2">
+                  <Calendar className="w-3.5 h-3.5 text-amber-500 dark:text-carnival-gold" />
                   <span>Event Start Date & Time *</span>
                 </label>
                 <input
                   type="datetime-local"
                   value={settings.eventStartDate}
                   onChange={(e) => setSettings({ ...settings, eventStartDate: e.target.value })}
-                  className="w-full px-4 py-3 rounded-xl bg-black/60 text-white text-xs font-mono border border-white/15 focus:border-carnival-gold focus:outline-none transition"
+                  className="w-full px-4 py-3 rounded-xl bg-slate-50 dark:bg-black/60 text-slate-900 dark:text-white text-xs font-mono border border-slate-300 dark:border-white/15 focus:border-amber-500 dark:focus:border-carnival-gold focus:outline-none transition"
                   required
                 />
-                <p className="text-[11px] text-slate-400">
+                <p className="text-[11px] text-slate-500 dark:text-slate-400">
                   This timestamp drives the mechanical flip-clock countdown timer on the Hero section.
                 </p>
               </div>
 
               {/* Current Season */}
               <div className="space-y-2">
-                <label className="text-xs font-mono font-bold text-slate-300 uppercase tracking-wider flex items-center gap-2">
-                  <Layers className="w-3.5 h-3.5 text-carnival-gold" />
+                <label className="text-xs font-mono font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider flex items-center gap-2">
+                  <Layers className="w-3.5 h-3.5 text-amber-500 dark:text-carnival-gold" />
                   <span>Current Season Number *</span>
                 </label>
                 <input
@@ -195,7 +195,7 @@ export const SiteConfig: React.FC = () => {
                   max={99}
                   value={settings.currentSeason}
                   onChange={(e) => setSettings({ ...settings, currentSeason: parseInt(e.target.value, 10) || 4 })}
-                  className="w-full px-4 py-3 rounded-xl bg-black/60 text-white text-xs font-mono border border-white/15 focus:border-carnival-gold focus:outline-none transition"
+                  className="w-full px-4 py-3 rounded-xl bg-slate-50 dark:bg-black/60 text-slate-900 dark:text-white text-xs font-mono border border-slate-300 dark:border-white/15 focus:border-amber-500 dark:focus:border-carnival-gold focus:outline-none transition"
                   required
                 />
               </div>
@@ -203,30 +203,30 @@ export const SiteConfig: React.FC = () => {
           </div>
 
           {/* Card 2: Feature Toggles */}
-          <div className="p-6 rounded-3xl glass-card border border-white/10 bg-black/40 space-y-6 relative overflow-hidden">
-            <div className="flex items-center gap-3 border-b border-white/10 pb-4">
-              <div className="w-10 h-10 rounded-xl bg-carnival-cyan/20 border border-carnival-cyan/40 flex items-center justify-center text-carnival-cyan">
+          <div className="p-6 rounded-3xl bg-white dark:bg-[#18122B] border border-slate-200 dark:border-white/10 shadow-sm dark:shadow-xl space-y-6 relative overflow-hidden">
+            <div className="flex items-center gap-3 border-b border-slate-200 dark:border-white/10 pb-4">
+              <div className="w-10 h-10 rounded-xl bg-cyan-100 dark:bg-carnival-cyan/20 border border-cyan-300 dark:border-carnival-cyan/40 flex items-center justify-center text-cyan-600 dark:text-carnival-cyan">
                 <Sliders className="w-5 h-5" />
               </div>
               <div>
-                <h3 className="text-lg font-bold text-white">Live Feature Control Switches</h3>
-                <p className="text-xs text-slate-400">Toggle public portal access and visibility</p>
+                <h3 className="text-lg font-bold text-slate-900 dark:text-white">Live Feature Control Switches</h3>
+                <p className="text-xs text-slate-500 dark:text-slate-400">Toggle public portal access and visibility</p>
               </div>
             </div>
 
             <div className="space-y-5">
               {/* Registration Toggle */}
-              <div className="flex items-center justify-between p-4 rounded-2xl bg-black/50 border border-white/10">
+              <div className="flex items-center justify-between p-4 rounded-2xl bg-slate-50 dark:bg-black/50 border border-slate-200 dark:border-white/10">
                 <div className="space-y-1 pr-4">
-                  <div className="text-sm font-bold text-white flex items-center gap-2">
+                  <div className="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
                     {settings.isRegistrationOpen ? (
-                      <UserCheck className="w-4 h-4 text-emerald-400" />
+                      <UserCheck className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
                     ) : (
-                      <UserX className="w-4 h-4 text-carnival-crimson" />
+                      <UserX className="w-4 h-4 text-red-600 dark:text-carnival-crimson" />
                     )}
                     <span>Registration Gate</span>
                   </div>
-                  <p className="text-xs text-slate-400">
+                  <p className="text-xs text-slate-500 dark:text-slate-400">
                     {settings.isRegistrationOpen
                       ? 'Student squad registrations are OPEN.'
                       : 'Student registrations are CLOSED.'}
@@ -236,32 +236,32 @@ export const SiteConfig: React.FC = () => {
                 <button
                   type="button"
                   onClick={() => setSettings({ ...settings, isRegistrationOpen: !settings.isRegistrationOpen })}
-                  className={`w-14 h-8 rounded-full p-1 transition duration-300 border ${
+                  className={`w-14 h-8 rounded-full p-1 transition duration-300 border cursor-pointer ${
                     settings.isRegistrationOpen
-                      ? 'bg-emerald-500/30 border-emerald-400 shadow-[0_0_10px_rgba(16,185,129,0.5)]'
-                      : 'bg-black/60 border-white/20'
+                      ? 'bg-emerald-500/30 border-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.5)]'
+                      : 'bg-slate-200 dark:bg-black/60 border-slate-300 dark:border-white/20'
                   }`}
                 >
                   <div
                     className={`w-6 h-6 rounded-full transition duration-300 transform ${
-                      settings.isRegistrationOpen ? 'translate-x-6 bg-emerald-400' : 'translate-x-0 bg-slate-500'
+                      settings.isRegistrationOpen ? 'translate-x-6 bg-emerald-500 dark:bg-emerald-400' : 'translate-x-0 bg-slate-400 dark:bg-slate-500'
                     }`}
                   />
                 </button>
               </div>
 
               {/* Leaderboard Visibility Toggle */}
-              <div className="flex items-center justify-between p-4 rounded-2xl bg-black/50 border border-white/10">
+              <div className="flex items-center justify-between p-4 rounded-2xl bg-slate-50 dark:bg-black/50 border border-slate-200 dark:border-white/10">
                 <div className="space-y-1 pr-4">
-                  <div className="text-sm font-bold text-white flex items-center gap-2">
+                  <div className="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
                     {settings.isLeaderboardVisible ? (
-                      <Eye className="w-4 h-4 text-carnival-gold" />
+                      <Eye className="w-4 h-4 text-amber-500 dark:text-carnival-gold" />
                     ) : (
-                      <EyeOff className="w-4 h-4 text-slate-500" />
+                      <EyeOff className="w-4 h-4 text-slate-400 dark:text-slate-500" />
                     )}
                     <span>Public Leaderboard</span>
                   </div>
-                  <p className="text-xs text-slate-400">
+                  <p className="text-xs text-slate-500 dark:text-slate-400">
                     {settings.isLeaderboardVisible
                       ? 'Live ranking table is VISIBLE to students.'
                       : 'Leaderboard is HIDDEN from students (Admins still view).'}
@@ -271,28 +271,28 @@ export const SiteConfig: React.FC = () => {
                 <button
                   type="button"
                   onClick={() => setSettings({ ...settings, isLeaderboardVisible: !settings.isLeaderboardVisible })}
-                  className={`w-14 h-8 rounded-full p-1 transition duration-300 border ${
+                  className={`w-14 h-8 rounded-full p-1 transition duration-300 border cursor-pointer ${
                     settings.isLeaderboardVisible
-                      ? 'bg-carnival-gold/30 border-carnival-gold shadow-[0_0_10px_rgba(255,215,0,0.5)]'
-                      : 'bg-black/60 border-white/20'
+                      ? 'bg-amber-500/30 border-amber-500 shadow-[0_0_10px_rgba(255,215,0,0.5)]'
+                      : 'bg-slate-200 dark:bg-black/60 border-slate-300 dark:border-white/20'
                   }`}
                 >
                   <div
                     className={`w-6 h-6 rounded-full transition duration-300 transform ${
-                      settings.isLeaderboardVisible ? 'translate-x-6 bg-carnival-gold' : 'translate-x-0 bg-slate-500'
+                      settings.isLeaderboardVisible ? 'translate-x-6 bg-amber-500 dark:bg-carnival-gold' : 'translate-x-0 bg-slate-400 dark:bg-slate-500'
                     }`}
                   />
                 </button>
               </div>
 
               {/* Grand Finale Mode Toggle */}
-              <div className="flex items-center justify-between p-4 rounded-2xl bg-black/50 border border-white/10">
+              <div className="flex items-center justify-between p-4 rounded-2xl bg-slate-50 dark:bg-black/50 border border-slate-200 dark:border-white/10">
                 <div className="space-y-1 pr-4">
-                  <div className="text-sm font-bold text-white flex items-center gap-2">
-                    <Trophy className={`w-4 h-4 ${settings.isGrandFinale ? 'text-amber-400' : 'text-slate-500'}`} />
+                  <div className="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                    <Trophy className={`w-4 h-4 ${settings.isGrandFinale ? 'text-amber-500 dark:text-amber-400' : 'text-slate-400 dark:text-slate-500'}`} />
                     <span>Grand Finale Gold Mode</span>
                   </div>
-                  <p className="text-xs text-slate-400">
+                  <p className="text-xs text-slate-500 dark:text-slate-400">
                     {settings.isGrandFinale
                       ? 'GRAND FINALE ACTIVE - Gold theme & victory overlays enabled.'
                       : 'Standard Carnival Mode.'}
@@ -302,15 +302,15 @@ export const SiteConfig: React.FC = () => {
                 <button
                   type="button"
                   onClick={() => setSettings({ ...settings, isGrandFinale: !settings.isGrandFinale })}
-                  className={`w-14 h-8 rounded-full p-1 transition duration-300 border ${
+                  className={`w-14 h-8 rounded-full p-1 transition duration-300 border cursor-pointer ${
                     settings.isGrandFinale
                       ? 'bg-amber-400/30 border-amber-400 shadow-[0_0_10px_rgba(251,191,36,0.5)]'
-                      : 'bg-black/60 border-white/20'
+                      : 'bg-slate-200 dark:bg-black/60 border-slate-300 dark:border-white/20'
                   }`}
                 >
                   <div
                     className={`w-6 h-6 rounded-full transition duration-300 transform ${
-                      settings.isGrandFinale ? 'translate-x-6 bg-amber-400' : 'translate-x-0 bg-slate-500'
+                      settings.isGrandFinale ? 'translate-x-6 bg-amber-500 dark:bg-amber-400' : 'translate-x-0 bg-slate-400 dark:bg-slate-500'
                     }`}
                   />
                 </button>
@@ -320,14 +320,14 @@ export const SiteConfig: React.FC = () => {
         </div>
 
         {/* Card 3: Hero Banner Custom Text */}
-        <div className="p-6 rounded-3xl glass-card border border-white/10 bg-black/40 space-y-4 relative overflow-hidden">
-          <div className="flex items-center gap-3 border-b border-white/10 pb-4">
-            <div className="w-10 h-10 rounded-xl bg-carnival-purple/20 border border-carnival-purple/40 flex items-center justify-center text-carnival-purple">
+        <div className="p-6 rounded-3xl bg-white dark:bg-[#18122B] border border-slate-200 dark:border-white/10 shadow-sm dark:shadow-xl space-y-4 relative overflow-hidden">
+          <div className="flex items-center gap-3 border-b border-slate-200 dark:border-white/10 pb-4">
+            <div className="w-10 h-10 rounded-xl bg-purple-100 dark:bg-carnival-purple/20 border border-purple-300 dark:border-carnival-purple/40 flex items-center justify-center text-purple-600 dark:text-carnival-purple">
               <MessageSquare className="w-5 h-5" />
             </div>
             <div>
-              <h3 className="text-lg font-bold text-white">Hero Announcement Banner</h3>
-              <p className="text-xs text-slate-400">Headline announcement text displayed on landing hero section</p>
+              <h3 className="text-lg font-bold text-slate-900 dark:text-white">Hero Announcement Banner</h3>
+              <p className="text-xs text-slate-500 dark:text-slate-400">Headline announcement text displayed on landing hero section</p>
             </div>
           </div>
 
@@ -336,7 +336,7 @@ export const SiteConfig: React.FC = () => {
               rows={3}
               value={settings.heroBannerText}
               onChange={(e) => setSettings({ ...settings, heroBannerText: e.target.value })}
-              className="w-full px-4 py-3 rounded-xl bg-black/60 text-white text-xs font-sans border border-white/15 focus:border-carnival-gold focus:outline-none transition leading-relaxed"
+              className="w-full px-4 py-3 rounded-xl bg-slate-50 dark:bg-black/60 text-slate-900 dark:text-white text-xs font-sans border border-slate-300 dark:border-white/15 focus:border-amber-500 dark:focus:border-carnival-gold focus:outline-none transition leading-relaxed"
               placeholder="Enter announcement text..."
             />
           </div>
@@ -347,7 +347,7 @@ export const SiteConfig: React.FC = () => {
           <button
             type="submit"
             disabled={saving}
-            className="px-8 py-4 rounded-2xl bg-gradient-to-r from-carnival-gold via-amber-500 to-carnival-crimson text-slate-950 font-black text-sm uppercase tracking-wider shadow-neon-gold hover:brightness-110 transition duration-300 flex items-center gap-3 disabled:opacity-50"
+            className="px-8 py-4 rounded-2xl bg-gradient-to-r from-amber-500 via-amber-600 to-rose-600 text-white font-black text-sm uppercase tracking-wider shadow-lg hover:brightness-110 transition duration-300 flex items-center gap-3 cursor-pointer disabled:opacity-50"
           >
             {saving ? (
               <>

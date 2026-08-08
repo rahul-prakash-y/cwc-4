@@ -238,14 +238,14 @@ export const ScoreSheet: React.FC = () => {
   return (
     <div className="space-y-6 max-w-7xl mx-auto font-sans">
       {/* Excel Sheet Header Banner */}
-      <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 p-6 rounded-2xl glass-card border border-carnival-gold/40 shadow-neon-gold">
+      <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 p-6 rounded-2xl bg-white dark:bg-[#18122B] border border-slate-200 dark:border-carnival-gold/40 shadow-sm dark:shadow-neon-gold">
         <div>
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-carnival-gold/20 text-carnival-gold text-xs font-mono font-bold border border-carnival-gold/30 mb-2">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-500/10 dark:bg-carnival-gold/20 text-amber-700 dark:text-carnival-gold text-xs font-mono font-bold border border-amber-300 dark:border-carnival-gold/30 mb-2">
             <Grid className="w-4 h-4" />
             <span>LIVE ARENA SCORE SHEET</span>
           </div>
-          <h2 className="text-2xl sm:text-3xl font-black text-white">Excel-Style Score Sheet Grid</h2>
-          <p className="text-slate-300 text-xs sm:text-sm mt-1 max-w-2xl">
+          <h2 className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white">Excel-Style Score Sheet Grid</h2>
+          <p className="text-slate-600 dark:text-slate-300 text-xs sm:text-sm mt-1 max-w-2xl">
             Real-time spreadsheet evaluator. Edit main/special scores inline to immediately calculate total points, assign advantages, toggle immunities, and bulk submit to the Fastify backend.
           </p>
         </div>
@@ -253,7 +253,7 @@ export const ScoreSheet: React.FC = () => {
         <div className="flex flex-wrap items-center gap-3">
           <button
             onClick={() => setIsGrantModalOpen(true)}
-            className="px-4 py-3 rounded-xl bg-gradient-to-r from-purple-600 via-pink-600 to-carnival-gold text-white font-black text-xs uppercase tracking-wider shadow-neon-purple hover:scale-105 transition-all flex items-center gap-2 cursor-pointer"
+            className="px-4 py-3 rounded-xl bg-gradient-to-r from-purple-600 via-pink-600 to-amber-500 dark:to-carnival-gold text-white font-black text-xs uppercase tracking-wider shadow-md dark:shadow-neon-purple hover:scale-105 transition-all flex items-center gap-2 cursor-pointer"
           >
             <Gift className="w-4 h-4 text-white fill-white" />
             <span>Grant Advantage 🎁</span>
@@ -262,7 +262,7 @@ export const ScoreSheet: React.FC = () => {
           <button
             onClick={handleSaveDayScores}
             disabled={isSubmitting}
-            className="px-6 py-3 rounded-xl bg-gradient-to-r from-carnival-gold via-carnival-amber to-carnival-crimson text-slate-950 font-black text-xs uppercase tracking-wider shadow-neon-gold hover:scale-105 transition-all flex items-center gap-2 disabled:opacity-50 cursor-pointer"
+            className="px-6 py-3 rounded-xl bg-gradient-to-r from-amber-500 via-amber-400 to-rose-600 dark:from-carnival-gold dark:via-carnival-amber dark:to-carnival-crimson text-slate-950 font-black text-xs uppercase tracking-wider shadow-md dark:shadow-neon-gold hover:scale-105 transition-all flex items-center gap-2 disabled:opacity-50 cursor-pointer"
           >
             {isSubmitting ? (
               <RefreshCw className="w-4 h-4 animate-spin text-slate-950" />
@@ -279,49 +279,49 @@ export const ScoreSheet: React.FC = () => {
         <motion.div
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
-          className="p-4 rounded-xl bg-emerald-500/20 border border-emerald-500/40 text-emerald-300 font-mono text-xs flex items-center gap-2 shadow-lg"
+          className="p-4 rounded-xl bg-emerald-50 dark:bg-emerald-500/20 border border-emerald-200 dark:border-emerald-500/40 text-emerald-800 dark:text-emerald-300 font-mono text-xs flex items-center gap-2 shadow-sm dark:shadow-lg"
         >
-          <CheckCircle2 className="w-5 h-5 text-emerald-400" />
+          <CheckCircle2 className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
           <span>{successMessage}</span>
         </motion.div>
       )}
 
       {/* Spreadsheet Data Grid */}
-      <div className="glass-card rounded-2xl border border-white/10 overflow-hidden shadow-2xl">
+      <div className="bg-white dark:bg-[#140D21] rounded-2xl border border-slate-200 dark:border-white/10 overflow-hidden shadow-sm dark:shadow-2xl">
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs font-mono border-collapse min-w-[1000px]">
             <thead>
-              <tr className="border-b border-white/10 bg-[#140D21] text-slate-300 uppercase tracking-wider font-bold">
-                <th className="p-3.5 border-r border-white/10 text-center min-w-[70px]">Rank</th>
-                <th className="p-3.5 border-r border-white/10 min-w-[180px]">Team Name</th>
-                <th className="p-3.5 border-r border-white/10 min-w-[130px]">Lead</th>
-                <th className="p-3.5 border-r border-white/10 min-w-[180px]">Advantage Used</th>
-                <th className="p-3.5 border-r border-white/10 text-center min-w-[120px]">Main Task Score</th>
-                <th className="p-3.5 border-r border-white/10 text-center min-w-[120px]">Special Task Score</th>
-                <th className="p-3.5 border-r border-white/10 text-center min-w-[120px]">Total Points</th>
-                <th className="p-3.5 border-r border-white/10 text-center min-w-[230px]">Status Controls</th>
+              <tr className="border-b border-slate-200 dark:border-white/10 bg-slate-100 dark:bg-[#140D21] text-slate-700 dark:text-slate-300 uppercase tracking-wider font-bold">
+                <th className="p-3.5 border-r border-slate-200 dark:border-white/10 text-center min-w-[70px]">Rank</th>
+                <th className="p-3.5 border-r border-slate-200 dark:border-white/10 min-w-[180px]">Team Name</th>
+                <th className="p-3.5 border-r border-slate-200 dark:border-white/10 min-w-[130px]">Lead</th>
+                <th className="p-3.5 border-r border-slate-200 dark:border-white/10 min-w-[180px]">Advantage Used</th>
+                <th className="p-3.5 border-r border-slate-200 dark:border-white/10 text-center min-w-[120px]">Main Task Score</th>
+                <th className="p-3.5 border-r border-slate-200 dark:border-white/10 text-center min-w-[120px]">Special Task Score</th>
+                <th className="p-3.5 border-r border-slate-200 dark:border-white/10 text-center min-w-[120px]">Total Points</th>
+                <th className="p-3.5 border-r border-slate-200 dark:border-white/10 text-center min-w-[230px]">Status Controls</th>
                 <th className="p-3.5 text-center min-w-[120px]">Immunity Status</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-white/5">
+            <tbody className="divide-y divide-slate-200 dark:divide-white/5">
               {rows.map((row, idx) => (
                 <tr
                   key={row.teamId}
-                  className={`hover:bg-white/5 transition-colors ${
-                    row.elimination ? 'bg-rose-950/20' : ''
+                  className={`hover:bg-slate-50 dark:hover:bg-white/5 transition-colors ${
+                    row.elimination ? 'bg-rose-50 dark:bg-rose-950/20' : ''
                   }`}
                 >
                   {/* Column 9: Current Rank */}
-                  <td className="p-3.5 border-r border-white/5 text-center">
+                  <td className="p-3.5 border-r border-slate-200 dark:border-white/5 text-center">
                     <span
                       className={`inline-flex items-center justify-center w-7 h-7 rounded-full font-black text-xs ${
                         row.rank === 1
-                          ? 'bg-carnival-gold text-slate-950 shadow-neon-gold'
+                          ? 'bg-amber-400 dark:bg-carnival-gold text-slate-950 shadow-sm dark:shadow-neon-gold'
                           : row.rank === 2
-                          ? 'bg-slate-300 text-slate-950'
+                          ? 'bg-slate-200 dark:bg-slate-300 text-slate-950'
                           : row.rank === 3
-                          ? 'bg-amber-700 text-white'
-                          : 'bg-white/5 text-slate-400'
+                          ? 'bg-amber-600 text-white'
+                          : 'bg-slate-100 dark:bg-white/5 text-slate-600 dark:text-slate-400'
                       }`}
                     >
                       {row.rank}
@@ -329,7 +329,7 @@ export const ScoreSheet: React.FC = () => {
                   </td>
 
                   {/* Column 1: Team Name */}
-                  <td className="p-3.5 border-r border-white/5 font-extrabold text-white">
+                  <td className="p-3.5 border-r border-slate-200 dark:border-white/5 font-extrabold text-slate-900 dark:text-white">
                     <div className="flex items-center gap-2">
                       <span className="text-lg">{row.teamAvatar}</span>
                       <span className="truncate">{row.teamName}</span>
@@ -337,14 +337,14 @@ export const ScoreSheet: React.FC = () => {
                   </td>
 
                   {/* Column 2: Lead */}
-                  <td className="p-3.5 border-r border-white/5 text-slate-300 font-sans">{row.leaderName}</td>
+                  <td className="p-3.5 border-r border-slate-200 dark:border-white/5 text-slate-700 dark:text-slate-300 font-sans">{row.leaderName}</td>
 
                   {/* Column 3: Advantage Used Dropdown */}
-                  <td className="p-3.5 border-r border-white/5">
+                  <td className="p-3.5 border-r border-slate-200 dark:border-white/5">
                     <select
                       value={row.advantage}
                       onChange={(e) => updateRow(idx, 'advantage', e.target.value)}
-                      className="w-full px-2.5 py-1.5 rounded-lg bg-[#1A1228] border border-carnival-purple/40 text-[11px] text-carnival-purple font-mono font-bold focus:outline-none focus:border-carnival-gold cursor-pointer"
+                      className="w-full px-2.5 py-1.5 rounded-lg bg-slate-50 dark:bg-[#1A1228] border border-slate-300 dark:border-carnival-purple/40 text-[11px] text-purple-700 dark:text-carnival-purple font-mono font-bold focus:outline-none focus:border-amber-500 dark:focus:border-carnival-gold cursor-pointer"
                     >
                       <option value="None">None (0x)</option>
                       <option value="Double Points (2x)">Double Points (2x)</option>
@@ -356,38 +356,38 @@ export const ScoreSheet: React.FC = () => {
                   </td>
 
                   {/* Column 4: Main Task Score Inline Editing */}
-                  <td className="p-3.5 border-r border-white/5 text-center">
+                  <td className="p-3.5 border-r border-slate-200 dark:border-white/5 text-center">
                     <input
                       type="number"
                       min={0}
                       max={1000}
                       value={row.mainTaskScore}
                       onChange={(e) => updateRow(idx, 'mainTaskScore', Number(e.target.value))}
-                      className="w-24 px-2 py-1.5 rounded bg-black/60 border border-carnival-cyan/40 text-center font-mono font-bold text-carnival-cyan text-xs focus:outline-none focus:border-carnival-cyan focus:ring-1 focus:ring-carnival-cyan"
+                      className="w-24 px-2 py-1.5 rounded bg-slate-50 dark:bg-black/60 border border-slate-300 dark:border-carnival-cyan/40 text-center font-mono font-bold text-cyan-700 dark:text-carnival-cyan text-xs focus:outline-none focus:border-cyan-500 dark:focus:border-carnival-cyan focus:ring-1 focus:ring-cyan-500 dark:focus:ring-carnival-cyan"
                     />
                   </td>
 
                   {/* Column 5: Special Task Score Inline Editing */}
-                  <td className="p-3.5 border-r border-white/5 text-center">
+                  <td className="p-3.5 border-r border-slate-200 dark:border-white/5 text-center">
                     <input
                       type="number"
                       min={0}
                       max={500}
                       value={row.specialTaskScore}
                       onChange={(e) => updateRow(idx, 'specialTaskScore', Number(e.target.value))}
-                      className="w-24 px-2 py-1.5 rounded bg-black/60 border border-carnival-cyan/40 text-center font-mono font-bold text-carnival-cyan text-xs focus:outline-none focus:border-carnival-cyan focus:ring-1 focus:ring-carnival-cyan"
+                      className="w-24 px-2 py-1.5 rounded bg-slate-50 dark:bg-black/60 border border-slate-300 dark:border-carnival-cyan/40 text-center font-mono font-bold text-cyan-700 dark:text-carnival-cyan text-xs focus:outline-none focus:border-cyan-500 dark:focus:border-carnival-cyan focus:ring-1 focus:ring-cyan-500 dark:focus:ring-carnival-cyan"
                     />
                   </td>
 
                   {/* Column 6: Total Points (Frontend Auto-Calculated) */}
-                  <td className="p-3.5 border-r border-white/5 text-center">
-                    <span className="px-3 py-1 rounded-full bg-carnival-gold/20 text-carnival-gold font-extrabold text-xs border border-carnival-gold/40 shadow-neon-gold">
+                  <td className="p-3.5 border-r border-slate-200 dark:border-white/5 text-center">
+                    <span className="px-3 py-1 rounded-full bg-amber-100 dark:bg-carnival-gold/20 text-amber-800 dark:text-carnival-gold font-extrabold text-xs border border-amber-300 dark:border-carnival-gold/40 shadow-sm dark:shadow-neon-gold">
                       {row.totalScore} PTS
                     </span>
                   </td>
 
                   {/* Status Controls: Full EliminationControls (compact) with modal gate for Eliminated */}
-                  <td className="p-3.5 border-r border-white/5 text-center">
+                  <td className="p-3.5 border-r border-slate-200 dark:border-white/5 text-center">
                     <EliminationControls
                       teamId={row.teamId}
                       teamName={row.teamName}
@@ -416,12 +416,12 @@ export const ScoreSheet: React.FC = () => {
                       onClick={() => updateRow(idx, 'immunity', !row.immunity)}
                       className={`p-1.5 rounded-lg transition-all mx-auto cursor-pointer ${
                         row.immunity
-                          ? 'bg-cyan-500/20 text-carnival-cyan border border-carnival-cyan/50 shadow-neon-cyan'
-                          : 'bg-white/5 text-slate-500 hover:text-slate-300'
+                          ? 'bg-cyan-100 dark:bg-cyan-500/20 text-cyan-700 dark:text-carnival-cyan border border-cyan-300 dark:border-carnival-cyan/50 shadow-sm dark:shadow-neon-cyan'
+                          : 'bg-slate-100 dark:bg-white/5 text-slate-400 hover:text-slate-700 dark:hover:text-slate-300'
                       }`}
                       title={row.immunity ? 'Immunity Active' : 'No Immunity'}
                     >
-                      <Shield className={`w-4 h-4 ${row.immunity ? 'fill-carnival-cyan/30' : ''}`} />
+                      <Shield className={`w-4 h-4 ${row.immunity ? 'fill-cyan-500/30 dark:fill-carnival-cyan/30' : ''}`} />
                     </button>
                   </td>
                 </tr>

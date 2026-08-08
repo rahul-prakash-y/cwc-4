@@ -279,46 +279,46 @@ export const BuzzerConsole: React.FC = () => {
   };
 
   return (
-    <div className="space-y-6 max-w-7xl mx-auto">
+    <div className="space-y-6 max-w-7xl mx-auto font-sans">
       {/* Header Banner */}
-      <div className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-red-950 via-slate-950 to-slate-900 p-6 sm:p-8 border border-red-500/30 shadow-2xl">
+      <div className="relative overflow-hidden rounded-3xl bg-white dark:bg-gradient-to-r dark:from-red-950 dark:via-slate-950 dark:to-slate-900 p-6 sm:p-8 border border-slate-200 dark:border-red-500/30 shadow-sm dark:shadow-2xl">
         <div className="absolute top-0 right-0 p-8 opacity-10 pointer-events-none">
           <Zap className="w-64 h-64 text-red-500" />
         </div>
 
         <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
           <div>
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-red-500/20 border border-red-500/40 text-red-400 text-xs font-mono font-bold mb-3">
-              <Flame className="w-3.5 h-3.5 text-red-400 animate-pulse" />
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-red-100 dark:bg-red-500/20 border border-red-300 dark:border-red-500/40 text-red-700 dark:text-red-400 text-xs font-mono font-bold mb-3">
+              <Flame className="w-3.5 h-3.5 text-red-500 dark:text-red-400 animate-pulse" />
               <span>RAPID FIRE ROUND • LIVE BUZZER CONTROL</span>
             </div>
-            <h1 className="text-3xl sm:text-4xl font-black text-white tracking-tight">
+            <h1 className="text-3xl sm:text-4xl font-black text-slate-900 dark:text-white tracking-tight">
               Live Buzzer Console 🎪
             </h1>
-            <p className="text-sm text-slate-300 mt-1 max-w-xl">
+            <p className="text-sm text-slate-600 dark:text-slate-300 mt-1 max-w-xl">
               Select questions, enforce 5-second anti-hack lockouts, and track real-time team reaction speeds down to the millisecond.
             </p>
           </div>
 
           {/* Admin Live Timer Status Card */}
           <div className="flex items-center gap-3">
-            <div className="px-5 py-3 rounded-2xl glass-card border border-white/15 text-right font-mono min-w-[180px]">
-              <div className="text-[10px] text-slate-400 uppercase font-bold tracking-wider">
+            <div className="px-5 py-3 rounded-2xl bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/15 text-right font-mono min-w-[180px]">
+              <div className="text-[10px] text-slate-500 dark:text-slate-400 uppercase font-bold tracking-wider">
                 BUZZER STATUS
               </div>
               {buzzerUnlockTime === null ? (
-                <div className="text-slate-400 text-sm font-extrabold flex items-center justify-end gap-1.5 mt-0.5">
-                  <span className="w-2.5 h-2.5 rounded-full bg-slate-600" />
+                <div className="text-slate-500 dark:text-slate-400 text-sm font-extrabold flex items-center justify-end gap-1.5 mt-0.5">
+                  <span className="w-2.5 h-2.5 rounded-full bg-slate-400 dark:bg-slate-600" />
                   <span>STANDBY</span>
                 </div>
               ) : adminTimer !== null && adminTimer > 0 ? (
-                <div className="text-amber-400 text-sm font-extrabold flex items-center justify-end gap-1.5 mt-0.5 animate-pulse">
-                  <Clock className="w-4 h-4 text-amber-400 animate-spin" />
+                <div className="text-amber-600 dark:text-amber-400 text-sm font-extrabold flex items-center justify-end gap-1.5 mt-0.5 animate-pulse">
+                  <Clock className="w-4 h-4 text-amber-600 dark:text-amber-400 animate-spin" />
                   <span>UNLOCKING IN {adminTimer}s</span>
                 </div>
               ) : (
-                <div className="text-emerald-400 text-sm font-extrabold flex items-center justify-end gap-1.5 mt-0.5">
-                  <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-ping" />
+                <div className="text-emerald-600 dark:text-emerald-400 text-sm font-extrabold flex items-center justify-end gap-1.5 mt-0.5">
+                  <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-ping" />
                   <span>BUZZER LIVE! ⚡</span>
                 </div>
               )}
@@ -328,18 +328,18 @@ export const BuzzerConsole: React.FC = () => {
       </div>
 
       {/* Question Selector & Control Toolbar */}
-      <div className="p-6 rounded-3xl glass-card border border-white/10 space-y-4">
+      <div className="p-6 rounded-3xl bg-white dark:bg-[#18122B] border border-slate-200 dark:border-white/10 shadow-sm dark:shadow-xl space-y-4">
         <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-4">
           {/* Question Selector Dropdown */}
           <div className="flex-1 min-w-[280px]">
-            <label className="block text-xs font-mono font-bold text-carnival-gold uppercase mb-1.5">
+            <label className="block text-xs font-mono font-bold text-amber-600 dark:text-carnival-gold uppercase mb-1.5">
               Select Rapid Fire Question:
             </label>
             <div className="flex items-center gap-2">
               <select
                 value={selectedQuestionId}
                 onChange={(e) => setSelectedQuestionId(e.target.value)}
-                className="w-full px-4 py-3 rounded-2xl bg-slate-900/90 border border-white/20 text-white font-mono text-sm focus:outline-none focus:border-red-500 transition-all"
+                className="w-full px-4 py-3 rounded-2xl bg-slate-50 dark:bg-slate-900/90 border border-slate-300 dark:border-white/20 text-slate-900 dark:text-white font-mono text-sm focus:outline-none focus:border-red-500 transition-all"
               >
                 <option value="">-- Generic Rapid Fire Round --</option>
                 {questions.map((q) => (
@@ -351,7 +351,7 @@ export const BuzzerConsole: React.FC = () => {
 
               <button
                 onClick={() => setIsAddModalOpen(true)}
-                className="px-3.5 py-3 rounded-2xl bg-carnival-gold/20 hover:bg-carnival-gold/30 text-carnival-gold border border-carnival-gold/40 font-mono text-xs font-bold flex items-center gap-1 shrink-0 transition-all cursor-pointer"
+                className="px-3.5 py-3 rounded-2xl bg-amber-100 dark:bg-carnival-gold/20 hover:bg-amber-200 dark:hover:bg-carnival-gold/30 text-amber-800 dark:text-carnival-gold border border-amber-300 dark:border-carnival-gold/40 font-mono text-xs font-bold flex items-center gap-1 shrink-0 transition-all cursor-pointer"
                 title="Add New Question"
               >
                 <Plus className="w-4 h-4" />
@@ -376,9 +376,9 @@ export const BuzzerConsole: React.FC = () => {
               whileHover={{ scale: 1.03 }}
               whileTap={{ scale: 0.96 }}
               onClick={handleResetBuzzer}
-              className="flex items-center gap-2 px-5 py-3.5 rounded-2xl bg-slate-800 hover:bg-slate-700 text-slate-200 font-mono text-sm font-bold border border-slate-600 transition-all cursor-pointer"
+              className="flex items-center gap-2 px-5 py-3.5 rounded-2xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 font-mono text-sm font-bold border border-slate-300 dark:border-slate-600 transition-all cursor-pointer"
             >
-              <RotateCcw className="w-4 h-4 text-slate-400" />
+              <RotateCcw className="w-4 h-4 text-slate-500 dark:text-slate-400" />
               <span>RESET</span>
             </motion.button>
           </div>
@@ -386,19 +386,19 @@ export const BuzzerConsole: React.FC = () => {
 
         {/* Selected / Active Question Detail Banner */}
         {activeQuestion && (
-          <div className="p-4 rounded-2xl bg-red-950/40 border border-red-500/30 flex items-start justify-between gap-4">
+          <div className="p-4 rounded-2xl bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-500/30 flex items-start justify-between gap-4">
             <div className="flex items-start gap-3">
-              <FileText className="w-5 h-5 text-red-400 shrink-0 mt-0.5" />
+              <FileText className="w-5 h-5 text-red-600 dark:text-red-400 shrink-0 mt-0.5" />
               <div>
-                <span className="text-[10px] font-mono font-bold text-red-400 uppercase tracking-wide">
+                <span className="text-[10px] font-mono font-bold text-red-600 dark:text-red-400 uppercase tracking-wide">
                   CURRENT BROADCAST QUESTION
                 </span>
-                <h4 className="text-base font-black text-white">{activeQuestion.title}</h4>
-                <p className="text-xs text-slate-300 font-mono mt-0.5">{activeQuestion.questionText}</p>
+                <h4 className="text-base font-black text-slate-900 dark:text-white">{activeQuestion.title}</h4>
+                <p className="text-xs text-slate-600 dark:text-slate-300 font-mono mt-0.5">{activeQuestion.questionText}</p>
               </div>
             </div>
             {activeQuestion.expectedAnswer && (
-              <span className="px-3 py-1 rounded-full bg-black/40 border border-white/10 text-xs font-mono text-emerald-400 shrink-0">
+              <span className="px-3 py-1 rounded-full bg-white dark:bg-black/40 border border-slate-200 dark:border-white/10 text-xs font-mono text-emerald-700 dark:text-emerald-400 shrink-0 font-bold">
                 Expected: {activeQuestion.expectedAnswer}
               </span>
             )}
@@ -407,18 +407,18 @@ export const BuzzerConsole: React.FC = () => {
       </div>
 
       {/* Live Buzzer Feed Section */}
-      <div className="p-6 sm:p-8 rounded-3xl glass-card border border-white/10 space-y-6">
-        <div className="flex items-center justify-between border-b border-white/10 pb-4">
+      <div className="p-6 sm:p-8 rounded-3xl bg-white dark:bg-[#18122B] border border-slate-200 dark:border-white/10 shadow-sm dark:shadow-xl space-y-6">
+        <div className="flex items-center justify-between border-b border-slate-200 dark:border-white/10 pb-4">
           <div className="flex items-center gap-2">
-            <Trophy className="w-5 h-5 text-carnival-gold" />
-            <h2 className="text-xl font-black text-white font-mono uppercase tracking-wide">
+            <Trophy className="w-5 h-5 text-amber-500 dark:text-carnival-gold" />
+            <h2 className="text-xl font-black text-slate-900 dark:text-white font-mono uppercase tracking-wide">
               Live Reaction Feed
             </h2>
           </div>
-          <div className="flex items-center gap-2 font-mono text-xs text-slate-400">
-            <Users className="w-4 h-4 text-carnival-gold" />
+          <div className="flex items-center gap-2 font-mono text-xs text-slate-500 dark:text-slate-400">
+            <Users className="w-4 h-4 text-amber-500 dark:text-carnival-gold" />
             <span>BUZZED IN: </span>
-            <span className="text-white font-extrabold text-base px-2.5 py-0.5 rounded-lg bg-carnival-gold/20 border border-carnival-gold/40 text-carnival-gold">
+            <span className="text-amber-800 dark:text-carnival-gold font-extrabold text-base px-2.5 py-0.5 rounded-lg bg-amber-100 dark:bg-carnival-gold/20 border border-amber-300 dark:border-carnival-gold/40">
               {buzzerQueue.length}
             </span>
           </div>
@@ -426,9 +426,9 @@ export const BuzzerConsole: React.FC = () => {
 
         {/* Empty State */}
         {buzzerQueue.length === 0 ? (
-          <div className="py-16 text-center space-y-3 rounded-2xl border border-dashed border-white/10 bg-slate-900/40">
-            <Sparkles className="w-12 h-12 text-slate-600 mx-auto animate-bounce" />
-            <h3 className="text-lg font-bold text-slate-300 font-mono">No Teams Have Buzzed In Yet</h3>
+          <div className="py-16 text-center space-y-3 rounded-2xl border border-dashed border-slate-300 dark:border-white/10 bg-slate-50 dark:bg-slate-900/40">
+            <Sparkles className="w-12 h-12 text-slate-400 dark:text-slate-600 mx-auto animate-bounce" />
+            <h3 className="text-lg font-bold text-slate-700 dark:text-slate-300 font-mono">No Teams Have Buzzed In Yet</h3>
             <p className="text-xs text-slate-500 font-mono max-w-sm mx-auto">
               Select a question above and click &quot;BROADCAST QUESTION&quot; to trigger the 5-second countdown across all active student portals.
             </p>
@@ -487,11 +487,11 @@ export const BuzzerConsole: React.FC = () => {
       </div>
 
       {/* Questions Bank List */}
-      <div className="p-6 rounded-3xl glass-card border border-white/10 space-y-4">
+      <div className="p-6 rounded-3xl bg-white dark:bg-[#18122B] border border-slate-200 dark:border-white/10 shadow-sm dark:shadow-xl space-y-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <HelpCircle className="w-5 h-5 text-carnival-gold" />
-            <h3 className="text-lg font-bold text-white font-mono uppercase">
+            <HelpCircle className="w-5 h-5 text-amber-500 dark:text-carnival-gold" />
+            <h3 className="text-lg font-bold text-slate-900 dark:text-white font-mono uppercase">
               Buzzer Question Bank ({questions.length})
             </h3>
           </div>
@@ -505,7 +505,7 @@ export const BuzzerConsole: React.FC = () => {
         </div>
 
         {questions.length === 0 ? (
-          <p className="text-xs text-slate-400 font-mono py-4">No saved questions in the question bank yet.</p>
+          <p className="text-xs text-slate-500 dark:text-slate-400 font-mono py-4">No saved questions in the question bank yet.</p>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             {questions.map((q) => (
@@ -513,16 +513,16 @@ export const BuzzerConsole: React.FC = () => {
                 key={q._id}
                 className={`p-4 rounded-2xl border transition-all ${
                   selectedQuestionId === q._id
-                    ? 'bg-red-950/30 border-red-500/50 shadow-lg'
-                    : 'bg-slate-900/60 border-white/10 hover:border-white/20'
+                    ? 'bg-red-50 dark:bg-red-950/30 border-red-300 dark:border-red-500/50 shadow-sm dark:shadow-lg'
+                    : 'bg-slate-50 dark:bg-slate-900/60 border-slate-200 dark:border-white/10 hover:border-slate-300 dark:hover:border-white/20'
                 }`}
               >
                 <div className="flex items-start justify-between gap-3">
                   <div>
-                    <h4 className="text-sm font-bold text-white">{q.title}</h4>
-                    <p className="text-xs text-slate-300 font-mono mt-1">{q.questionText}</p>
+                    <h4 className="text-sm font-bold text-slate-900 dark:text-white">{q.title}</h4>
+                    <p className="text-xs text-slate-600 dark:text-slate-300 font-mono mt-1">{q.questionText}</p>
                     {q.expectedAnswer && (
-                      <p className="text-[11px] text-emerald-400 font-mono mt-1">
+                      <p className="text-[11px] text-emerald-700 dark:text-emerald-400 font-mono mt-1 font-bold">
                         Answer: {q.expectedAnswer}
                       </p>
                     )}
@@ -530,17 +530,17 @@ export const BuzzerConsole: React.FC = () => {
                   <div className="flex items-center gap-1 shrink-0">
                     <button
                       onClick={() => setSelectedQuestionId(q._id)}
-                      className={`px-2.5 py-1 rounded-lg font-mono text-[11px] font-bold ${
+                      className={`px-2.5 py-1 rounded-lg font-mono text-[11px] font-bold cursor-pointer ${
                         selectedQuestionId === q._id
-                          ? 'bg-red-500 text-white'
-                          : 'bg-slate-800 text-slate-300 hover:bg-slate-700'
+                          ? 'bg-red-600 text-white'
+                          : 'bg-slate-200 dark:bg-slate-800 text-slate-800 dark:text-slate-300 hover:bg-slate-300 dark:hover:bg-slate-700'
                       }`}
                     >
                       {selectedQuestionId === q._id ? 'Selected' : 'Select'}
                     </button>
                     <button
                       onClick={() => handleDeleteQuestion(q._id)}
-                      className="p-1.5 rounded-lg bg-red-500/20 text-red-400 hover:bg-red-500/40 transition-all"
+                      className="p-1.5 rounded-lg bg-red-100 dark:bg-red-500/20 text-red-600 dark:text-red-400 hover:bg-red-200 dark:hover:bg-red-500/40 transition-all cursor-pointer"
                       title="Delete Question"
                     >
                       <Trash2 className="w-3.5 h-3.5" />
@@ -561,16 +561,16 @@ export const BuzzerConsole: React.FC = () => {
               initial={{ scale: 0.9, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.9, opacity: 0 }}
-              className="w-full max-w-lg p-6 sm:p-8 rounded-3xl glass-card border border-white/20 bg-slate-950 space-y-5 shadow-2xl"
+              className="w-full max-w-lg p-6 sm:p-8 rounded-3xl bg-white dark:bg-slate-950 border border-slate-200 dark:border-white/20 space-y-5 shadow-2xl"
             >
-              <div className="flex items-center justify-between border-b border-white/10 pb-4">
+              <div className="flex items-center justify-between border-b border-slate-200 dark:border-white/10 pb-4">
                 <div className="flex items-center gap-2">
-                  <HelpCircle className="w-5 h-5 text-carnival-gold" />
-                  <h3 className="text-xl font-bold text-white font-mono">Create Rapid Fire Question</h3>
+                  <HelpCircle className="w-5 h-5 text-amber-500 dark:text-carnival-gold" />
+                  <h3 className="text-xl font-bold text-slate-900 dark:text-white font-mono">Create Rapid Fire Question</h3>
                 </div>
                 <button
                   onClick={() => setIsAddModalOpen(false)}
-                  className="p-2 rounded-xl bg-slate-800 text-slate-400 hover:text-white"
+                  className="p-2 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white cursor-pointer"
                 >
                   <X className="w-4 h-4" />
                 </button>
@@ -578,52 +578,52 @@ export const BuzzerConsole: React.FC = () => {
 
               <form onSubmit={handleCreateQuestion} className="space-y-4 font-mono text-sm">
                 <div>
-                  <label className="block text-xs font-bold text-slate-300 mb-1">Question Title:</label>
+                  <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">Question Title:</label>
                   <input
                     type="text"
                     required
                     placeholder="e.g. Round 1 - Q1 Algorithm Challenge"
                     value={newTitle}
                     onChange={(e) => setNewTitle(e.target.value)}
-                    className="w-full px-4 py-2.5 rounded-xl bg-slate-900 border border-white/15 text-white focus:outline-none focus:border-carnival-gold"
+                    className="w-full px-4 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-white/15 text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:border-amber-500 dark:focus:border-carnival-gold"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-xs font-bold text-slate-300 mb-1">Question Prompt / Text:</label>
+                  <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">Question Prompt / Text:</label>
                   <textarea
                     required
                     rows={3}
                     placeholder="What is the time complexity of QuickSort in worst case?"
                     value={newQuestionText}
                     onChange={(e) => setNewQuestionText(e.target.value)}
-                    className="w-full px-4 py-2.5 rounded-xl bg-slate-900 border border-white/15 text-white focus:outline-none focus:border-carnival-gold"
+                    className="w-full px-4 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-white/15 text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:border-amber-500 dark:focus:border-carnival-gold"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-xs font-bold text-slate-300 mb-1">Expected Answer (Optional):</label>
+                  <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">Expected Answer (Optional):</label>
                   <input
                     type="text"
                     placeholder="e.g. O(n^2)"
                     value={newExpectedAnswer}
                     onChange={(e) => setNewExpectedAnswer(e.target.value)}
-                    className="w-full px-4 py-2.5 rounded-xl bg-slate-900 border border-white/15 text-white focus:outline-none focus:border-carnival-gold"
+                    className="w-full px-4 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-white/15 text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:border-amber-500 dark:focus:border-carnival-gold"
                   />
                 </div>
 
-                <div className="flex items-center justify-end gap-3 pt-4 border-t border-white/10">
+                <div className="flex items-center justify-end gap-3 pt-4 border-t border-slate-200 dark:border-white/10">
                   <button
                     type="button"
                     onClick={() => setIsAddModalOpen(false)}
-                    className="px-5 py-2.5 rounded-xl bg-slate-800 text-slate-300 hover:bg-slate-700 text-xs font-bold"
+                    className="px-5 py-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 text-xs font-bold cursor-pointer"
                   >
                     Cancel
                   </button>
                   <button
                     type="submit"
                     disabled={isSubmitting}
-                    className="px-6 py-2.5 rounded-xl bg-gradient-to-r from-red-600 to-amber-500 text-white text-xs font-extrabold shadow-lg hover:shadow-red-500/20 transition-all cursor-pointer"
+                    className="px-6 py-2.5 rounded-xl bg-gradient-to-r from-red-600 to-amber-500 text-white text-xs font-extrabold shadow-lg hover:shadow-red-500/20 transition-all cursor-pointer disabled:opacity-50"
                   >
                     {isSubmitting ? 'Saving...' : 'Save Question'}
                   </button>

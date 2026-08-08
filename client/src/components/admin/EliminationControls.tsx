@@ -197,7 +197,7 @@ export const EliminationControls: React.FC<EliminationControlsProps> = ({
     // ── Compact pill-row for table/scoresheet use ──────────────────────────
     return (
       <>
-        <div className="inline-flex items-center gap-1 p-1 rounded-xl bg-black/40 border border-white/5">
+        <div className="inline-flex items-center gap-1 p-1 rounded-xl bg-slate-100 dark:bg-black/40 border border-slate-200 dark:border-white/5">
           {(Object.keys(STATUS_CONFIG) as TeamStatus[]).map((status) => {
             const cfg = STATUS_CONFIG[status];
             const Icon = cfg.icon;
@@ -211,7 +211,7 @@ export const EliminationControls: React.FC<EliminationControlsProps> = ({
                 className={`px-2.5 py-1 rounded-lg text-[10px] font-bold font-mono transition-all flex items-center gap-1 border ${
                   isActive
                     ? cfg.activeClass
-                    : `text-slate-400 border-transparent ${cfg.hoverClass}`
+                    : `text-slate-600 dark:text-slate-400 border-transparent ${cfg.hoverClass}`
                 }`}
               >
                 <Icon className="w-3 h-3" />

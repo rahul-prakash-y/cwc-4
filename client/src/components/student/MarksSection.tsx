@@ -41,24 +41,24 @@ export const MarksSection: React.FC<MarksSectionProps> = ({ records = [] }) => {
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      className="p-6 sm:p-8 rounded-3xl glass-card border border-carnival-gold/30 shadow-2xl space-y-6 relative overflow-hidden bg-gradient-to-b from-[#18132B]/95 via-[#130E24]/95 to-[#0F0A1D]/95"
+      className="p-6 sm:p-8 rounded-3xl border border-slate-200 dark:border-carnival-gold/30 shadow-sm dark:shadow-2xl space-y-6 relative overflow-hidden bg-white/90 dark:bg-[#120D24] dark:bg-gradient-to-b dark:from-[#18132B] dark:via-[#130E24] dark:to-[#0F0A1D]"
     >
       {/* Background Decorative Glow */}
-      <div className="absolute top-0 right-1/4 w-80 h-80 bg-carnival-gold/5 rounded-full blur-3xl pointer-events-none" />
+      <div className="absolute top-0 right-1/4 w-80 h-80 bg-amber-500/5 dark:bg-carnival-gold/5 rounded-full blur-3xl pointer-events-none" />
 
       {/* Section Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-white/10 pb-5">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-200 dark:border-white/10 pb-5">
         <div>
           <div className="flex items-center gap-2 mb-1.5">
-            <span className="px-3 py-1 rounded-full text-xs font-mono font-bold bg-carnival-gold/20 text-carnival-gold border border-carnival-gold/40 flex items-center gap-1.5 shadow-neon-gold">
+            <span className="px-3 py-1 rounded-full text-xs font-mono font-bold bg-amber-500/10 dark:bg-carnival-gold/20 text-amber-700 dark:text-carnival-gold border border-amber-500/30 dark:border-carnival-gold/40 flex items-center gap-1.5 shadow-sm dark:shadow-neon-gold">
               <Calculator className="w-3.5 h-3.5" />
               <span>CARNIVAL SCORE BREAKDOWN</span>
             </span>
           </div>
-          <h2 className="text-2xl sm:text-3xl font-black text-white tracking-tight flex items-center gap-2">
+          <h2 className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white tracking-tight flex items-center gap-2">
             Daywise Marks Breakdown 📊
           </h2>
-          <p className="text-xs text-slate-300">
+          <p className="text-xs text-slate-600 dark:text-slate-300">
             Daily arena performance breakdown across Advantage, Main Task, and Special Task points
           </p>
         </div>
@@ -69,8 +69,8 @@ export const MarksSection: React.FC<MarksSectionProps> = ({ records = [] }) => {
             onClick={() => setFilterDay('all')}
             className={`px-3 py-1.5 rounded-xl text-xs font-bold font-mono transition ${
               filterDay === 'all'
-                ? 'bg-carnival-gold text-slate-950 font-black shadow-neon-gold'
-                : 'bg-black/40 text-slate-400 border border-white/10 hover:text-white'
+                ? 'bg-amber-500 dark:bg-carnival-gold text-white dark:text-slate-950 font-black shadow-sm dark:shadow-neon-gold'
+                : 'bg-slate-100 dark:bg-[#17112C] text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-white/10 hover:text-slate-900 dark:hover:text-white'
             }`}
           >
             All Days
@@ -81,8 +81,8 @@ export const MarksSection: React.FC<MarksSectionProps> = ({ records = [] }) => {
               onClick={() => setFilterDay(r.day)}
               className={`px-3 py-1.5 rounded-xl text-xs font-bold font-mono transition ${
                 filterDay === r.day
-                  ? 'bg-carnival-gold text-slate-950 font-black shadow-neon-gold'
-                  : 'bg-black/40 text-slate-400 border border-white/10 hover:text-white'
+                  ? 'bg-amber-500 dark:bg-carnival-gold text-white dark:text-slate-950 font-black shadow-sm dark:shadow-neon-gold'
+                  : 'bg-slate-100 dark:bg-[#17112C] text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-white/10 hover:text-slate-900 dark:hover:text-white'
               }`}
             >
               Day {r.day}
@@ -94,39 +94,39 @@ export const MarksSection: React.FC<MarksSectionProps> = ({ records = [] }) => {
       {/* Summary Highlight Metric Cards */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
         {/* Metric 1: Advantage Points */}
-        <div className="p-4 rounded-2xl bg-black/40 border border-carnival-purple/40 shadow-neon-purple space-y-1">
-          <div className="text-[11px] font-mono text-carnival-purple font-bold flex items-center gap-1">
+        <div className="p-4 rounded-2xl bg-purple-50 dark:bg-[#180E29] border border-purple-200 dark:border-carnival-purple/50 shadow-sm dark:shadow-neon-purple space-y-1">
+          <div className="text-[11px] font-mono text-purple-700 dark:text-carnival-purple font-bold flex items-center gap-1">
             <Zap className="w-3.5 h-3.5" /> ADVANTAGE (ADV)
           </div>
-          <div className="text-2xl font-black text-white font-mono">{totalAdv.toLocaleString()}</div>
-          <div className="text-[10px] text-slate-400">Bonus & Perk Boosts</div>
+          <div className="text-2xl font-black text-slate-900 dark:text-white font-mono">{totalAdv.toLocaleString()}</div>
+          <div className="text-[10px] text-slate-500 dark:text-slate-400">Bonus & Perk Boosts</div>
         </div>
 
         {/* Metric 2: Main Task Points */}
-        <div className="p-4 rounded-2xl bg-black/40 border border-carnival-cyan/40 shadow-neon-cyan space-y-1">
-          <div className="text-[11px] font-mono text-carnival-cyan font-bold flex items-center gap-1">
+        <div className="p-4 rounded-2xl bg-cyan-50 dark:bg-[#0A1A24] border border-cyan-200 dark:border-carnival-cyan/50 shadow-sm dark:shadow-neon-cyan space-y-1">
+          <div className="text-[11px] font-mono text-cyan-700 dark:text-carnival-cyan font-bold flex items-center gap-1">
             <Trophy className="w-3.5 h-3.5" /> MAIN TASK (MAIN)
           </div>
-          <div className="text-2xl font-black text-white font-mono">{totalMain.toLocaleString()}</div>
-          <div className="text-[10px] text-slate-400">Core Sprint Submissions</div>
+          <div className="text-2xl font-black text-slate-900 dark:text-white font-mono">{totalMain.toLocaleString()}</div>
+          <div className="text-[10px] text-slate-500 dark:text-slate-400">Core Sprint Submissions</div>
         </div>
 
         {/* Metric 3: Special Task Points */}
-        <div className="p-4 rounded-2xl bg-black/40 border border-carnival-crimson/40 shadow-neon-crimson space-y-1">
-          <div className="text-[11px] font-mono text-carnival-crimson font-bold flex items-center gap-1">
+        <div className="p-4 rounded-2xl bg-rose-50 dark:bg-[#240A14] border border-rose-200 dark:border-carnival-crimson/50 shadow-sm dark:shadow-neon-crimson space-y-1">
+          <div className="text-[11px] font-mono text-rose-700 dark:text-carnival-crimson font-bold flex items-center gap-1">
             <Sparkles className="w-3.5 h-3.5" /> SPECIAL TASK
           </div>
-          <div className="text-2xl font-black text-white font-mono">{totalSpecial.toLocaleString()}</div>
-          <div className="text-[10px] text-slate-400">Trivia & Side Quests</div>
+          <div className="text-2xl font-black text-slate-900 dark:text-white font-mono">{totalSpecial.toLocaleString()}</div>
+          <div className="text-[10px] text-slate-500 dark:text-slate-400">Trivia & Side Quests</div>
         </div>
 
         {/* Metric 4: Grand Cumulative Score */}
-        <div className="p-4 rounded-2xl bg-gradient-to-r from-carnival-gold/20 to-amber-500/20 border border-carnival-gold/60 shadow-neon-gold space-y-1">
-          <div className="text-[11px] font-mono text-carnival-gold font-bold flex items-center gap-1">
+        <div className="p-4 rounded-2xl bg-amber-50 dark:bg-gradient-to-r dark:from-[#291D03] dark:to-[#1A1202] border border-amber-300 dark:border-carnival-gold/60 shadow-sm dark:shadow-neon-gold space-y-1">
+          <div className="text-[11px] font-mono text-amber-800 dark:text-carnival-gold font-bold flex items-center gap-1">
             <Award className="w-3.5 h-3.5" /> CUMULATIVE TOTAL
           </div>
-          <div className="text-2xl font-black text-white font-mono">{grandTotal.toLocaleString()}</div>
-          <div className="text-[10px] text-amber-300/80 font-bold">Overall Squad Total</div>
+          <div className="text-2xl font-black text-slate-900 dark:text-white font-mono">{grandTotal.toLocaleString()}</div>
+          <div className="text-[10px] text-amber-700 dark:text-amber-300/80 font-bold">Overall Squad Total</div>
         </div>
       </div>
 
@@ -134,7 +134,7 @@ export const MarksSection: React.FC<MarksSectionProps> = ({ records = [] }) => {
       <div className="overflow-x-auto">
         <table className="w-full text-left border-separate border-spacing-y-2">
           <thead>
-            <tr className="text-[11px] font-mono font-bold text-slate-400 uppercase tracking-wider px-3">
+            <tr className="text-[11px] font-mono font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider px-3">
               <th className="py-2 px-4">Day</th>
               <th className="py-2 px-4 text-center">Advantage Points (adv)</th>
               <th className="py-2 px-4 text-center">Main Task Score (main)</th>
@@ -145,7 +145,7 @@ export const MarksSection: React.FC<MarksSectionProps> = ({ records = [] }) => {
           <tbody>
             {filteredRecords.length === 0 ? (
               <tr>
-                <td colSpan={5} className="py-8 text-center text-slate-400 font-mono text-xs">
+                <td colSpan={5} className="py-8 text-center text-slate-500 dark:text-slate-400 font-mono text-xs">
                   No score records recorded yet for your team.
                 </td>
               </tr>
@@ -155,46 +155,46 @@ export const MarksSection: React.FC<MarksSectionProps> = ({ records = [] }) => {
               return (
                 <tr
                   key={r.day}
-                  className="bg-black/40 hover:bg-white/5 border border-white/10 rounded-2xl text-sm transition font-mono"
+                  className="bg-slate-50 dark:bg-[#140E26] hover:bg-slate-100 dark:hover:bg-[#1C1436] border border-slate-200 dark:border-white/10 rounded-2xl text-sm transition font-mono"
                 >
                   {/* Day Badge Cell */}
                   <td className="py-3.5 px-4 rounded-l-2xl whitespace-nowrap">
                     <div className="flex items-center gap-2">
-                      <div className="w-8 h-8 rounded-xl bg-carnival-gold/20 text-carnival-gold border border-carnival-gold/40 flex items-center justify-center font-bold text-xs">
+                      <div className="w-8 h-8 rounded-xl bg-amber-500/10 dark:bg-carnival-gold/20 text-amber-700 dark:text-carnival-gold border border-amber-500/30 dark:border-carnival-gold/40 flex items-center justify-center font-bold text-xs">
                         D{r.day}
                       </div>
                       <div>
-                        <div className="font-bold text-white text-xs">Day {r.day} Sprint</div>
-                        {r.notes && <div className="text-[10px] text-slate-400">{r.notes}</div>}
+                        <div className="font-bold text-slate-900 dark:text-white text-xs">Day {r.day} Sprint</div>
+                        {r.notes && <div className="text-[10px] text-slate-500 dark:text-slate-400">{r.notes}</div>}
                       </div>
                     </div>
                   </td>
 
                   {/* Advantage Points */}
                   <td className="py-3.5 px-4 text-center">
-                    <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-carnival-purple/20 text-carnival-purple border border-carnival-purple/40 font-bold text-xs">
+                    <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-purple-100 dark:bg-carnival-purple/20 text-purple-700 dark:text-carnival-purple border border-purple-200 dark:border-carnival-purple/40 font-bold text-xs">
                       +{r.adv}
                     </span>
                   </td>
 
                   {/* Main Task Score */}
                   <td className="py-3.5 px-4 text-center">
-                    <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-carnival-cyan/20 text-carnival-cyan border border-carnival-cyan/40 font-bold text-xs">
+                    <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-cyan-100 dark:bg-carnival-cyan/20 text-cyan-700 dark:text-carnival-cyan border border-cyan-200 dark:border-carnival-cyan/40 font-bold text-xs">
                       +{r.main}
                     </span>
                   </td>
 
                   {/* Special Task Score */}
                   <td className="py-3.5 px-4 text-center">
-                    <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-carnival-crimson/20 text-carnival-crimson border border-carnival-crimson/40 font-bold text-xs">
+                    <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-rose-100 dark:bg-carnival-crimson/20 text-rose-700 dark:text-carnival-crimson border border-rose-200 dark:border-carnival-crimson/40 font-bold text-xs">
                       +{r.special}
                     </span>
                   </td>
 
                   {/* Day Total */}
                   <td className="py-3.5 px-4 rounded-r-2xl text-right">
-                    <div className="font-black text-base text-carnival-gold">
-                      {dayTotal.toLocaleString()} <span className="text-[10px] text-slate-400 font-sans">PTS</span>
+                    <div className="font-black text-base text-amber-700 dark:text-carnival-gold">
+                      {dayTotal.toLocaleString()} <span className="text-[10px] text-slate-500 dark:text-slate-400 font-sans">PTS</span>
                     </div>
                   </td>
                 </tr>
@@ -202,24 +202,24 @@ export const MarksSection: React.FC<MarksSectionProps> = ({ records = [] }) => {
             }))}
 
             {/* Overall Total Calculation Footer Row */}
-            <tr className="bg-gradient-to-r from-carnival-gold/20 via-black/60 to-carnival-gold/20 border-2 border-carnival-gold/60 rounded-2xl text-sm font-mono font-bold">
-              <td className="py-4 px-4 rounded-l-2xl text-white font-extrabold">
+            <tr className="bg-amber-50 dark:bg-gradient-to-r dark:from-[#291D03] dark:via-[#140E26] dark:to-[#291D03] border-2 border-amber-300 dark:border-carnival-gold/60 rounded-2xl text-sm font-mono font-bold">
+              <td className="py-4 px-4 rounded-l-2xl text-slate-900 dark:text-white font-extrabold">
                 <div className="flex items-center gap-2">
-                  <Calculator className="w-4 h-4 text-carnival-gold" />
+                  <Calculator className="w-4 h-4 text-amber-600 dark:text-carnival-gold" />
                   <span>OVERALL TOTAL</span>
                 </div>
               </td>
-              <td className="py-4 px-4 text-center text-carnival-purple font-black text-base">
+              <td className="py-4 px-4 text-center text-purple-700 dark:text-carnival-purple font-black text-base">
                 +{totalAdv.toLocaleString()}
               </td>
-              <td className="py-4 px-4 text-center text-carnival-cyan font-black text-base">
+              <td className="py-4 px-4 text-center text-cyan-700 dark:text-carnival-cyan font-black text-base">
                 +{totalMain.toLocaleString()}
               </td>
-              <td className="py-4 px-4 text-center text-carnival-crimson font-black text-base">
+              <td className="py-4 px-4 text-center text-rose-700 dark:text-carnival-crimson font-black text-base">
                 +{totalSpecial.toLocaleString()}
               </td>
-              <td className="py-4 px-4 rounded-r-2xl text-right text-carnival-gold font-black text-xl shadow-neon-gold">
-                {grandTotal.toLocaleString()} <span className="text-xs text-amber-300/80 font-sans">PTS</span>
+              <td className="py-4 px-4 rounded-r-2xl text-right text-amber-700 dark:text-carnival-gold font-black text-xl shadow-sm dark:shadow-neon-gold">
+                {grandTotal.toLocaleString()} <span className="text-xs text-amber-700 dark:text-amber-300/80 font-sans">PTS</span>
               </td>
             </tr>
           </tbody>

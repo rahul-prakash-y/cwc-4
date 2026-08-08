@@ -298,15 +298,15 @@ export const DailyAttendanceView: React.FC = () => {
       </AnimatePresence>
 
       {/* Control Header Panel */}
-      <div className="p-6 rounded-2xl glass-card border border-carnival-gold/30 space-y-6">
+      <div className="p-6 rounded-2xl bg-white dark:bg-[#18122B] border border-slate-200 dark:border-carnival-gold/30 shadow-sm dark:shadow-xl space-y-6">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div>
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-carnival-gold/20 text-carnival-gold text-xs font-mono font-bold border border-carnival-gold/30 mb-2">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-500/10 dark:bg-carnival-gold/20 text-amber-700 dark:text-carnival-gold text-xs font-mono font-bold border border-amber-300 dark:border-carnival-gold/30 mb-2">
               <Calendar className="w-3.5 h-3.5" />
               <span>FACULTY DAILY ATTENDANCE & RULE ENGINE</span>
             </div>
-            <h3 className="text-2xl font-extrabold text-white">Daily Attendance Controller</h3>
-            <p className="text-xs text-slate-300 mt-1">
+            <h3 className="text-2xl font-extrabold text-slate-900 dark:text-white">Daily Attendance Controller</h3>
+            <p className="text-xs text-slate-600 dark:text-slate-300 mt-1">
               Toggle member-level daily attendance, categorize teams by Hosteller/Day Scholar, and run auto-checker rule validation.
             </p>
           </div>
@@ -315,7 +315,7 @@ export const DailyAttendanceView: React.FC = () => {
           <button
             onClick={handleRunAutoChecker}
             disabled={autoChecking}
-            className="px-5 py-3 rounded-xl bg-gradient-to-r from-carnival-gold via-amber-400 to-carnival-crimson text-slate-950 font-black text-xs uppercase tracking-wider shadow-neon-gold hover:scale-105 transition-all flex items-center gap-2 cursor-pointer disabled:opacity-50"
+            className="px-5 py-3 rounded-xl bg-gradient-to-r from-amber-500 via-amber-400 to-rose-600 dark:from-carnival-gold dark:via-amber-400 dark:to-carnival-crimson text-slate-950 font-black text-xs uppercase tracking-wider shadow-md dark:shadow-neon-gold hover:scale-105 transition-all flex items-center gap-2 cursor-pointer disabled:opacity-50"
           >
             <Zap className={`w-4 h-4 text-slate-950 ${autoChecking ? 'animate-spin' : ''}`} />
             <span>{autoChecking ? 'Running Auto-Checker...' : 'Run Attendance Auto-Checker ⚡'}</span>
@@ -324,16 +324,16 @@ export const DailyAttendanceView: React.FC = () => {
 
         {/* Day Selector Ribbon (Day 1 to Day 10) */}
         <div className="space-y-2">
-          <div className="text-xs font-mono text-slate-400 font-bold uppercase tracking-wider">Select Carnival Arena Day:</div>
+          <div className="text-xs font-mono text-slate-600 dark:text-slate-400 font-bold uppercase tracking-wider">Select Carnival Arena Day:</div>
           <div className="flex items-center gap-2 overflow-x-auto pb-2">
             {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((day) => (
               <button
                 key={day}
                 onClick={() => setSelectedDay(day)}
-                className={`px-4 py-2 rounded-xl font-mono text-xs font-bold transition-all flex-shrink-0 flex items-center gap-1.5 ${
+                className={`px-4 py-2 rounded-xl font-mono text-xs font-bold transition-all flex-shrink-0 flex items-center gap-1.5 cursor-pointer ${
                   selectedDay === day
-                    ? 'bg-carnival-gold text-slate-950 shadow-neon-gold scale-105'
-                    : 'bg-white/5 text-slate-300 hover:text-white hover:bg-white/10'
+                    ? 'bg-amber-500 dark:bg-carnival-gold text-slate-950 shadow-md dark:shadow-neon-gold scale-105'
+                    : 'bg-slate-100 dark:bg-white/5 text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-white/10'
                 }`}
               >
                 <Calendar className="w-3.5 h-3.5" />
@@ -344,18 +344,18 @@ export const DailyAttendanceView: React.FC = () => {
         </div>
 
         {/* Categorization Tabs (Hosteller / Day Scholar / All) */}
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pt-2 border-t border-white/10">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pt-2 border-t border-slate-200 dark:border-white/10">
           <div className="flex items-center gap-2">
-            <span className="text-xs font-mono text-slate-400 flex items-center gap-1 font-bold">
+            <span className="text-xs font-mono text-slate-600 dark:text-slate-400 flex items-center gap-1 font-bold">
               <Filter className="w-3.5 h-3.5" /> Category Filter:
             </span>
 
             <button
               onClick={() => setResidenceFilter('All')}
-              className={`px-3.5 py-1.5 rounded-xl text-xs font-mono font-bold transition-all ${
+              className={`px-3.5 py-1.5 rounded-xl text-xs font-mono font-bold transition-all cursor-pointer ${
                 residenceFilter === 'All'
-                  ? 'bg-carnival-cyan text-slate-950 shadow-neon-cyan'
-                  : 'bg-white/5 text-slate-400 hover:text-white'
+                  ? 'bg-cyan-500 dark:bg-carnival-cyan text-slate-950 shadow-sm dark:shadow-neon-cyan'
+                  : 'bg-slate-100 dark:bg-white/5 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
               }`}
             >
               All Teams ({teams.length})
@@ -363,10 +363,10 @@ export const DailyAttendanceView: React.FC = () => {
 
             <button
               onClick={() => setResidenceFilter('Hosteller')}
-              className={`px-3.5 py-1.5 rounded-xl text-xs font-mono font-bold transition-all flex items-center gap-1.5 ${
+              className={`px-3.5 py-1.5 rounded-xl text-xs font-mono font-bold transition-all flex items-center gap-1.5 cursor-pointer ${
                 residenceFilter === 'Hosteller'
-                  ? 'bg-amber-400 text-slate-950 shadow-neon-gold'
-                  : 'bg-white/5 text-slate-400 hover:text-white'
+                  ? 'bg-amber-400 text-slate-950 shadow-sm dark:shadow-neon-gold'
+                  : 'bg-slate-100 dark:bg-white/5 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
               }`}
             >
               <Home className="w-3.5 h-3.5" />
@@ -375,10 +375,10 @@ export const DailyAttendanceView: React.FC = () => {
 
             <button
               onClick={() => setResidenceFilter('Day Scholar')}
-              className={`px-3.5 py-1.5 rounded-xl text-xs font-mono font-bold transition-all flex items-center gap-1.5 ${
+              className={`px-3.5 py-1.5 rounded-xl text-xs font-mono font-bold transition-all flex items-center gap-1.5 cursor-pointer ${
                 residenceFilter === 'Day Scholar'
-                  ? 'bg-purple-400 text-slate-950 shadow-neon-purple'
-                  : 'bg-white/5 text-slate-400 hover:text-white'
+                  ? 'bg-purple-600 dark:bg-purple-400 text-white dark:text-slate-950 shadow-sm dark:shadow-neon-purple'
+                  : 'bg-slate-100 dark:bg-white/5 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
               }`}
             >
               <Bus className="w-3.5 h-3.5" />
@@ -386,8 +386,8 @@ export const DailyAttendanceView: React.FC = () => {
             </button>
           </div>
 
-          <div className="text-xs font-mono text-slate-400">
-            Active Day: <span className="text-carnival-gold font-bold">Day {selectedDay}</span>
+          <div className="text-xs font-mono text-slate-600 dark:text-slate-400">
+            Active Day: <span className="text-amber-700 dark:text-carnival-gold font-bold">Day {selectedDay}</span>
           </div>
         </div>
       </div>
@@ -403,20 +403,20 @@ export const DailyAttendanceView: React.FC = () => {
           return (
             <div
               key={team.id}
-              className={`glass-card p-6 rounded-2xl border transition-all space-y-4 ${
+              className={`p-6 rounded-2xl border transition-all space-y-4 shadow-sm dark:shadow-lg ${
                 team.status === 'Danger'
-                  ? 'border-rose-500/50 bg-rose-950/10 shadow-neon-crimson'
+                  ? 'border-rose-300 dark:border-rose-500/50 bg-rose-50 dark:bg-rose-950/10 dark:shadow-neon-crimson'
                   : isDangerRatio
-                  ? 'border-amber-500/40 bg-amber-950/10'
-                  : 'border-white/10 hover:border-carnival-cyan/40'
+                  ? 'border-amber-300 dark:border-amber-500/40 bg-amber-50 dark:bg-amber-950/10'
+                  : 'border-slate-200 dark:border-white/10 hover:border-cyan-400 dark:hover:border-carnival-cyan/40 bg-white dark:bg-[#151226]'
               }`}
             >
               {/* Team Header */}
-              <div className="flex items-start justify-between gap-3 border-b border-white/10 pb-3">
+              <div className="flex items-start justify-between gap-3 border-b border-slate-200 dark:border-white/10 pb-3">
                 <div className="flex items-center gap-3">
-                  <span className="text-2xl p-2 rounded-xl bg-white/5 border border-white/10">{team.avatar}</span>
+                  <span className="text-2xl p-2 rounded-xl bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10">{team.avatar}</span>
                   <div>
-                    <h4 className="font-extrabold text-white text-base flex items-center gap-2">
+                    <h4 className="font-extrabold text-slate-900 dark:text-white text-base flex items-center gap-2">
                       {team.name}
                       <span
                         className="w-2.5 h-2.5 rounded-full"
@@ -430,8 +430,8 @@ export const DailyAttendanceView: React.FC = () => {
                         title="Click to toggle category (Hosteller / Day Scholar)"
                         className={`px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold border transition-all flex items-center gap-1 cursor-pointer ${
                           team.residenceType === 'Hosteller'
-                            ? 'bg-amber-500/20 text-amber-300 border-amber-500/40 hover:bg-amber-500/30'
-                            : 'bg-purple-500/20 text-purple-300 border-purple-500/40 hover:bg-purple-500/30'
+                            ? 'bg-amber-100 dark:bg-amber-500/20 text-amber-800 dark:text-amber-300 border-amber-300 dark:border-amber-500/40 hover:bg-amber-200 dark:hover:bg-amber-500/30'
+                            : 'bg-purple-100 dark:bg-purple-500/20 text-purple-800 dark:text-purple-300 border-purple-300 dark:border-purple-500/40 hover:bg-purple-200 dark:hover:bg-purple-500/30'
                         }`}
                       >
                         {team.residenceType === 'Hosteller' ? <Home className="w-3 h-3" /> : <Bus className="w-3 h-3" />}
@@ -442,8 +442,8 @@ export const DailyAttendanceView: React.FC = () => {
                       <span
                         className={`px-2 py-0.5 rounded text-[10px] font-mono font-bold ${
                           team.status === 'Danger'
-                            ? 'bg-rose-500/20 text-rose-400 border border-rose-500/30 animate-pulse'
-                            : 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30'
+                            ? 'bg-rose-100 dark:bg-rose-500/20 text-rose-700 dark:text-rose-400 border border-rose-300 dark:border-rose-500/30 animate-pulse'
+                            : 'bg-emerald-100 dark:bg-emerald-500/20 text-emerald-700 dark:text-emerald-400 border border-emerald-300 dark:border-emerald-500/30'
                         }`}
                       >
                         {team.status}
@@ -456,13 +456,13 @@ export const DailyAttendanceView: React.FC = () => {
                 <div className="text-right">
                   <div
                     className={`text-sm font-extrabold font-mono ${
-                      isDangerRatio ? 'text-rose-400' : 'text-emerald-400'
+                      isDangerRatio ? 'text-rose-600 dark:text-rose-400' : 'text-emerald-600 dark:text-emerald-400'
                     }`}
                   >
                     {presentMembersCount}/{totalMembersCount} Present ({attendancePercentage}%)
                   </div>
                   {isDangerRatio && (
-                    <div className="text-[10px] text-rose-400 font-mono flex items-center gap-1 justify-end mt-0.5">
+                    <div className="text-[10px] text-rose-600 dark:text-rose-400 font-mono flex items-center gap-1 justify-end mt-0.5">
                       <AlertTriangle className="w-3 h-3" /> Below 50% Rule
                     </div>
                   )}
@@ -471,7 +471,7 @@ export const DailyAttendanceView: React.FC = () => {
 
               {/* Members Roster List with Attendance Toggles */}
               <div className="space-y-2">
-                <div className="text-[11px] font-mono text-slate-400 uppercase tracking-wider font-bold">
+                <div className="text-[11px] font-mono text-slate-600 dark:text-slate-400 uppercase tracking-wider font-bold">
                   Team Members Attendance for Day {selectedDay}:
                 </div>
                 <div className="space-y-2">
@@ -481,35 +481,35 @@ export const DailyAttendanceView: React.FC = () => {
                       onClick={() => handleToggleMember(team.id, member.id)}
                       className={`p-3 rounded-xl border flex items-center justify-between cursor-pointer transition-all ${
                         member.isPresent
-                          ? 'bg-emerald-500/10 border-emerald-500/30 hover:bg-emerald-500/20'
-                          : 'bg-rose-500/10 border-rose-500/30 hover:bg-rose-500/20'
+                          ? 'bg-emerald-50 dark:bg-emerald-500/10 border-emerald-200 dark:border-emerald-500/30 hover:bg-emerald-100 dark:hover:bg-emerald-500/20'
+                          : 'bg-rose-50 dark:bg-rose-500/10 border-rose-200 dark:border-rose-500/30 hover:bg-rose-100 dark:hover:bg-rose-500/20'
                       }`}
                     >
                       <div className="flex items-center gap-3">
                         <div
                           className={`w-8 h-8 rounded-lg flex items-center justify-center font-bold text-xs ${
                             member.isPresent
-                              ? 'bg-emerald-500/20 text-emerald-300'
-                              : 'bg-rose-500/20 text-rose-300'
+                              ? 'bg-emerald-100 dark:bg-emerald-500/20 text-emerald-800 dark:text-emerald-300'
+                              : 'bg-rose-100 dark:bg-rose-500/20 text-rose-800 dark:text-rose-300'
                           }`}
                         >
                           {member.isPresent ? <UserCheck className="w-4 h-4" /> : <UserX className="w-4 h-4" />}
                         </div>
                         <div>
-                          <div className="font-bold text-white text-xs flex items-center gap-1.5">
+                          <div className="font-bold text-slate-900 dark:text-white text-xs flex items-center gap-1.5">
                             {member.name}
-                            <span className="px-1.5 py-0.2 text-[9px] font-mono rounded bg-white/10 text-slate-300">
+                            <span className="px-1.5 py-0.2 text-[9px] font-mono rounded bg-slate-200 dark:bg-white/10 text-slate-700 dark:text-slate-300">
                               {member.role}
                             </span>
                           </div>
-                          <div className="text-[10px] text-slate-400 font-mono">{member.email}</div>
+                          <div className="text-[10px] text-slate-500 dark:text-slate-400 font-mono">{member.email}</div>
                         </div>
                       </div>
 
                       <div className="flex items-center gap-2">
                         <span
                           className={`text-[11px] font-mono font-bold ${
-                            member.isPresent ? 'text-emerald-400' : 'text-rose-400'
+                            member.isPresent ? 'text-emerald-700 dark:text-emerald-400' : 'text-rose-700 dark:text-rose-400'
                           }`}
                         >
                           {member.isPresent ? 'PRESENT' : 'ABSENT'}
@@ -527,10 +527,10 @@ export const DailyAttendanceView: React.FC = () => {
               </div>
 
               {/* Card Actions: "Mark Team Present for Day X" & "Save Attendance" */}
-              <div className="flex items-center justify-between gap-3 pt-3 border-t border-white/10">
+              <div className="flex items-center justify-between gap-3 pt-3 border-t border-slate-200 dark:border-white/10">
                 <button
                   onClick={() => handleMarkTeamPresent(team.id)}
-                  className="px-3.5 py-2 rounded-xl bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 font-mono font-bold text-xs hover:bg-emerald-500 hover:text-slate-950 transition-all flex items-center gap-1.5 cursor-pointer"
+                  className="px-3.5 py-2 rounded-xl bg-emerald-100 dark:bg-emerald-500/20 text-emerald-800 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-500/40 font-mono font-bold text-xs hover:bg-emerald-500 hover:text-white dark:hover:text-slate-950 transition-all flex items-center gap-1.5 cursor-pointer"
                 >
                   <CheckCircle2 className="w-4 h-4" />
                   <span>Mark Team Present for Day {selectedDay}</span>
@@ -538,7 +538,7 @@ export const DailyAttendanceView: React.FC = () => {
 
                 <button
                   onClick={() => handleSaveAttendance(team)}
-                  className="px-4 py-2 rounded-xl bg-carnival-cyan text-slate-950 font-black text-xs uppercase tracking-wider shadow-neon-cyan hover:scale-105 transition-all flex items-center gap-1.5 cursor-pointer"
+                  className="px-4 py-2 rounded-xl bg-cyan-500 dark:bg-carnival-cyan text-slate-950 font-black text-xs uppercase tracking-wider shadow-sm dark:shadow-neon-cyan hover:scale-105 transition-all flex items-center gap-1.5 cursor-pointer"
                 >
                   <RefreshCw className="w-3.5 h-3.5" />
                   <span>Save Record</span>

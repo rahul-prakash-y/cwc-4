@@ -230,16 +230,16 @@ export const BuzzerButton: React.FC = () => {
   const countdownProgress = unlockTime ? Math.max(0, Math.min(100, ((unlockTime - Date.now()) / 5000) * 100)) : 100;
 
   return (
-    <div className="relative flex flex-col items-center justify-center p-6 rounded-3xl bg-gradient-to-b from-slate-900/90 via-slate-950 to-black border border-carnival-gold/20 shadow-2xl overflow-hidden max-w-md mx-auto">
+    <div className="relative flex flex-col items-center justify-center p-6 rounded-3xl bg-white/90 dark:bg-gradient-to-b dark:from-slate-900/90 dark:via-slate-950 dark:to-black border border-slate-200 dark:border-carnival-gold/20 shadow-sm dark:shadow-2xl overflow-hidden max-w-md mx-auto">
       {/* Background Carnival Glow Effects */}
-      <div className="absolute -top-24 -left-24 w-48 h-48 bg-carnival-gold/10 rounded-full blur-3xl pointer-events-none" />
+      <div className="absolute -top-24 -left-24 w-48 h-48 bg-amber-500/10 dark:bg-carnival-gold/10 rounded-full blur-3xl pointer-events-none" />
       <div className="absolute -bottom-24 -right-24 w-48 h-48 bg-red-600/10 rounded-full blur-3xl pointer-events-none" />
 
       {/* Header Info */}
       <div className="w-full flex items-center justify-between mb-4 z-10">
         <div className="flex items-center gap-2">
-          <Sparkles className="w-4 h-4 text-carnival-gold animate-spin" />
-          <span className="font-mono text-xs font-bold text-carnival-gold uppercase tracking-wider">
+          <Sparkles className="w-4 h-4 text-amber-600 dark:text-carnival-gold animate-spin" />
+          <span className="font-mono text-xs font-bold text-amber-700 dark:text-carnival-gold uppercase tracking-wider">
             RAPID FIRE BUZZER 🎪
           </span>
         </div>
@@ -247,8 +247,8 @@ export const BuzzerButton: React.FC = () => {
           onClick={() => setSoundEnabled(!soundEnabled)}
           className={`p-1.5 rounded-lg border text-xs flex items-center gap-1 transition-all ${
             soundEnabled
-              ? 'border-carnival-gold/40 text-carnival-gold bg-carnival-gold/10'
-              : 'border-slate-700 text-slate-500 bg-slate-800'
+              ? 'border-amber-500/40 text-amber-700 dark:text-carnival-gold bg-amber-500/10'
+              : 'border-slate-300 dark:border-slate-700 text-slate-500 bg-slate-100 dark:bg-slate-800'
           }`}
           title="Toggle Buzzer Sound"
         >
@@ -258,8 +258,8 @@ export const BuzzerButton: React.FC = () => {
       </div>
 
       {/* Team Badge */}
-      <div className="mb-4 px-4 py-1.5 rounded-full glass-card border border-white/10 text-xs font-mono font-bold text-slate-300 z-10 text-center">
-        TEAM: <span className="text-white font-extrabold">{teamName}</span>
+      <div className="mb-4 px-4 py-1.5 rounded-full glass-card border border-slate-200 dark:border-white/10 text-xs font-mono font-bold text-slate-600 dark:text-slate-300 z-10 text-center">
+        TEAM: <span className="text-slate-900 dark:text-white font-extrabold">{teamName}</span>
       </div>
 
       {/* Broadcasted Question Card */}

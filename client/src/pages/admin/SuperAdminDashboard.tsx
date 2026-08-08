@@ -298,30 +298,30 @@ export const SuperAdminDashboard: React.FC = () => {
   };
 
   return (
-    <div className="space-y-6 max-w-7xl mx-auto">
+    <div className="space-y-6 max-w-7xl mx-auto font-sans">
       {/* Header Banner */}
-      <div className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-[#1E112A] via-[#2D1B36] to-[#170E28] p-6 sm:p-8 border border-purple-500/30 shadow-2xl">
+      <div className="relative overflow-hidden rounded-3xl bg-white dark:bg-gradient-to-r dark:from-[#1E112A] dark:via-[#2D1B36] dark:to-[#170E28] p-6 sm:p-8 border border-slate-200 dark:border-purple-500/30 shadow-sm dark:shadow-2xl">
         <div className="absolute top-0 right-0 w-96 h-96 bg-purple-500/10 rounded-full blur-3xl -z-10" />
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <div className="space-y-2">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-purple-500/20 border border-purple-400/40 text-purple-300 text-xs font-mono font-bold">
-              <ShieldAlert className="w-3.5 h-3.5 text-purple-400" />
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-purple-100 dark:bg-purple-500/20 border border-purple-300 dark:border-purple-400/40 text-purple-800 dark:text-purple-300 text-xs font-mono font-bold">
+              <ShieldAlert className="w-3.5 h-3.5 text-purple-600 dark:text-purple-400" />
               <span>TIERED SUPERADMIN SECURITY HUB</span>
             </div>
-            <h2 className="text-2xl sm:text-3xl font-black text-white tracking-tight flex items-center gap-3">
+            <h2 className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white tracking-tight flex items-center gap-3">
               <span>SuperAdmin Control Center</span>
-              <Sparkles className="w-6 h-6 text-carnival-gold animate-spin-slow" />
+              <Sparkles className="w-6 h-6 text-amber-500 dark:text-carnival-gold animate-spin-slow" />
             </h2>
-            <p className="text-slate-300 text-xs sm:text-sm max-w-2xl font-sans">
+            <p className="text-slate-600 dark:text-slate-300 text-xs sm:text-sm max-w-2xl font-sans">
               Absolute governance for CWC Season 4. Manage admin privileges, audit security events, force password resets, and instantly block compromised student/team accounts.
             </p>
           </div>
 
           <div className="flex items-center gap-2">
-            <div className="px-4 py-2 rounded-2xl glass-card border border-purple-400/30 font-mono text-xs text-right">
-              <div className="text-[10px] text-purple-400 uppercase font-bold">Active Role</div>
-              <div className="font-extrabold text-white text-sm flex items-center gap-1.5">
-                <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping" />
+            <div className="px-4 py-2 rounded-2xl bg-slate-50 dark:bg-white/5 border border-purple-300 dark:border-purple-400/30 font-mono text-xs text-right">
+              <div className="text-[10px] text-purple-600 dark:text-purple-400 uppercase font-bold">Active Role</div>
+              <div className="font-extrabold text-slate-900 dark:text-white text-sm flex items-center gap-1.5">
+                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-ping" />
                 <span>SUPERADMIN</span>
               </div>
             </div>
@@ -329,13 +329,13 @@ export const SuperAdminDashboard: React.FC = () => {
         </div>
 
         {/* Tab Selector */}
-        <div className="flex items-center gap-2 mt-6 overflow-x-auto pb-1 border-t border-white/10 pt-4">
+        <div className="flex items-center gap-2 mt-6 overflow-x-auto pb-1 border-t border-slate-200 dark:border-white/10 pt-4">
           <button
             onClick={() => setSearchParams({ tab: 'security' })}
-            className={`flex items-center gap-2 px-4 py-2.5 rounded-xl font-mono text-xs font-bold transition-all ${
+            className={`flex items-center gap-2 px-4 py-2.5 rounded-xl font-mono text-xs font-bold transition-all cursor-pointer ${
               activeTab === 'security'
                 ? 'bg-gradient-to-r from-rose-600 to-pink-600 text-white shadow-[0_0_20px_rgba(225,29,72,0.4)] font-black'
-                : 'glass-card text-slate-300 hover:text-white'
+                : 'bg-slate-100 dark:bg-white/5 text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white border border-slate-200 dark:border-white/10'
             }`}
           >
             <ShieldAlert className="w-4 h-4" />
@@ -344,10 +344,10 @@ export const SuperAdminDashboard: React.FC = () => {
 
           <button
             onClick={() => setSearchParams({ tab: 'logs' })}
-            className={`flex items-center gap-2 px-4 py-2.5 rounded-xl font-mono text-xs font-bold transition-all ${
+            className={`flex items-center gap-2 px-4 py-2.5 rounded-xl font-mono text-xs font-bold transition-all cursor-pointer ${
               activeTab === 'logs'
                 ? 'bg-gradient-to-r from-purple-600 to-indigo-600 text-white shadow-neon-purple font-black'
-                : 'glass-card text-slate-300 hover:text-white'
+                : 'bg-slate-100 dark:bg-white/5 text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white border border-slate-200 dark:border-white/10'
             }`}
           >
             <FileText className="w-4 h-4" />
@@ -356,10 +356,10 @@ export const SuperAdminDashboard: React.FC = () => {
 
           <button
             onClick={() => setSearchParams({ tab: 'admins' })}
-            className={`flex items-center gap-2 px-4 py-2.5 rounded-xl font-mono text-xs font-bold transition-all ${
+            className={`flex items-center gap-2 px-4 py-2.5 rounded-xl font-mono text-xs font-bold transition-all cursor-pointer ${
               activeTab === 'admins'
                 ? 'bg-gradient-to-r from-amber-500 to-yellow-500 text-slate-950 shadow-neon-gold font-black'
-                : 'glass-card text-slate-300 hover:text-white'
+                : 'bg-slate-100 dark:bg-white/5 text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white border border-slate-200 dark:border-white/10'
             }`}
           >
             <UserCheck className="w-4 h-4" />
@@ -368,10 +368,10 @@ export const SuperAdminDashboard: React.FC = () => {
 
           <button
             onClick={() => setSearchParams({ tab: 'cms' })}
-            className={`flex items-center gap-2 px-4 py-2.5 rounded-xl font-mono text-xs font-bold transition-all ${
+            className={`flex items-center gap-2 px-4 py-2.5 rounded-xl font-mono text-xs font-bold transition-all cursor-pointer ${
               activeTab === 'cms'
                 ? 'bg-gradient-to-r from-cyan-500 to-blue-500 text-slate-950 shadow-neon-cyan font-black'
-                : 'glass-card text-slate-300 hover:text-white'
+                : 'bg-slate-100 dark:bg-white/5 text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white border border-slate-200 dark:border-white/10'
             }`}
           >
             <Sliders className="w-4 h-4" />
@@ -389,19 +389,19 @@ export const SuperAdminDashboard: React.FC = () => {
             exit={{ opacity: 0, y: -10 }}
             className={`p-4 rounded-2xl flex items-center justify-between shadow-xl border font-mono text-xs font-bold ${
               notification.type === 'success'
-                ? 'bg-emerald-950/80 border-emerald-500 text-emerald-300 shadow-[0_0_20px_rgba(16,185,129,0.3)]'
-                : 'bg-rose-950/80 border-rose-500 text-rose-300 shadow-[0_0_20px_rgba(244,63,94,0.3)]'
+                ? 'bg-emerald-50 dark:bg-emerald-950/80 border-emerald-300 dark:border-emerald-500 text-emerald-800 dark:text-emerald-300 shadow-sm dark:shadow-[0_0_20px_rgba(16,185,129,0.3)]'
+                : 'bg-rose-50 dark:bg-rose-950/80 border-rose-300 dark:border-rose-500 text-rose-800 dark:text-rose-300 shadow-sm dark:shadow-[0_0_20px_rgba(244,63,94,0.3)]'
             }`}
           >
             <div className="flex items-center gap-3">
               {notification.type === 'success' ? (
-                <CheckCircle className="w-5 h-5 text-emerald-400" />
+                <CheckCircle className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
               ) : (
-                <AlertTriangle className="w-5 h-5 text-rose-400" />
+                <AlertTriangle className="w-5 h-5 text-rose-600 dark:text-rose-400" />
               )}
               <span>{notification.message}</span>
             </div>
-            <button onClick={() => setNotification(null)} className="text-slate-400 hover:text-white">
+            <button onClick={() => setNotification(null)} className="text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white cursor-pointer">
               <X className="w-4 h-4" />
             </button>
           </motion.div>
@@ -414,13 +414,13 @@ export const SuperAdminDashboard: React.FC = () => {
       {activeTab === 'security' && (
         <div className="space-y-6">
           {/* Search Bar & Action Header */}
-          <div className="glass-card p-6 rounded-3xl border border-white/10 space-y-4">
+          <div className="bg-white dark:bg-[#18122B] p-6 rounded-3xl border border-slate-200 dark:border-white/10 shadow-sm dark:shadow-xl space-y-4">
             <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
               <div>
-                <h3 className="text-lg font-bold text-white flex items-center gap-2 font-mono">
+                <h3 className="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2 font-mono">
                   <span>Student & Team Account Controls</span>
                 </h3>
-                <p className="text-xs text-slate-400">
+                <p className="text-xs text-slate-600 dark:text-slate-400">
                   Search accounts to toggle Block status (instant WebSocket disconnect) or Force Password Reset.
                 </p>
               </div>
@@ -434,13 +434,13 @@ export const SuperAdminDashboard: React.FC = () => {
                     onChange={(e) => setSecurityQuery(e.target.value)}
                     onKeyDown={(e) => e.key === 'Enter' && fetchSecurityTargets()}
                     placeholder="Search student name, email, team..."
-                    className="w-full bg-[#120B1F] border border-white/15 rounded-xl pl-10 pr-4 py-2.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-rose-500 transition-all font-mono"
+                    className="w-full bg-slate-50 dark:bg-[#120B1F] border border-slate-300 dark:border-white/15 rounded-xl pl-10 pr-4 py-2.5 text-xs text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:border-rose-500 transition-all font-mono"
                   />
                 </div>
                 <button
                   onClick={fetchSecurityTargets}
                   disabled={securityLoading}
-                  className="px-4 py-2.5 rounded-xl bg-gradient-to-r from-rose-600 to-pink-600 text-white font-mono text-xs font-bold hover:brightness-110 transition-all shadow-[0_0_15px_rgba(225,29,72,0.3)] flex items-center gap-2"
+                  className="px-4 py-2.5 rounded-xl bg-gradient-to-r from-rose-600 to-pink-600 text-white font-mono text-xs font-bold hover:brightness-110 transition-all shadow-sm dark:shadow-[0_0_15px_rgba(225,29,72,0.3)] flex items-center gap-2 cursor-pointer disabled:opacity-50"
                 >
                   <RefreshCw className={`w-3.5 h-3.5 ${securityLoading ? 'animate-spin' : ''}`} />
                   <span>Search</span>
@@ -451,12 +451,12 @@ export const SuperAdminDashboard: React.FC = () => {
 
           {/* Results Grid */}
           {securityLoading ? (
-            <div className="p-12 text-center text-slate-400 font-mono text-xs glass-card rounded-3xl border border-white/10">
-              <RefreshCw className="w-6 h-6 animate-spin mx-auto mb-2 text-rose-400" />
+            <div className="p-12 text-center text-slate-600 dark:text-slate-400 font-mono text-xs bg-white dark:bg-[#18122B] rounded-3xl border border-slate-200 dark:border-white/10">
+              <RefreshCw className="w-6 h-6 animate-spin mx-auto mb-2 text-rose-500 dark:text-rose-400" />
               <span>Scanning Arena Accounts...</span>
             </div>
           ) : securityTargets.length === 0 ? (
-            <div className="p-12 text-center text-slate-400 font-mono text-xs glass-card rounded-3xl border border-white/10">
+            <div className="p-12 text-center text-slate-600 dark:text-slate-400 font-mono text-xs bg-white dark:bg-[#18122B] rounded-3xl border border-slate-200 dark:border-white/10">
               <span>No matching student or team accounts found. Try a different query.</span>
             </div>
           ) : (
@@ -472,10 +472,10 @@ export const SuperAdminDashboard: React.FC = () => {
                     layout
                     initial={{ opacity: 0, scale: 0.95 }}
                     animate={{ opacity: 1, scale: 1 }}
-                    className={`glass-card p-5 rounded-2xl border transition-all flex flex-col justify-between space-y-4 ${
+                    className={`p-5 rounded-2xl border transition-all flex flex-col justify-between space-y-4 shadow-sm dark:shadow-lg ${
                       isBlocked
-                        ? 'border-rose-500/50 bg-rose-950/20 shadow-[0_0_15px_rgba(225,29,72,0.2)]'
-                        : 'border-white/10 hover:border-purple-500/40'
+                        ? 'border-rose-300 dark:border-rose-500/50 bg-rose-50 dark:bg-rose-950/20 dark:shadow-[0_0_15px_rgba(225,29,72,0.2)]'
+                        : 'border-slate-200 dark:border-white/10 hover:border-purple-400 dark:hover:border-purple-500/40 bg-white dark:bg-[#18122B]'
                     }`}
                   >
                     <div>
@@ -483,8 +483,8 @@ export const SuperAdminDashboard: React.FC = () => {
                         <span
                           className={`text-[10px] font-mono font-extrabold uppercase px-2.5 py-0.5 rounded-full ${
                             target.type === 'team'
-                              ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/40'
-                              : 'bg-purple-500/20 text-purple-300 border border-purple-500/40'
+                              ? 'bg-cyan-100 dark:bg-cyan-500/20 text-cyan-800 dark:text-cyan-300 border border-cyan-300 dark:border-cyan-500/40'
+                              : 'bg-purple-100 dark:bg-purple-500/20 text-purple-800 dark:text-purple-300 border border-purple-300 dark:border-purple-500/40'
                           }`}
                         >
                           {target.type === 'team' ? '🎪 TEAM' : '👤 STUDENT'}
@@ -493,33 +493,33 @@ export const SuperAdminDashboard: React.FC = () => {
                         <span
                           className={`text-[10px] font-mono font-bold px-2 py-0.5 rounded-full flex items-center gap-1 ${
                             isBlocked
-                              ? 'bg-rose-500/30 text-rose-300 border border-rose-500'
-                              : 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40'
+                              ? 'bg-rose-100 dark:bg-rose-500/30 text-rose-800 dark:text-rose-300 border border-rose-300 dark:border-rose-500'
+                              : 'bg-emerald-100 dark:bg-emerald-500/20 text-emerald-800 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-500/40'
                           }`}
                         >
                           {isBlocked ? (
                             <>
-                              <Ban className="w-3 h-3 text-rose-400" /> BLOCKED
+                              <Ban className="w-3 h-3 text-rose-600 dark:text-rose-400" /> BLOCKED
                             </>
                           ) : (
                             <>
-                              <CheckCircle className="w-3 h-3 text-emerald-400" /> ACTIVE
+                              <CheckCircle className="w-3 h-3 text-emerald-600 dark:text-emerald-400" /> ACTIVE
                             </>
                           )}
                         </span>
                       </div>
 
-                      <h4 className="font-extrabold text-white text-base font-mono truncate">{displayName}</h4>
-                      <p className="text-xs text-slate-400 font-mono truncate">{email || 'No email associated'}</p>
+                      <h4 className="font-extrabold text-slate-900 dark:text-white text-base font-mono truncate">{displayName}</h4>
+                      <p className="text-xs text-slate-600 dark:text-slate-400 font-mono truncate">{email || 'No email associated'}</p>
 
                       {target.isFirstLogin && (
-                        <div className="mt-2 text-[10px] text-amber-400 font-mono bg-amber-500/10 border border-amber-500/20 px-2 py-1 rounded-lg inline-block">
+                        <div className="mt-2 text-[10px] text-amber-700 dark:text-amber-400 font-mono bg-amber-100 dark:bg-amber-500/10 border border-amber-300 dark:border-amber-500/20 px-2 py-1 rounded-lg inline-block">
                           ⚠️ First Login Pending
                         </div>
                       )}
                     </div>
 
-                    <div className="pt-3 border-t border-white/10 grid grid-cols-2 gap-2">
+                    <div className="pt-3 border-t border-slate-200 dark:border-white/10 grid grid-cols-2 gap-2">
                       <button
                         onClick={() =>
                           setConfirmModalState({
@@ -535,10 +535,10 @@ export const SuperAdminDashboard: React.FC = () => {
                             isBlockedState: isBlocked,
                           })
                         }
-                        className={`py-2 px-3 rounded-xl font-mono text-xs font-bold flex items-center justify-center gap-1.5 transition-all ${
+                        className={`py-2 px-3 rounded-xl font-mono text-xs font-bold flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
                           isBlocked
-                            ? 'bg-emerald-600 hover:bg-emerald-500 text-white shadow-[0_0_15px_rgba(16,185,129,0.3)]'
-                            : 'bg-rose-600 hover:bg-rose-500 text-white shadow-[0_0_15px_rgba(225,29,72,0.3)]'
+                            ? 'bg-emerald-600 hover:bg-emerald-500 text-white shadow-sm dark:shadow-[0_0_15px_rgba(16,185,129,0.3)]'
+                            : 'bg-rose-600 hover:bg-rose-500 text-white shadow-sm dark:shadow-[0_0_15px_rgba(225,29,72,0.3)]'
                         }`}
                       >
                         <Ban className="w-3.5 h-3.5" />
@@ -557,9 +557,9 @@ export const SuperAdminDashboard: React.FC = () => {
                             targetType: target.type,
                           })
                         }
-                        className="py-2 px-3 rounded-xl glass-card border border-purple-500/40 text-purple-300 hover:bg-purple-500/20 font-mono text-xs font-bold flex items-center justify-center gap-1.5 transition-all"
+                        className="py-2 px-3 rounded-xl bg-slate-100 dark:bg-white/5 border border-purple-300 dark:border-purple-500/40 text-purple-700 dark:text-purple-300 hover:bg-purple-100 dark:hover:bg-purple-500/20 font-mono text-xs font-bold flex items-center justify-center gap-1.5 transition-all cursor-pointer"
                       >
-                        <LogOut className="w-3.5 h-3.5 text-purple-400" />
+                        <LogOut className="w-3.5 h-3.5 text-purple-600 dark:text-purple-400" />
                         <span>Force Logout</span>
                       </button>
 
@@ -575,9 +575,9 @@ export const SuperAdminDashboard: React.FC = () => {
                               targetName: displayName || '',
                             })
                           }
-                          className="py-2 px-3 rounded-xl glass-card border border-amber-500/40 text-amber-300 hover:bg-amber-500/20 font-mono text-xs font-bold flex items-center justify-center gap-1.5 transition-all"
+                          className="py-2 px-3 rounded-xl bg-slate-100 dark:bg-white/5 border border-amber-300 dark:border-amber-500/40 text-amber-700 dark:text-amber-300 hover:bg-amber-100 dark:hover:bg-amber-500/20 font-mono text-xs font-bold flex items-center justify-center gap-1.5 transition-all cursor-pointer"
                         >
-                          <KeyRound className="w-3.5 h-3.5 text-amber-400" />
+                          <KeyRound className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400" />
                           <span>Reset Pass</span>
                         </button>
                       )}
@@ -594,9 +594,9 @@ export const SuperAdminDashboard: React.FC = () => {
                             targetType: target.type,
                           })
                         }
-                        className="py-2 px-3 rounded-xl bg-red-950/80 hover:bg-red-900 border border-red-500/50 text-red-300 font-mono text-xs font-bold flex items-center justify-center gap-1.5 transition-all"
+                        className="py-2 px-3 rounded-xl bg-rose-100 dark:bg-red-950/80 hover:bg-rose-200 dark:hover:bg-red-900 border border-rose-300 dark:border-red-500/50 text-rose-800 dark:text-red-300 font-mono text-xs font-bold flex items-center justify-center gap-1.5 transition-all cursor-pointer"
                       >
-                        <Trash2 className="w-3.5 h-3.5 text-red-400" />
+                        <Trash2 className="w-3.5 h-3.5 text-rose-600 dark:text-red-400" />
                         <span>Delete</span>
                       </button>
                     </div>
@@ -614,13 +614,13 @@ export const SuperAdminDashboard: React.FC = () => {
       {activeTab === 'logs' && (
         <div className="space-y-6">
           {/* Filters Bar */}
-          <div className="glass-card p-6 rounded-3xl border border-white/10 space-y-4">
+          <div className="bg-white dark:bg-[#18122B] p-6 rounded-3xl border border-slate-200 dark:border-white/10 shadow-sm dark:shadow-xl space-y-4">
             <div className="flex flex-col md:flex-row items-center justify-between gap-4">
               <div>
-                <h3 className="text-lg font-bold text-white flex items-center gap-2 font-mono">
+                <h3 className="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2 font-mono">
                   <span>Administrative Audit Trail</span>
                 </h3>
-                <p className="text-xs text-slate-400">
+                <p className="text-xs text-slate-600 dark:text-slate-400">
                   Immutable log recording critical administrative operations across score updates, advantages, and security actions.
                 </p>
               </div>
@@ -628,7 +628,7 @@ export const SuperAdminDashboard: React.FC = () => {
               <button
                 onClick={fetchAuditLogs}
                 disabled={logsLoading}
-                className="px-4 py-2.5 rounded-xl bg-purple-600 text-white font-mono text-xs font-bold hover:bg-purple-500 transition-all flex items-center gap-2 self-end sm:self-auto"
+                className="px-4 py-2.5 rounded-xl bg-purple-600 text-white font-mono text-xs font-bold hover:bg-purple-500 transition-all flex items-center gap-2 self-end sm:self-auto cursor-pointer disabled:opacity-50"
               >
                 <RefreshCw className={`w-3.5 h-3.5 ${logsLoading ? 'animate-spin' : ''}`} />
                 <span>Refresh Logs</span>
@@ -644,7 +644,7 @@ export const SuperAdminDashboard: React.FC = () => {
                   onChange={(e) => setLogSearch(e.target.value)}
                   onKeyDown={(e) => e.key === 'Enter' && fetchAuditLogs()}
                   placeholder="Filter by admin email / target..."
-                  className="w-full bg-[#120B1F] border border-white/15 rounded-xl pl-9 pr-3 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-purple-500 font-mono"
+                  className="w-full bg-slate-50 dark:bg-[#120B1F] border border-slate-300 dark:border-white/15 rounded-xl pl-9 pr-3 py-2 text-xs text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:border-purple-500 font-mono"
                 />
               </div>
 
@@ -654,7 +654,7 @@ export const SuperAdminDashboard: React.FC = () => {
                   setActionFilter(e.target.value);
                   setLogsPage(1);
                 }}
-                className="bg-[#120B1F] border border-white/15 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-purple-500 font-mono"
+                className="bg-slate-50 dark:bg-[#120B1F] border border-slate-300 dark:border-white/15 rounded-xl px-3 py-2 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-purple-500 font-mono"
               >
                 <option value="ALL">All Actions</option>
                 <option value="BLOCK_ACCOUNT">BLOCK_ACCOUNT</option>
@@ -670,23 +670,23 @@ export const SuperAdminDashboard: React.FC = () => {
                 type="date"
                 value={startDate}
                 onChange={(e) => setStartDate(e.target.value)}
-                className="bg-[#120B1F] border border-white/15 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-purple-500 font-mono"
+                className="bg-slate-50 dark:bg-[#120B1F] border border-slate-300 dark:border-white/15 rounded-xl px-3 py-2 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-purple-500 font-mono"
               />
 
               <input
                 type="date"
                 value={endDate}
                 onChange={(e) => setEndDate(e.target.value)}
-                className="bg-[#120B1F] border border-white/15 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-purple-500 font-mono"
+                className="bg-slate-50 dark:bg-[#120B1F] border border-slate-300 dark:border-white/15 rounded-xl px-3 py-2 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-purple-500 font-mono"
               />
             </div>
           </div>
 
           {/* Audit Logs Data Table */}
-          <div className="glass-card rounded-3xl border border-white/10 overflow-hidden">
+          <div className="bg-white dark:bg-[#18122B] rounded-3xl border border-slate-200 dark:border-white/10 shadow-sm dark:shadow-xl overflow-hidden">
             <div className="overflow-x-auto">
               <table className="w-full text-left font-mono text-xs">
-                <thead className="bg-[#1A1228] text-slate-300 uppercase border-b border-white/10 text-[10px] tracking-wider">
+                <thead className="bg-slate-100 dark:bg-[#1A1228] text-slate-700 dark:text-slate-300 uppercase border-b border-slate-200 dark:border-white/10 text-[10px] tracking-wider">
                   <tr>
                     <th className="py-3.5 px-4">Timestamp</th>
                     <th className="py-3.5 px-4">Admin Executer</th>
@@ -695,31 +695,31 @@ export const SuperAdminDashboard: React.FC = () => {
                     <th className="py-3.5 px-4">Operation Details</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-white/5 text-slate-200">
+                <tbody className="divide-y divide-slate-200 dark:divide-white/5 text-slate-800 dark:text-slate-200">
                   {logsLoading ? (
                     <tr>
-                      <td colSpan={5} className="py-8 text-center text-slate-400">
-                        <RefreshCw className="w-5 h-5 animate-spin mx-auto mb-2 text-purple-400" />
+                      <td colSpan={5} className="py-8 text-center text-slate-500 dark:text-slate-400">
+                        <RefreshCw className="w-5 h-5 animate-spin mx-auto mb-2 text-purple-600 dark:text-purple-400" />
                         <span>Loading audit records...</span>
                       </td>
                     </tr>
                   ) : logs.length === 0 ? (
                     <tr>
-                      <td colSpan={5} className="py-8 text-center text-slate-400">
+                      <td colSpan={5} className="py-8 text-center text-slate-500 dark:text-slate-400">
                         <span>No audit log records matching the specified filter criteria.</span>
                       </td>
                     </tr>
                   ) : (
                     logs.map((log) => (
-                      <tr key={log._id} className="hover:bg-white/5 transition-colors">
-                        <td className="py-3 px-4 text-slate-400 whitespace-nowrap">
+                      <tr key={log._id} className="hover:bg-slate-50 dark:hover:bg-white/5 transition-colors">
+                        <td className="py-3 px-4 text-slate-600 dark:text-slate-400 whitespace-nowrap">
                           <div className="flex items-center gap-1.5">
-                            <Clock className="w-3.5 h-3.5 text-purple-400" />
+                            <Clock className="w-3.5 h-3.5 text-purple-600 dark:text-purple-400" />
                             <span>{new Date(log.timestamp).toLocaleString()}</span>
                           </div>
                         </td>
 
-                        <td className="py-3 px-4 font-bold text-purple-300">
+                        <td className="py-3 px-4 font-bold text-purple-700 dark:text-purple-300">
                           {log.adminEmail || log.adminId || 'System'}
                         </td>
 
@@ -727,23 +727,23 @@ export const SuperAdminDashboard: React.FC = () => {
                           <span
                             className={`px-2 py-0.5 rounded-full text-[10px] font-extrabold border ${
                               log.action.includes('BLOCK') || log.action.includes('REVOKE')
-                                ? 'bg-rose-500/20 text-rose-300 border-rose-500/40'
+                                ? 'bg-rose-100 dark:bg-rose-500/20 text-rose-700 dark:text-rose-300 border-rose-300 dark:border-rose-500/40'
                                 : log.action.includes('RESET')
-                                ? 'bg-amber-500/20 text-amber-300 border-amber-500/40'
-                                : 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40'
+                                ? 'bg-amber-100 dark:bg-amber-500/20 text-amber-800 dark:text-amber-300 border-amber-300 dark:border-amber-500/40'
+                                : 'bg-emerald-100 dark:bg-emerald-500/20 text-emerald-800 dark:text-emerald-300 border-emerald-300 dark:border-emerald-500/40'
                             }`}
                           >
                             {log.action}
                           </span>
                         </td>
 
-                        <td className="py-3 px-4 text-slate-300">
+                        <td className="py-3 px-4 text-slate-800 dark:text-slate-300">
                           <div className="font-bold">{log.targetType || 'N/A'}</div>
                           <div className="text-[10px] text-slate-500 truncate max-w-[120px]">{log.targetId || '-'}</div>
                         </td>
 
-                        <td className="py-3 px-4 text-slate-300">
-                          <pre className="text-[10px] bg-[#0E0817] p-2 rounded-lg border border-white/10 max-w-xs overflow-x-auto whitespace-pre-wrap">
+                        <td className="py-3 px-4 text-slate-800 dark:text-slate-300">
+                          <pre className="text-[10px] bg-slate-100 dark:bg-[#0E0817] text-slate-800 dark:text-slate-300 p-2 rounded-lg border border-slate-200 dark:border-white/10 max-w-xs overflow-x-auto whitespace-pre-wrap">
                             {JSON.stringify(log.details || {}, null, 2)}
                           </pre>
                         </td>
@@ -755,17 +755,17 @@ export const SuperAdminDashboard: React.FC = () => {
             </div>
 
             {/* Pagination Controls */}
-            <div className="p-4 bg-[#140D24] border-t border-white/10 flex items-center justify-between font-mono text-xs text-slate-400">
+            <div className="p-4 bg-slate-50 dark:bg-[#140D24] border-t border-slate-200 dark:border-white/10 flex items-center justify-between font-mono text-xs text-slate-600 dark:text-slate-400">
               <div>
-                Showing page <span className="text-white font-bold">{logsPage}</span> of{' '}
-                <span className="text-white font-bold">{totalLogsPages}</span> ({totalLogsCount} total logs)
+                Showing page <span className="text-slate-900 dark:text-white font-bold">{logsPage}</span> of{' '}
+                <span className="text-slate-900 dark:text-white font-bold">{totalLogsPages}</span> ({totalLogsCount} total logs)
               </div>
 
               <div className="flex items-center gap-2">
                 <button
                   disabled={logsPage <= 1}
                   onClick={() => setLogsPage((prev) => Math.max(prev - 1, 1))}
-                  className="px-3 py-1.5 rounded-lg glass-card border border-white/10 text-white disabled:opacity-40 disabled:cursor-not-allowed flex items-center gap-1"
+                  className="px-3 py-1.5 rounded-lg bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 text-slate-800 dark:text-white disabled:opacity-40 disabled:cursor-not-allowed flex items-center gap-1 cursor-pointer"
                 >
                   <ChevronLeft className="w-4 h-4" /> Previous
                 </button>
@@ -773,7 +773,7 @@ export const SuperAdminDashboard: React.FC = () => {
                 <button
                   disabled={logsPage >= totalLogsPages}
                   onClick={() => setLogsPage((prev) => Math.min(prev + 1, totalLogsPages))}
-                  className="px-3 py-1.5 rounded-lg glass-card border border-white/10 text-white disabled:opacity-40 disabled:cursor-not-allowed flex items-center gap-1"
+                  className="px-3 py-1.5 rounded-lg bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 text-slate-800 dark:text-white disabled:opacity-40 disabled:cursor-not-allowed flex items-center gap-1 cursor-pointer"
                 >
                   Next <ChevronRight className="w-4 h-4" />
                 </button>
@@ -789,19 +789,19 @@ export const SuperAdminDashboard: React.FC = () => {
       {activeTab === 'admins' && (
         <div className="space-y-6">
           {/* Header & Create Admin Button */}
-          <div className="glass-card p-6 rounded-3xl border border-white/10 flex flex-col sm:flex-row items-center justify-between gap-4">
+          <div className="bg-white dark:bg-[#18122B] p-6 rounded-3xl border border-slate-200 dark:border-white/10 shadow-sm dark:shadow-xl flex flex-col sm:flex-row items-center justify-between gap-4">
             <div>
-              <h3 className="text-lg font-bold text-white flex items-center gap-2 font-mono">
+              <h3 className="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2 font-mono">
                 <span>Ringmaster Admin Management</span>
               </h3>
-              <p className="text-xs text-slate-400">
+              <p className="text-xs text-slate-600 dark:text-slate-400">
                 Grant or revoke standard 'admin' and 'superadmin' roles to control staff access.
               </p>
             </div>
 
             <button
               onClick={() => setShowCreateAdminModal(true)}
-              className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-yellow-500 text-slate-950 font-mono text-xs font-black shadow-neon-gold hover:brightness-110 transition-all flex items-center gap-2"
+              className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-yellow-500 text-slate-950 font-mono text-xs font-black shadow-sm dark:shadow-neon-gold hover:brightness-110 transition-all flex items-center gap-2 cursor-pointer"
             >
               <UserPlus className="w-4 h-4" />
               <span>Create New Admin Account</span>
@@ -810,8 +810,8 @@ export const SuperAdminDashboard: React.FC = () => {
 
           {/* Admin List Grid */}
           {adminsLoading ? (
-            <div className="p-12 text-center text-slate-400 font-mono text-xs glass-card rounded-3xl border border-white/10">
-              <RefreshCw className="w-6 h-6 animate-spin mx-auto mb-2 text-amber-400" />
+            <div className="p-12 text-center text-slate-600 dark:text-slate-400 font-mono text-xs bg-white dark:bg-[#18122B] rounded-3xl border border-slate-200 dark:border-white/10">
+              <RefreshCw className="w-6 h-6 animate-spin mx-auto mb-2 text-amber-500 dark:text-amber-400" />
               <span>Loading Admin Directory...</span>
             </div>
           ) : (
@@ -819,31 +819,31 @@ export const SuperAdminDashboard: React.FC = () => {
               {adminList.map((admin) => (
                 <div
                   key={admin._id}
-                  className="glass-card p-5 rounded-2xl border border-white/10 flex flex-col justify-between space-y-4 hover:border-amber-500/40 transition-all"
+                  className="bg-white dark:bg-[#18122B] p-5 rounded-2xl border border-slate-200 dark:border-white/10 flex flex-col justify-between space-y-4 hover:border-amber-400 dark:hover:border-amber-500/40 transition-all shadow-sm dark:shadow-lg"
                 >
                   <div className="flex items-start justify-between">
                     <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-amber-400 to-yellow-500 flex items-center justify-center font-bold text-slate-950 font-mono text-base shadow-neon-gold">
+                      <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-amber-400 to-yellow-500 flex items-center justify-center font-bold text-slate-950 font-mono text-base shadow-sm dark:shadow-neon-gold">
                         {admin.role === 'superadmin' ? '⚡' : '👑'}
                       </div>
                       <div>
-                        <h4 className="font-bold text-white text-sm font-mono">{admin.name}</h4>
-                        <p className="text-xs text-slate-400 font-mono">{admin.email}</p>
+                        <h4 className="font-bold text-slate-900 dark:text-white text-sm font-mono">{admin.name}</h4>
+                        <p className="text-xs text-slate-600 dark:text-slate-400 font-mono">{admin.email}</p>
                       </div>
                     </div>
 
                     <span
                       className={`text-[10px] font-mono font-extrabold uppercase px-2.5 py-0.5 rounded-full ${
                         admin.role === 'superadmin'
-                          ? 'bg-purple-500/20 text-purple-300 border border-purple-500'
-                          : 'bg-amber-500/20 text-amber-300 border border-amber-500'
+                          ? 'bg-purple-100 dark:bg-purple-500/20 text-purple-800 dark:text-purple-300 border border-purple-300 dark:border-purple-500'
+                          : 'bg-amber-100 dark:bg-amber-500/20 text-amber-800 dark:text-amber-300 border border-amber-300 dark:border-amber-500'
                       }`}
                     >
                       {admin.role}
                     </span>
                   </div>
 
-                  <div className="pt-3 border-t border-white/10 flex items-center justify-between">
+                  <div className="pt-3 border-t border-slate-200 dark:border-white/10 flex items-center justify-between">
                     <span className="text-[10px] text-slate-500 font-mono">
                       Added: {new Date(admin.createdAt || Date.now()).toLocaleDateString()}
                     </span>
@@ -860,7 +860,7 @@ export const SuperAdminDashboard: React.FC = () => {
                             targetName: admin.name,
                           })
                         }
-                        className="p-2 rounded-xl glass-card text-rose-400 hover:bg-rose-500/20 transition-all"
+                        className="p-2 rounded-xl bg-slate-100 dark:bg-white/5 text-rose-600 dark:text-rose-400 hover:bg-rose-100 dark:hover:bg-rose-500/20 transition-all cursor-pointer"
                         title="Revoke Admin Access"
                       >
                         <Trash2 className="w-4 h-4" />
@@ -889,36 +889,36 @@ export const SuperAdminDashboard: React.FC = () => {
               initial={{ scale: 0.9, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.9, opacity: 0 }}
-              className="glass-card max-w-md w-full p-6 rounded-3xl border border-rose-500/50 shadow-2xl bg-[#170E28] space-y-5"
+              className="max-w-md w-full p-6 rounded-3xl border border-rose-300 dark:border-rose-500/50 shadow-2xl bg-white dark:bg-[#170E28] space-y-5"
             >
               <div className="flex items-center gap-3">
-                <div className="w-12 h-12 rounded-2xl bg-rose-500/20 border border-rose-500 flex items-center justify-center text-rose-400">
+                <div className="w-12 h-12 rounded-2xl bg-rose-100 dark:bg-rose-500/20 border border-rose-300 dark:border-rose-500 flex items-center justify-center text-rose-600 dark:text-rose-400">
                   <AlertTriangle className="w-6 h-6 animate-pulse" />
                 </div>
                 <div>
-                  <h3 className="font-extrabold text-white text-base font-mono">
+                  <h3 className="font-extrabold text-slate-900 dark:text-white text-base font-mono">
                     {confirmModalState.title}
                   </h3>
-                  <p className="text-xs text-rose-300 font-mono font-bold">
+                  <p className="text-xs text-rose-700 dark:text-rose-300 font-mono font-bold">
                     Target: {confirmModalState.targetName}
                   </p>
                 </div>
               </div>
 
-              <p className="text-xs text-slate-300 font-sans leading-relaxed">
+              <p className="text-xs text-slate-600 dark:text-slate-300 font-sans leading-relaxed">
                 {confirmModalState.description}
               </p>
 
               <div className="flex items-center gap-3 pt-2">
                 <button
                   onClick={() => setConfirmModalState((prev) => ({ ...prev, isOpen: false }))}
-                  className="flex-1 py-2.5 rounded-xl glass-card border border-white/10 text-slate-300 hover:text-white font-mono text-xs font-bold"
+                  className="flex-1 py-2.5 rounded-xl bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white font-mono text-xs font-bold cursor-pointer"
                 >
                   Cancel
                 </button>
                 <button
                   onClick={executeConfirmedAction}
-                  className="flex-1 py-2.5 rounded-xl bg-gradient-to-r from-rose-600 to-pink-600 text-white font-mono text-xs font-extrabold shadow-[0_0_20px_rgba(225,29,72,0.4)] hover:brightness-110 transition-all"
+                  className="flex-1 py-2.5 rounded-xl bg-gradient-to-r from-rose-600 to-pink-600 text-white font-mono text-xs font-extrabold shadow-[0_0_20px_rgba(225,29,72,0.4)] hover:brightness-110 transition-all cursor-pointer"
                 >
                   Confirm & Execute
                 </button>
@@ -938,15 +938,15 @@ export const SuperAdminDashboard: React.FC = () => {
               initial={{ scale: 0.9, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.9, opacity: 0 }}
-              className="glass-card max-w-md w-full p-6 rounded-3xl border border-amber-500/40 shadow-2xl bg-[#170E28] space-y-5"
+              className="max-w-md w-full p-6 rounded-3xl border border-amber-300 dark:border-amber-500/40 shadow-2xl bg-white dark:bg-[#170E28] space-y-5"
             >
-              <div className="flex items-center justify-between border-b border-white/10 pb-4">
-                <h3 className="font-extrabold text-white text-base font-mono flex items-center gap-2">
+              <div className="flex items-center justify-between border-b border-slate-200 dark:border-white/10 pb-4">
+                <h3 className="font-extrabold text-slate-900 dark:text-white text-base font-mono flex items-center gap-2">
                   <span>Create Admin Account</span>
                 </h3>
                 <button
                   onClick={() => setShowCreateAdminModal(false)}
-                  className="text-slate-400 hover:text-white"
+                  className="text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white cursor-pointer"
                 >
                   <X className="w-5 h-5" />
                 </button>
@@ -954,46 +954,46 @@ export const SuperAdminDashboard: React.FC = () => {
 
               <form onSubmit={handleCreateAdmin} className="space-y-4 font-mono text-xs">
                 <div>
-                  <label className="block text-slate-300 mb-1">Full Name</label>
+                  <label className="block text-slate-700 dark:text-slate-300 mb-1">Full Name</label>
                   <input
                     type="text"
                     required
                     value={newAdminName}
                     onChange={(e) => setNewAdminName(e.target.value)}
                     placeholder="e.g. John Ringmaster"
-                    className="w-full bg-[#120B1F] border border-white/15 rounded-xl px-3.5 py-2.5 text-white placeholder-slate-500 focus:outline-none focus:border-amber-500"
+                    className="w-full bg-slate-50 dark:bg-[#120B1F] border border-slate-300 dark:border-white/15 rounded-xl px-3.5 py-2.5 text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:border-amber-500"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-slate-300 mb-1">Email Address</label>
+                  <label className="block text-slate-700 dark:text-slate-300 mb-1">Email Address</label>
                   <input
                     type="email"
                     required
                     value={newAdminEmail}
                     onChange={(e) => setNewAdminEmail(e.target.value)}
                     placeholder="admin@cwcseason4.com"
-                    className="w-full bg-[#120B1F] border border-white/15 rounded-xl px-3.5 py-2.5 text-white placeholder-slate-500 focus:outline-none focus:border-amber-500"
+                    className="w-full bg-slate-50 dark:bg-[#120B1F] border border-slate-300 dark:border-white/15 rounded-xl px-3.5 py-2.5 text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:border-amber-500"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-slate-300 mb-1">Initial Password (Optional)</label>
+                  <label className="block text-slate-700 dark:text-slate-300 mb-1">Initial Password (Optional)</label>
                   <input
                     type="password"
                     value={newAdminPassword}
                     onChange={(e) => setNewAdminPassword(e.target.value)}
                     placeholder="Default: CWC4-Admin-2026"
-                    className="w-full bg-[#120B1F] border border-white/15 rounded-xl px-3.5 py-2.5 text-white placeholder-slate-500 focus:outline-none focus:border-amber-500"
+                    className="w-full bg-slate-50 dark:bg-[#120B1F] border border-slate-300 dark:border-white/15 rounded-xl px-3.5 py-2.5 text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:border-amber-500"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-slate-300 mb-1">Role Tier</label>
+                  <label className="block text-slate-700 dark:text-slate-300 mb-1">Role Tier</label>
                   <select
                     value={newAdminRole}
                     onChange={(e) => setNewAdminRole(e.target.value as any)}
-                    className="w-full bg-[#120B1F] border border-white/15 rounded-xl px-3.5 py-2.5 text-white focus:outline-none focus:border-amber-500"
+                    className="w-full bg-slate-50 dark:bg-[#120B1F] border border-slate-300 dark:border-white/15 rounded-xl px-3.5 py-2.5 text-slate-900 dark:text-white focus:outline-none focus:border-amber-500"
                   >
                     <option value="admin">Standard Admin (Manage data, tasks, scores)</option>
                     <option value="superadmin">SuperAdmin (Absolute control & logs)</option>
@@ -1004,14 +1004,14 @@ export const SuperAdminDashboard: React.FC = () => {
                   <button
                     type="button"
                     onClick={() => setShowCreateAdminModal(false)}
-                    className="flex-1 py-2.5 rounded-xl glass-card border border-white/10 text-slate-300 hover:text-white font-bold"
+                    className="flex-1 py-2.5 rounded-xl bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white font-bold cursor-pointer"
                   >
                     Cancel
                   </button>
                   <button
                     type="submit"
                     disabled={createAdminSubmitting}
-                    className="flex-1 py-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-yellow-500 text-slate-950 font-black shadow-neon-gold hover:brightness-110 transition-all flex items-center justify-center gap-2"
+                    className="flex-1 py-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-yellow-500 text-slate-950 font-black shadow-sm dark:shadow-neon-gold hover:brightness-110 transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
                   >
                     {createAdminSubmitting ? (
                       <RefreshCw className="w-4 h-4 animate-spin" />

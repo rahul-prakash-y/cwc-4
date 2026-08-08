@@ -120,12 +120,12 @@ export const NotificationBell: React.FC = () => {
       {/* Bell Button */}
       <button
         onClick={toggleDropdown}
-        className="p-2 rounded-xl glass-card text-slate-300 hover:text-white relative transition-all duration-200 border border-white/10 hover:border-carnival-gold/40"
+        className="p-2 rounded-xl glass-card text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white relative transition-all duration-200 border border-slate-200 dark:border-white/10 hover:border-amber-500 dark:hover:border-carnival-gold/40"
         title="Notifications"
       >
         <Bell className="w-4 h-4" />
         {unreadCount > 0 && (
-          <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 rounded-full bg-carnival-crimson text-white font-mono text-[10px] font-bold flex items-center justify-center shadow-[0_0_10px_rgba(255,0,85,0.8)] animate-pulse">
+          <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 rounded-full bg-rose-600 dark:bg-carnival-crimson text-white font-mono text-[10px] font-bold flex items-center justify-center shadow-md dark:shadow-[0_0_10px_rgba(255,0,85,0.8)] animate-pulse">
             {unreadCount > 9 ? '9+' : unreadCount}
           </span>
         )}
@@ -133,39 +133,39 @@ export const NotificationBell: React.FC = () => {
 
       {/* Notification Dropdown Menu */}
       {isOpen && (
-        <div className="absolute right-0 mt-3 w-80 sm:w-96 rounded-2xl glass-card border border-carnival-gold/30 shadow-2xl bg-[#140E26] backdrop-blur-2xl z-50 overflow-hidden font-sans">
+        <div className="absolute right-0 mt-3 w-80 sm:w-96 rounded-2xl glass-card border border-slate-200 dark:border-carnival-gold/30 shadow-xl dark:shadow-2xl bg-white dark:bg-[#140E26] backdrop-blur-2xl z-50 overflow-hidden font-sans">
           {/* Dropdown Header */}
-          <div className="p-4 border-b border-white/10 flex items-center justify-between bg-black/40">
+          <div className="p-4 border-b border-slate-200 dark:border-white/10 flex items-center justify-between bg-slate-50 dark:bg-black/40">
             <div className="flex items-center gap-2">
-              <Bell className="w-4 h-4 text-carnival-gold" />
-              <h3 className="font-extrabold text-white text-sm font-mono">Arena Broadcast Alerts</h3>
+              <Bell className="w-4 h-4 text-amber-600 dark:text-carnival-gold" />
+              <h3 className="font-extrabold text-slate-900 dark:text-white text-sm font-mono">Arena Broadcast Alerts</h3>
             </div>
             <button
               onClick={() => setIsOpen(false)}
-              className="text-slate-400 hover:text-white p-1 rounded-lg hover:bg-white/10 transition"
+              className="text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white p-1 rounded-lg hover:bg-slate-200 dark:hover:bg-white/10 transition"
             >
               <X className="w-4 h-4" />
             </button>
           </div>
 
           {/* Notifications List */}
-          <div className="max-h-80 overflow-y-auto divide-y divide-white/5">
+          <div className="max-h-80 overflow-y-auto divide-y divide-slate-100 dark:divide-white/5">
             {notifications.length === 0 ? (
-              <div className="p-8 text-center text-slate-400 font-mono text-xs space-y-2">
-                <Bell className="w-6 h-6 mx-auto text-slate-600" />
+              <div className="p-8 text-center text-slate-500 dark:text-slate-400 font-mono text-xs space-y-2">
+                <Bell className="w-6 h-6 mx-auto text-slate-400 dark:text-slate-600" />
                 <p>No new arena notifications</p>
               </div>
             ) : (
               notifications.map((notif) => (
                 <div
                   key={notif.id}
-                  className="p-4 hover:bg-white/5 transition-colors flex items-start gap-3 relative"
+                  className="p-4 hover:bg-slate-50 dark:hover:bg-white/5 transition-colors flex items-start gap-3 relative"
                 >
                   <div
                     className={`w-8 h-8 rounded-xl flex items-center justify-center shrink-0 border ${
                       notif.type === 'advantage'
-                        ? 'bg-amber-500/20 border-amber-500/40 text-amber-400'
-                        : 'bg-carnival-purple/20 border-carnival-purple/40 text-carnival-purple'
+                        ? 'bg-amber-100 dark:bg-amber-500/20 border-amber-300 dark:border-amber-500/40 text-amber-700 dark:text-amber-400'
+                        : 'bg-purple-100 dark:bg-carnival-purple/20 border-purple-200 dark:border-carnival-purple/40 text-purple-700 dark:text-carnival-purple'
                     }`}
                   >
                     {notif.type === 'advantage' ? <Zap className="w-4 h-4" /> : <Megaphone className="w-4 h-4" />}
@@ -173,12 +173,12 @@ export const NotificationBell: React.FC = () => {
 
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center justify-between gap-2">
-                      <h4 className="font-bold text-white text-xs truncate">{notif.title}</h4>
-                      <span className="text-[10px] text-slate-400 font-mono shrink-0">
+                      <h4 className="font-bold text-slate-900 dark:text-white text-xs truncate">{notif.title}</h4>
+                      <span className="text-[10px] text-slate-500 dark:text-slate-400 font-mono shrink-0">
                         {new Date(notif.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                       </span>
                     </div>
-                    <p className="text-xs text-slate-300 mt-1 line-clamp-2 leading-relaxed">{notif.message}</p>
+                    <p className="text-xs text-slate-600 dark:text-slate-300 mt-1 line-clamp-2 leading-relaxed">{notif.message}</p>
                   </div>
                 </div>
               ))
@@ -186,13 +186,13 @@ export const NotificationBell: React.FC = () => {
           </div>
 
           {/* Footer */}
-          <div className="p-3 bg-black/40 border-t border-white/10 text-center">
+          <div className="p-3 bg-slate-50 dark:bg-black/40 border-t border-slate-200 dark:border-white/10 text-center">
             <button
               onClick={() => {
                 setNotifications((items) => items.map((i) => ({ ...i, read: true })));
                 setUnreadCount(0);
               }}
-              className="text-[11px] font-mono font-bold text-carnival-gold hover:underline"
+              className="text-[11px] font-mono font-bold text-amber-600 dark:text-carnival-gold hover:underline"
             >
               Clear Badge Counter
             </button>

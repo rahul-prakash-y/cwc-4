@@ -59,23 +59,23 @@ export const Dashboard: React.FC = () => {
   return (
     <div className="space-y-8 max-w-7xl mx-auto font-sans">
       {/* Header Banner */}
-      <div className="p-6 sm:p-8 rounded-2xl glass-card border border-carnival-crimson/40 shadow-neon-crimson relative overflow-hidden flex flex-col md:flex-row items-center justify-between gap-6">
+      <div className="p-6 sm:p-8 rounded-2xl bg-white dark:bg-[#18122B] border border-slate-200 dark:border-carnival-crimson/40 shadow-lg dark:shadow-neon-crimson relative overflow-hidden flex flex-col md:flex-row items-center justify-between gap-6">
         <div className="space-y-2 text-center md:text-left">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-carnival-crimson/20 text-carnival-crimson text-xs font-mono font-bold border border-carnival-crimson/30">
-            <Crown className="w-4 h-4 text-carnival-gold animate-bounce" />
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-rose-500/10 dark:bg-carnival-crimson/20 text-rose-700 dark:text-carnival-crimson text-xs font-mono font-bold border border-rose-500/30 dark:border-carnival-crimson/30">
+            <Crown className="w-4 h-4 text-amber-500 dark:text-carnival-gold animate-bounce" />
             <span>RINGMASTER COMMAND CENTER</span>
           </div>
-          <h2 className="text-2xl sm:text-4xl font-black text-white">
+          <h2 className="text-2xl sm:text-4xl font-black text-slate-900 dark:text-white">
             CWC Season 4 <span className="text-gradient-carnival">Admin Overview</span>
           </h2>
-          <p className="text-slate-300 text-sm max-w-2xl">
+          <p className="text-slate-600 dark:text-slate-300 text-sm max-w-2xl">
             Live arena telemetry of registered teams, qualification metrics, daily point progression, and broadcast control.
           </p>
         </div>
 
         <button
           onClick={triggerCarnivalConfetti}
-          className="px-6 py-3 rounded-xl bg-gradient-to-r from-carnival-gold to-carnival-amber text-slate-950 font-black text-sm shadow-neon-gold hover:scale-105 transition-all flex items-center gap-2 cursor-pointer"
+          className="px-6 py-3 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 dark:from-carnival-gold dark:to-carnival-amber text-slate-950 font-black text-sm shadow-md dark:shadow-neon-gold hover:scale-105 transition-all flex items-center gap-2 cursor-pointer"
         >
           <Sparkles className="w-4 h-4 text-slate-950" />
           <span>Pop Global Celebration 🎊</span>
@@ -87,18 +87,18 @@ export const Dashboard: React.FC = () => {
         {/* Card 1: Registered Teams */}
         <motion.div
           whileHover={{ y: -4 }}
-          className="glass-card p-6 rounded-2xl border border-white/10 hover:border-carnival-cyan/50 transition-all shadow-lg relative overflow-hidden group"
+          className="bg-white dark:bg-[#18122B] p-6 rounded-2xl border border-slate-200 dark:border-white/10 hover:border-cyan-500/50 dark:hover:border-carnival-cyan/50 transition-all shadow-sm dark:shadow-lg relative overflow-hidden group"
         >
-          <div className="absolute -right-4 -bottom-4 w-20 h-20 bg-carnival-cyan/10 rounded-full blur-xl group-hover:bg-carnival-cyan/20 transition-all" />
+          <div className="absolute -right-4 -bottom-4 w-20 h-20 bg-cyan-500/10 dark:bg-carnival-cyan/10 rounded-full blur-xl group-hover:bg-cyan-500/20 dark:group-hover:bg-carnival-cyan/20 transition-all" />
           <div className="flex items-center justify-between mb-3">
-            <span className="text-xs text-slate-400 font-mono uppercase tracking-wider font-bold">Registered Teams</span>
-            <div className="p-2 rounded-xl bg-carnival-cyan/10 text-carnival-cyan border border-carnival-cyan/30">
+            <span className="text-xs text-slate-500 dark:text-slate-400 font-mono uppercase tracking-wider font-bold">Registered Teams</span>
+            <div className="p-2 rounded-xl bg-cyan-50 dark:bg-carnival-cyan/10 text-cyan-700 dark:text-carnival-cyan border border-cyan-200 dark:border-carnival-cyan/30">
               <Users className="w-5 h-5" />
             </div>
           </div>
-          <div className="text-3xl sm:text-4xl font-black text-white font-mono">12 Teams</div>
-          <div className="text-xs text-carnival-cyan mt-2 font-mono flex items-center gap-1 font-semibold">
-            <span className="w-2 h-2 rounded-full bg-carnival-cyan animate-pulse" />
+          <div className="text-3xl sm:text-4xl font-black text-slate-900 dark:text-white font-mono">12 Teams</div>
+          <div className="text-xs text-cyan-700 dark:text-carnival-cyan mt-2 font-mono flex items-center gap-1 font-semibold">
+            <span className="w-2 h-2 rounded-full bg-cyan-500 dark:bg-carnival-cyan animate-pulse" />
             <span>36 Total Participants</span>
           </div>
         </motion.div>
@@ -106,17 +106,17 @@ export const Dashboard: React.FC = () => {
         {/* Card 2: Qualified Teams */}
         <motion.div
           whileHover={{ y: -4 }}
-          className="glass-card p-6 rounded-2xl border border-white/10 hover:border-emerald-500/50 transition-all shadow-lg relative overflow-hidden group"
+          className="bg-white dark:bg-[#18122B] p-6 rounded-2xl border border-slate-200 dark:border-white/10 hover:border-emerald-500/50 transition-all shadow-sm dark:shadow-lg relative overflow-hidden group"
         >
           <div className="absolute -right-4 -bottom-4 w-20 h-20 bg-emerald-500/10 rounded-full blur-xl group-hover:bg-emerald-500/20 transition-all" />
           <div className="flex items-center justify-between mb-3">
-            <span className="text-xs text-slate-400 font-mono uppercase tracking-wider font-bold">Qualified Teams</span>
-            <div className="p-2 rounded-xl bg-emerald-500/10 text-emerald-400 border border-emerald-500/30">
+            <span className="text-xs text-slate-500 dark:text-slate-400 font-mono uppercase tracking-wider font-bold">Qualified Teams</span>
+            <div className="p-2 rounded-xl bg-emerald-50 dark:bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-500/30">
               <CheckCircle2 className="w-5 h-5" />
             </div>
           </div>
-          <div className="text-3xl sm:text-4xl font-black text-white font-mono">9 Teams</div>
-          <div className="text-xs text-emerald-400 mt-2 font-mono flex items-center gap-1 font-semibold">
+          <div className="text-3xl sm:text-4xl font-black text-slate-900 dark:text-white font-mono">9 Teams</div>
+          <div className="text-xs text-emerald-700 dark:text-emerald-400 mt-2 font-mono flex items-center gap-1 font-semibold">
             <span>✓ Safe & Advancing</span>
           </div>
         </motion.div>
@@ -124,17 +124,17 @@ export const Dashboard: React.FC = () => {
         {/* Card 3: Eliminated Teams */}
         <motion.div
           whileHover={{ y: -4 }}
-          className="glass-card p-6 rounded-2xl border border-white/10 hover:border-rose-500/50 transition-all shadow-lg relative overflow-hidden group"
+          className="bg-white dark:bg-[#18122B] p-6 rounded-2xl border border-slate-200 dark:border-white/10 hover:border-rose-500/50 transition-all shadow-sm dark:shadow-lg relative overflow-hidden group"
         >
           <div className="absolute -right-4 -bottom-4 w-20 h-20 bg-rose-500/10 rounded-full blur-xl group-hover:bg-rose-500/20 transition-all" />
           <div className="flex items-center justify-between mb-3">
-            <span className="text-xs text-slate-400 font-mono uppercase tracking-wider font-bold">Eliminated Teams</span>
-            <div className="p-2 rounded-xl bg-rose-500/10 text-rose-400 border border-rose-500/30">
+            <span className="text-xs text-slate-500 dark:text-slate-400 font-mono uppercase tracking-wider font-bold">Eliminated Teams</span>
+            <div className="p-2 rounded-xl bg-rose-50 dark:bg-rose-500/10 text-rose-700 dark:text-rose-400 border border-rose-200 dark:border-rose-500/30">
               <XCircle className="w-5 h-5" />
             </div>
           </div>
-          <div className="text-3xl sm:text-4xl font-black text-rose-400 font-mono">1 Team</div>
-          <div className="text-xs text-rose-400/80 mt-2 font-mono flex items-center gap-1 font-semibold">
+          <div className="text-3xl sm:text-4xl font-black text-rose-600 dark:text-rose-400 font-mono">1 Team</div>
+          <div className="text-xs text-rose-700 dark:text-rose-400/80 mt-2 font-mono flex items-center gap-1 font-semibold">
             <span>⚠️ Evicted from Arena</span>
           </div>
         </motion.div>
@@ -142,17 +142,17 @@ export const Dashboard: React.FC = () => {
         {/* Card 4: Today's Submissions */}
         <motion.div
           whileHover={{ y: -4 }}
-          className="glass-card p-6 rounded-2xl border border-white/10 hover:border-carnival-gold/50 transition-all shadow-lg relative overflow-hidden group"
+          className="bg-white dark:bg-[#18122B] p-6 rounded-2xl border border-slate-200 dark:border-white/10 hover:border-amber-500/50 dark:hover:border-carnival-gold/50 transition-all shadow-sm dark:shadow-lg relative overflow-hidden group"
         >
-          <div className="absolute -right-4 -bottom-4 w-20 h-20 bg-carnival-gold/10 rounded-full blur-xl group-hover:bg-carnival-gold/20 transition-all" />
+          <div className="absolute -right-4 -bottom-4 w-20 h-20 bg-amber-500/10 dark:bg-carnival-gold/10 rounded-full blur-xl group-hover:bg-amber-500/20 dark:group-hover:bg-carnival-gold/20 transition-all" />
           <div className="flex items-center justify-between mb-3">
-            <span className="text-xs text-slate-400 font-mono uppercase tracking-wider font-bold">Today's Submissions</span>
-            <div className="p-2 rounded-xl bg-carnival-gold/10 text-carnival-gold border border-carnival-gold/30">
+            <span className="text-xs text-slate-500 dark:text-slate-400 font-mono uppercase tracking-wider font-bold">Today's Submissions</span>
+            <div className="p-2 rounded-xl bg-amber-50 dark:bg-carnival-gold/10 text-amber-700 dark:text-carnival-gold border border-amber-200 dark:border-carnival-gold/30">
               <FileCode className="w-5 h-5" />
             </div>
           </div>
-          <div className="text-3xl sm:text-4xl font-black text-white font-mono">18 Repos</div>
-          <div className="text-xs text-carnival-gold mt-2 font-mono flex items-center gap-1 font-semibold">
+          <div className="text-3xl sm:text-4xl font-black text-slate-900 dark:text-white font-mono">18 Repos</div>
+          <div className="text-xs text-amber-700 dark:text-carnival-gold mt-2 font-mono flex items-center gap-1 font-semibold">
             <Zap className="w-3.5 h-3.5" />
             <span>100% Evaluated</span>
           </div>
@@ -160,19 +160,19 @@ export const Dashboard: React.FC = () => {
       </div>
 
       {/* Chart Section: react-chartjs-2 Line Chart */}
-      <div className="glass-card p-6 sm:p-8 rounded-2xl border border-white/10 shadow-2xl space-y-4">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-white/10">
+      <div className="bg-white dark:bg-[#18122B] p-6 sm:p-8 rounded-2xl border border-slate-200 dark:border-white/10 shadow-sm dark:shadow-2xl space-y-4">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-200 dark:border-white/10">
           <div>
-            <h3 className="font-extrabold text-xl text-white flex items-center gap-2 font-mono">
-              <TrendingUp className="w-5 h-5 text-carnival-gold" />
+            <h3 className="font-extrabold text-xl text-slate-900 dark:text-white flex items-center gap-2 font-mono">
+              <TrendingUp className="w-5 h-5 text-amber-600 dark:text-carnival-gold" />
               Daily Point Progression Analytics
             </h3>
-            <p className="text-slate-400 text-xs mt-1">
+            <p className="text-slate-500 dark:text-slate-400 text-xs mt-1">
               Live line chart of accumulated points across 10 Days for top teams.
             </p>
           </div>
           <div className="flex items-center gap-2 text-xs font-mono">
-            <span className="px-3 py-1 rounded-full bg-carnival-gold/10 text-carnival-gold border border-carnival-gold/30 font-bold">
+            <span className="px-3 py-1 rounded-full bg-amber-500/10 dark:bg-carnival-gold/10 text-amber-700 dark:text-carnival-gold border border-amber-300 dark:border-carnival-gold/30 font-bold">
               Chart.js Active
             </span>
           </div>
@@ -182,9 +182,9 @@ export const Dashboard: React.FC = () => {
       </div>
 
       {/* Broadcast System & Feed */}
-      <div className="glass-card p-6 rounded-2xl border border-white/10 shadow-xl space-y-4">
-        <h3 className="font-extrabold text-lg text-white flex items-center gap-2">
-          <Megaphone className="w-5 h-5 text-carnival-gold" />
+      <div className="bg-white dark:bg-[#18122B] p-6 rounded-2xl border border-slate-200 dark:border-white/10 shadow-sm dark:shadow-xl space-y-4">
+        <h3 className="font-extrabold text-lg text-slate-900 dark:text-white flex items-center gap-2">
+          <Megaphone className="w-5 h-5 text-amber-600 dark:text-carnival-gold" />
           Broadcast Live Carnival Announcement
         </h3>
 
@@ -196,12 +196,12 @@ export const Dashboard: React.FC = () => {
               placeholder="Type live announcement for student dashboards..."
               value={announcementText}
               onChange={(e) => setAnnouncementText(e.target.value)}
-              className="flex-1 px-4 py-3 rounded-xl bg-white/5 text-sm text-white border border-white/10 focus:border-carnival-gold focus:outline-none transition-all placeholder:text-slate-500 font-mono"
+              className="flex-1 px-4 py-3 rounded-xl bg-slate-50 dark:bg-white/5 text-sm text-slate-900 dark:text-white border border-slate-300 dark:border-white/10 focus:border-amber-500 dark:focus:border-carnival-gold focus:outline-none transition-all placeholder:text-slate-400 dark:placeholder:text-slate-500 font-mono"
             />
             <button
               type="submit"
               disabled={isBroadcasting}
-              className="px-6 py-3 rounded-xl bg-gradient-to-r from-carnival-gold to-carnival-amber text-slate-950 font-black text-sm shadow-neon-gold hover:scale-105 transition-all flex items-center justify-center gap-2 disabled:opacity-50 cursor-pointer"
+              className="px-6 py-3 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 dark:from-carnival-gold dark:to-carnival-amber text-slate-950 font-black text-sm shadow-md dark:shadow-neon-gold hover:scale-105 transition-all flex items-center justify-center gap-2 disabled:opacity-50 cursor-pointer"
             >
               <Megaphone className="w-4 h-4 text-slate-950" />
               <span>{isBroadcasting ? 'Broadcasting...' : 'Broadcast Now'}</span>
@@ -213,19 +213,19 @@ export const Dashboard: React.FC = () => {
               type="checkbox"
               checked={sendEmailAlert}
               onChange={(e) => setSendEmailAlert(e.target.checked)}
-              className="w-4 h-4 rounded border-white/20 bg-white/10 text-carnival-gold focus:ring-carnival-gold accent-carnival-gold cursor-pointer"
+              className="w-4 h-4 rounded border-slate-300 dark:border-white/20 bg-slate-100 dark:bg-white/10 text-amber-600 dark:text-carnival-gold focus:ring-amber-500 dark:focus:ring-carnival-gold accent-amber-500 dark:accent-carnival-gold cursor-pointer"
             />
-            <span className="text-xs font-mono font-bold text-slate-300 group-hover:text-carnival-gold transition-colors flex items-center gap-1.5">
-              <Mail className="w-3.5 h-3.5 text-carnival-gold" />
+            <span className="text-xs font-mono font-bold text-slate-700 dark:text-slate-300 group-hover:text-amber-600 dark:group-hover:text-carnival-gold transition-colors flex items-center gap-1.5">
+              <Mail className="w-3.5 h-3.5 text-amber-600 dark:text-carnival-gold" />
               Send Email Alert to All Registered Team Leaders
             </span>
           </label>
         </form>
 
         <div className="space-y-2 pt-2">
-          <div className="text-xs font-mono text-slate-400 uppercase font-bold tracking-wider">Recent Broadcast Feed:</div>
+          <div className="text-xs font-mono text-slate-500 dark:text-slate-400 uppercase font-bold tracking-wider">Recent Broadcast Feed:</div>
           {broadcastLog.map((log, idx) => (
-            <div key={idx} className="p-3 rounded-xl bg-black/40 text-xs font-mono text-slate-200 border border-white/5 flex items-center justify-between">
+            <div key={idx} className="p-3 rounded-xl bg-slate-100 dark:bg-black/40 text-xs font-mono text-slate-800 dark:text-slate-200 border border-slate-200 dark:border-white/5 flex items-center justify-between">
               <span>{log}</span>
               <span className="text-[10px] text-slate-500 font-sans">Just now</span>
             </div>

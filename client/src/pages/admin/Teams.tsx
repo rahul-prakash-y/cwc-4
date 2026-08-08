@@ -153,21 +153,21 @@ export const Teams: React.FC = () => {
   return (
     <div className="space-y-6 max-w-7xl mx-auto font-sans">
       {/* Header Banner */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 p-6 rounded-2xl glass-card border border-carnival-cyan/30">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 p-6 rounded-2xl bg-white dark:bg-[#18122B] border border-slate-200 dark:border-carnival-cyan/30 shadow-sm dark:shadow-lg">
         <div>
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-carnival-cyan/20 text-carnival-cyan text-xs font-mono font-bold border border-carnival-cyan/30 mb-2">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-cyan-500/10 dark:bg-carnival-cyan/20 text-cyan-700 dark:text-carnival-cyan text-xs font-mono font-bold border border-cyan-500/30 dark:border-carnival-cyan/30 mb-2">
             <Users className="w-4 h-4" />
             <span>ROSTER & PARTICIPANT MANAGEMENT</span>
           </div>
-          <h2 className="text-2xl sm:text-3xl font-black text-white">Team Management View</h2>
-          <p className="text-slate-300 text-xs sm:text-sm mt-1">
+          <h2 className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white">Team Management View</h2>
+          <p className="text-slate-600 dark:text-slate-300 text-xs sm:text-sm mt-1">
             Search teams by name or student roll numbers. Use quick-action dropdowns to change status between Approve, Reject, Safe, Danger, Eliminated, or Qualified.
           </p>
         </div>
 
         <button
           onClick={() => setIsGrantModalOpen(true)}
-          className="px-4 py-2.5 rounded-xl bg-gradient-to-r from-carnival-gold via-amber-400 to-carnival-crimson text-slate-950 font-black text-xs uppercase tracking-wider shadow-neon-gold hover:scale-105 transition-all flex items-center gap-2 cursor-pointer"
+          className="px-4 py-2.5 rounded-xl bg-gradient-to-r from-amber-500 via-amber-400 to-rose-600 dark:from-carnival-gold dark:via-amber-400 dark:to-carnival-crimson text-slate-950 font-black text-xs uppercase tracking-wider shadow-md dark:shadow-neon-gold hover:scale-105 transition-all flex items-center gap-2 cursor-pointer"
         >
           <Gift className="w-4 h-4 text-slate-950 fill-slate-950" />
           <span>Grant Advantage 🎁</span>
@@ -184,13 +184,13 @@ export const Teams: React.FC = () => {
             placeholder="Filter by team name or member roll numbers (e.g. 21CS001)..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-white/5 border border-white/10 text-xs text-white placeholder:text-slate-500 font-mono focus:outline-none focus:border-carnival-cyan transition-all"
+            className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-slate-50 dark:bg-white/5 border border-slate-300 dark:border-white/10 text-xs text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 font-mono focus:outline-none focus:border-cyan-500 dark:focus:border-carnival-cyan transition-all"
           />
         </div>
 
         {/* Filter Pills */}
         <div className="flex items-center gap-2 overflow-x-auto w-full md:w-auto pb-1 md:pb-0">
-          <span className="text-xs font-mono text-slate-400 flex items-center gap-1">
+          <span className="text-xs font-mono text-slate-500 dark:text-slate-400 flex items-center gap-1">
             <Filter className="w-3.5 h-3.5" /> Filter:
           </span>
           {['All', 'Approved', 'Safe', 'Danger', 'Eliminated', 'Qualified', 'Pending'].map((filter) => (
@@ -199,8 +199,8 @@ export const Teams: React.FC = () => {
               onClick={() => setStatusFilter(filter)}
               className={`px-3 py-1.5 rounded-xl text-xs font-mono font-bold transition-all cursor-pointer ${
                 statusFilter === filter
-                  ? 'bg-carnival-cyan text-slate-950 shadow-neon-cyan'
-                  : 'bg-white/5 text-slate-400 hover:text-white hover:bg-white/10'
+                  ? 'bg-cyan-500 dark:bg-carnival-cyan text-slate-950 shadow-sm dark:shadow-neon-cyan'
+                  : 'bg-slate-100 dark:bg-white/5 text-slate-700 dark:text-slate-400 border border-slate-200 dark:border-white/10 hover:text-slate-900 dark:hover:text-white'
               }`}
             >
               {filter}
@@ -210,29 +210,29 @@ export const Teams: React.FC = () => {
       </div>
 
       {/* Team Data Table */}
-      <div className="glass-card rounded-2xl border border-white/10 overflow-hidden shadow-2xl">
+      <div className="bg-white dark:bg-[#140D21] rounded-2xl border border-slate-200 dark:border-white/10 overflow-hidden shadow-sm dark:shadow-2xl">
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs font-mono border-collapse min-w-[950px]">
             <thead>
-              <tr className="border-b border-white/10 bg-[#140D21] text-slate-300 uppercase tracking-wider font-bold">
-                <th className="p-4 border-r border-white/10 min-w-[200px]">Team & Tagline</th>
-                <th className="p-4 border-r border-white/10 min-w-[280px]">Members & Roll Numbers</th>
-                <th className="p-4 border-r border-white/10 text-center min-w-[100px]">Points</th>
-                <th className="p-4 border-r border-white/10 text-center min-w-[120px]">Current Status</th>
-                <th className="p-4 border-r border-white/10 text-center min-w-[200px]">Quick Status Action</th>
+              <tr className="border-b border-slate-200 dark:border-white/10 bg-slate-100 dark:bg-[#140D21] text-slate-700 dark:text-slate-300 uppercase tracking-wider font-bold">
+                <th className="p-4 border-r border-slate-200 dark:border-white/10 min-w-[200px]">Team & Tagline</th>
+                <th className="p-4 border-r border-slate-200 dark:border-white/10 min-w-[280px]">Members & Roll Numbers</th>
+                <th className="p-4 border-r border-slate-200 dark:border-white/10 text-center min-w-[100px]">Points</th>
+                <th className="p-4 border-r border-slate-200 dark:border-white/10 text-center min-w-[120px]">Current Status</th>
+                <th className="p-4 border-r border-slate-200 dark:border-white/10 text-center min-w-[200px]">Quick Status Action</th>
                 <th className="p-4 text-right min-w-[140px]">Actions</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-white/5">
+            <tbody className="divide-y divide-slate-200 dark:divide-white/5">
               {filteredTeams.map((team) => (
-                <tr key={team.id} className="hover:bg-white/5 transition-colors">
+                <tr key={team.id} className="hover:bg-slate-50 dark:hover:bg-white/5 transition-colors">
                   {/* Team & Tagline */}
-                  <td className="p-4 border-r border-white/5 font-bold text-white">
+                  <td className="p-4 border-r border-slate-200 dark:border-white/5 font-bold text-slate-900 dark:text-white">
                     <div className="flex items-center gap-3">
-                      <span className="text-carnival-gold text-sm font-extrabold font-mono">#{team.rank}</span>
-                      <span className="text-xl p-1.5 rounded-xl bg-white/5 border border-white/10">{team.avatar}</span>
+                      <span className="text-amber-600 dark:text-carnival-gold text-sm font-extrabold font-mono">#{team.rank}</span>
+                      <span className="text-xl p-1.5 rounded-xl bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10">{team.avatar}</span>
                       <div>
-                        <div className="font-extrabold text-white text-sm flex items-center gap-2">
+                        <div className="font-extrabold text-slate-900 dark:text-white text-sm flex items-center gap-2">
                           {team.name}
                           <span
                             className="w-2.5 h-2.5 rounded-full"
@@ -240,21 +240,21 @@ export const Teams: React.FC = () => {
                             title={`Theme: ${team.themeColor}`}
                           />
                         </div>
-                        <div className="text-[11px] text-slate-400 font-sans font-normal truncate max-w-xs">{team.tagline}</div>
+                        <div className="text-[11px] text-slate-500 dark:text-slate-400 font-sans font-normal truncate max-w-xs">{team.tagline}</div>
                       </div>
                     </div>
                   </td>
 
                   {/* Members with Roll Numbers */}
-                  <td className="p-4 border-r border-white/5">
+                  <td className="p-4 border-r border-slate-200 dark:border-white/5">
                     <div className="space-y-1">
                       {team.members.map((member) => (
                         <div key={member.id} className="flex items-center justify-between text-[11px]">
-                          <span className="text-slate-200 font-semibold flex items-center gap-1">
-                            {member.role === 'Leader' && <span className="text-carnival-gold" title="Team Lead">👑</span>}
+                          <span className="text-slate-800 dark:text-slate-200 font-semibold flex items-center gap-1">
+                            {member.role === 'Leader' && <span className="text-amber-500 dark:text-carnival-gold" title="Team Lead">👑</span>}
                             {member.name}
                           </span>
-                          <span className="px-1.5 py-0.5 rounded bg-white/5 text-carnival-cyan font-mono text-[10px]">
+                          <span className="px-1.5 py-0.5 rounded bg-cyan-50 dark:bg-white/5 text-cyan-700 dark:text-carnival-cyan font-mono text-[10px] border border-cyan-200 dark:border-transparent">
                             {member.rollNumber}
                           </span>
                         </div>
@@ -263,23 +263,23 @@ export const Teams: React.FC = () => {
                   </td>
 
                   {/* Points */}
-                  <td className="p-4 border-r border-white/5 text-center font-extrabold text-carnival-cyan text-sm">
+                  <td className="p-4 border-r border-slate-200 dark:border-white/5 text-center font-extrabold text-cyan-700 dark:text-carnival-cyan text-sm">
                     {team.points} PTS
                   </td>
 
                   {/* Current Status Badge */}
-                  <td className="p-4 border-r border-white/5 text-center">
+                  <td className="p-4 border-r border-slate-200 dark:border-white/5 text-center">
                     <span className={`px-2.5 py-1 rounded-lg border font-sans font-bold text-[11px] inline-block ${getStatusBadge(team.status)}`}>
                       {team.status}
                     </span>
                   </td>
 
                   {/* Quick Action Status Change Buttons & Dropdown */}
-                  <td className="p-4 border-r border-white/5 text-center">
+                  <td className="p-4 border-r border-slate-200 dark:border-white/5 text-center">
                     <select
                       value={team.status}
                       onChange={(e) => handleUpdateStatus(team.id, e.target.value as TeamStatus)}
-                      className="px-3 py-1.5 rounded-xl bg-[#1A1228] border border-white/20 text-xs font-mono font-bold text-white focus:outline-none focus:border-carnival-cyan cursor-pointer w-full max-w-[180px]"
+                      className="px-3 py-1.5 rounded-xl bg-slate-50 dark:bg-[#1A1228] border border-slate-300 dark:border-white/20 text-xs font-mono font-bold text-slate-900 dark:text-white focus:outline-none focus:border-cyan-500 dark:focus:border-carnival-cyan cursor-pointer w-full max-w-[180px]"
                     >
                       <option value="Approved">✓ Approve</option>
                       <option value="Safe">🛡️ Safe</option>
@@ -295,14 +295,14 @@ export const Teams: React.FC = () => {
                   <td className="p-4 text-right space-x-2">
                     <button
                       onClick={() => setEditingTeam(team)}
-                      className="px-3 py-1.5 rounded-lg bg-carnival-gold/20 text-carnival-gold hover:bg-carnival-gold hover:text-slate-950 font-sans font-bold text-xs transition-all inline-flex items-center gap-1 cursor-pointer"
+                      className="px-3 py-1.5 rounded-lg bg-amber-100 dark:bg-carnival-gold/20 text-amber-800 dark:text-carnival-gold hover:bg-amber-500 hover:text-white dark:hover:bg-carnival-gold dark:hover:text-slate-950 font-sans font-bold text-xs transition-all inline-flex items-center gap-1 cursor-pointer"
                     >
                       <Edit3 className="w-3.5 h-3.5" />
                       <span>Edit</span>
                     </button>
                     <button
                       onClick={() => handleDeleteTeam(team.id)}
-                      className="px-3 py-1.5 rounded-lg bg-rose-500/20 text-rose-400 hover:bg-rose-500 hover:text-white font-sans font-bold text-xs transition-all inline-flex items-center gap-1 cursor-pointer"
+                      className="px-3 py-1.5 rounded-lg bg-rose-100 dark:bg-rose-500/20 text-rose-700 dark:text-rose-400 hover:bg-rose-500 hover:text-white font-sans font-bold text-xs transition-all inline-flex items-center gap-1 cursor-pointer"
                     >
                       <Trash2 className="w-3.5 h-3.5" />
                       <span>Reject</span>
@@ -318,21 +318,21 @@ export const Teams: React.FC = () => {
       {/* Edit Team Modal */}
       <AnimatePresence>
         {editingTeam && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-md">
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 dark:bg-black/70 backdrop-blur-md">
             <motion.div
               initial={{ scale: 0.9, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.9, opacity: 0 }}
-              className="glass-card p-6 sm:p-8 rounded-2xl border border-carnival-cyan/40 max-w-lg w-full shadow-2xl relative space-y-5"
+              className="bg-white dark:bg-[#18122B] p-6 sm:p-8 rounded-2xl border border-slate-200 dark:border-carnival-cyan/40 max-w-lg w-full shadow-xl dark:shadow-2xl relative space-y-5"
             >
-              <div className="flex items-center justify-between border-b border-white/10 pb-4">
-                <h3 className="text-lg font-bold text-white flex items-center gap-2">
-                  <Edit3 className="w-5 h-5 text-carnival-cyan" />
+              <div className="flex items-center justify-between border-b border-slate-200 dark:border-white/10 pb-4">
+                <h3 className="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                  <Edit3 className="w-5 h-5 text-cyan-600 dark:text-carnival-cyan" />
                   Edit Team & Member Details
                 </h3>
                 <button
                   onClick={() => setEditingTeam(null)}
-                  className="p-1 rounded-lg text-slate-400 hover:text-white hover:bg-white/10 cursor-pointer"
+                  className="p-1 rounded-lg text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/10 cursor-pointer"
                 >
                   <X className="w-5 h-5" />
                 </button>
@@ -340,35 +340,35 @@ export const Teams: React.FC = () => {
 
               <form onSubmit={handleSaveEdit} className="space-y-4">
                 <div>
-                  <label className="block text-xs font-mono text-slate-300 mb-1">Team Name</label>
+                  <label className="block text-xs font-mono text-slate-700 dark:text-slate-300 mb-1">Team Name</label>
                   <input
                     type="text"
                     required
                     value={editingTeam.name}
                     onChange={(e) => setEditingTeam({ ...editingTeam, name: e.target.value })}
-                    className="w-full px-4 py-2.5 rounded-xl bg-white/5 border border-white/10 text-xs text-white focus:outline-none focus:border-carnival-cyan font-mono"
+                    className="w-full px-4 py-2.5 rounded-xl bg-slate-50 dark:bg-white/5 border border-slate-300 dark:border-white/10 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-cyan-500 dark:focus:border-carnival-cyan font-mono"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-xs font-mono text-slate-300 mb-1">Tagline</label>
+                  <label className="block text-xs font-mono text-slate-700 dark:text-slate-300 mb-1">Tagline</label>
                   <input
                     type="text"
                     value={editingTeam.tagline}
                     onChange={(e) => setEditingTeam({ ...editingTeam, tagline: e.target.value })}
-                    className="w-full px-4 py-2.5 rounded-xl bg-white/5 border border-white/10 text-xs text-white focus:outline-none focus:border-carnival-cyan"
+                    className="w-full px-4 py-2.5 rounded-xl bg-slate-50 dark:bg-white/5 border border-slate-300 dark:border-white/10 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-cyan-500 dark:focus:border-carnival-cyan"
                   />
                 </div>
 
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-xs font-mono text-slate-300 mb-1">Status</label>
+                    <label className="block text-xs font-mono text-slate-700 dark:text-slate-300 mb-1">Status</label>
                     <select
                       value={editingTeam.status}
                       onChange={(e) =>
                         setEditingTeam({ ...editingTeam, status: e.target.value as TeamStatus })
                       }
-                      className="w-full px-4 py-2.5 rounded-xl bg-[#1A1228] border border-white/10 text-xs text-white focus:outline-none focus:border-carnival-cyan"
+                      className="w-full px-4 py-2.5 rounded-xl bg-slate-50 dark:bg-[#1A1228] border border-slate-300 dark:border-white/10 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-cyan-500 dark:focus:border-carnival-cyan"
                     >
                       <option value="Approved">Approved</option>
                       <option value="Safe">Safe</option>
@@ -381,27 +381,27 @@ export const Teams: React.FC = () => {
                   </div>
 
                   <div>
-                    <label className="block text-xs font-mono text-slate-300 mb-1">Theme Accent</label>
+                    <label className="block text-xs font-mono text-slate-700 dark:text-slate-300 mb-1">Theme Accent</label>
                     <input
                       type="color"
                       value={editingTeam.themeColor}
                       onChange={(e) => setEditingTeam({ ...editingTeam, themeColor: e.target.value })}
-                      className="w-full h-10 px-1 py-1 rounded-xl bg-white/5 border border-white/10 cursor-pointer"
+                      className="w-full h-10 px-1 py-1 rounded-xl bg-slate-50 dark:bg-white/5 border border-slate-300 dark:border-white/10 cursor-pointer"
                     />
                   </div>
                 </div>
 
-                <div className="flex items-center justify-end gap-3 pt-4 border-t border-white/10">
+                <div className="flex items-center justify-end gap-3 pt-4 border-t border-slate-200 dark:border-white/10">
                   <button
                     type="button"
                     onClick={() => setEditingTeam(null)}
-                    className="px-4 py-2 rounded-xl bg-white/5 text-slate-300 text-xs font-bold hover:bg-white/10 cursor-pointer"
+                    className="px-4 py-2 rounded-xl bg-slate-100 dark:bg-white/5 text-slate-700 dark:text-slate-300 text-xs font-bold hover:bg-slate-200 dark:hover:bg-white/10 cursor-pointer"
                   >
                     Cancel
                   </button>
                   <button
                     type="submit"
-                    className="px-6 py-2 rounded-xl bg-carnival-cyan text-slate-950 font-black text-xs shadow-neon-cyan hover:scale-105 transition-all flex items-center gap-1.5 cursor-pointer"
+                    className="px-6 py-2 rounded-xl bg-cyan-500 dark:bg-carnival-cyan text-slate-950 font-black text-xs shadow-md dark:shadow-neon-cyan hover:scale-105 transition-all flex items-center gap-1.5 cursor-pointer"
                   >
                     <Save className="w-4 h-4 text-slate-950" />
                     <span>Save Changes</span>

@@ -71,8 +71,14 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const { user, updateUser } = useAuth();
   const { socket } = useSocket();
 
-  // 1. Authenticated User's theme preference (database-driven)
-  const [theme, setThemeState] = useState<ThemeMode>(() => user?.themePreference || 'dark');
+  // 1. Authenticated User's theme preference (database-driven + localStorage persistence)
+  const [theme, setThemeState] = useState<ThemeMode>(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('cwc_theme') as ThemeMode;
+      if (saved === 'light' || saved === 'dark') return saved;
+    }
+    return user?.themePreference || 'dark';
+  });
 
   // 2. Global Event Mode (from Global Settings API / WebSockets)
   const [eventMode, setEventModeState] = useState<EventMode>('standard');
@@ -80,16 +86,21 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
   const isGrandFinale = eventMode === 'finale';
 
-  // Sync state when user object updates from DB
+  // Sync state when user object updates from DB (only if localStorage is not explicitly set)
   useEffect(() => {
-    if (user?.themePreference) {
-      setThemeState(user.themePreference);
+    if (user?.themePreference && ['light', 'dark'].includes(user.themePreference)) {
+      const saved = localStorage.getItem('cwc_theme');
+      if (!saved) {
+        setThemeState(user.themePreference);
+        localStorage.setItem('cwc_theme', user.themePreference);
+      }
     }
   }, [user?.themePreference]);
 
-  // Task 3: Listen to user.themePreference & manually add/remove 'dark' class on <html> element
+  // Task 3: Listen to theme & manually add/remove 'dark' and 'light' class on <html> element and sync to localStorage
   useEffect(() => {
     const root = window.document.documentElement;
+    localStorage.setItem('cwc_theme', theme);
     if (theme === 'dark') {
       root.classList.add('dark');
       root.classList.remove('light');
@@ -190,13 +201,14 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     };
   }, [socket]);
 
-  // Task 4: Optimistic Theme Toggle with async DB sync & rollback on failure
+  // Persistent Theme Toggle with background DB sync
   const toggleTheme = async () => {
-    const previousTheme = theme;
-    const nextTheme: ThemeMode = previousTheme === 'dark' ? 'light' : 'dark';
+    const nextTheme: ThemeMode = theme === 'dark' ? 'light' : 'dark';
 
-    // 1. Optimistically update UI
+    // 1. Permanently update local UI & localStorage
     setThemeState(nextTheme);
+    localStorage.setItem('cwc_theme', nextTheme);
+
     const root = window.document.documentElement;
     if (nextTheme === 'dark') {
       root.classList.add('dark');
@@ -206,42 +218,27 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       root.classList.add('light');
     }
 
-    if (!user) {
-      // Guest mode: UI update complete, no backend sync required
-      return;
-    }
+    if (!user) return;
 
     updateUser({ themePreference: nextTheme });
 
-    // 2. Asynchronous API call to PATCH /api/auth/theme for authenticated user
+    // 2. Background API call to sync preference if user is authenticated
     try {
       const res = await apiClient.patch('/auth/theme', { theme: nextTheme });
       if (res.data?.user) {
         updateUser(res.data.user);
       }
-    } catch (err: any) {
-      // 3. Revert optimistic UI update and show Toast error on API failure
-      console.error('Failed to sync theme preference with server:', err);
-      setThemeState(previousTheme);
-      if (previousTheme === 'dark') {
-        root.classList.add('dark');
-        root.classList.remove('light');
-      } else {
-        root.classList.remove('dark');
-        root.classList.add('light');
-      }
-      updateUser({ themePreference: previousTheme });
-      const errMsg = err.response?.data?.message || err.message || 'Failed to save theme preference to server';
-      toast.error(errMsg);
-      throw err;
+    } catch (err) {
+      console.warn('Backend theme preference sync skipped or failed:', err);
     }
   };
 
   const setTheme = async (newTheme: ThemeMode) => {
     if (newTheme === theme) return;
-    const previousTheme = theme;
 
     setThemeState(newTheme);
+    localStorage.setItem('cwc_theme', newTheme);
+
     const root = window.document.documentElement;
     if (newTheme === 'dark') {
       root.classList.add('dark');
@@ -260,17 +257,8 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       if (res.data?.user) {
         updateUser(res.data.user);
       }
-    } catch (err: any) {
-      setThemeState(previousTheme);
-      if (previousTheme === 'dark') {
-        root.classList.add('dark');
-        root.classList.remove('light');
-      } else {
-        root.classList.remove('dark');
-        root.classList.add('light');
-      }
-      updateUser({ themePreference: previousTheme });
-      toast.error('Failed to update theme on server');
+    } catch (err) {
+      console.warn('Backend theme preference sync skipped or failed:', err);
     }
   };
 

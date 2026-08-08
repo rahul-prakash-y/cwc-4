@@ -304,26 +304,26 @@ export const Attendance: React.FC = () => {
   const dangerTeamsCount = teams.filter((t) => (attendanceState[t._id]?.length || 0) < 2).length;
 
   return (
-    <div className="space-y-8 max-w-7xl mx-auto pb-16">
+    <div className="space-y-8 max-w-7xl mx-auto pb-16 font-sans">
       {/* Top Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 border-b border-white/10">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 border-b border-slate-200 dark:border-white/10">
         <div>
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-carnival-gold/20 text-carnival-gold border border-carnival-gold/30 text-xs font-mono font-bold mb-2">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-500/10 dark:bg-carnival-gold/20 text-amber-700 dark:text-carnival-gold border border-amber-300 dark:border-carnival-gold/30 text-xs font-mono font-bold mb-2">
             <UserCheck className="w-3.5 h-3.5" />
             <span>Task 2 & 3: Daily Attendance & Rule Book Engine</span>
           </div>
-          <h2 className="text-2xl sm:text-4xl font-black text-white tracking-tight">
+          <h2 className="text-2xl sm:text-4xl font-black text-slate-900 dark:text-white tracking-tight">
             Daily Attendance & Rule Book Manager
           </h2>
-          <p className="text-sm text-slate-300 mt-1">
-            Categorized by Hosteller and Day Scholar. Auto-enforces <span className="text-carnival-gold font-bold">2-Member Minimum Presence</span> to flag 'Danger' status.
+          <p className="text-sm text-slate-600 dark:text-slate-300 mt-1">
+            Categorized by Hosteller and Day Scholar. Auto-enforces <span className="text-amber-700 dark:text-carnival-gold font-bold">2-Member Minimum Presence</span> to flag 'Danger' status.
           </p>
         </div>
 
         <button
           onClick={saveAllDayAttendance}
           disabled={saving}
-          className="flex items-center justify-center gap-2 px-6 py-3.5 rounded-2xl bg-gradient-to-r from-carnival-gold via-amber-400 to-yellow-500 text-slate-950 font-black text-sm hover:brightness-110 transition-all shadow-neon-gold btn-gold-pulse disabled:opacity-50"
+          className="flex items-center justify-center gap-2 px-6 py-3.5 rounded-2xl bg-gradient-to-r from-amber-500 via-amber-400 to-rose-600 dark:from-carnival-gold dark:via-amber-400 dark:to-yellow-500 text-slate-950 font-black text-sm hover:brightness-110 transition-all shadow-md dark:shadow-neon-gold btn-gold-pulse disabled:opacity-50 cursor-pointer"
         >
           {saving ? <RefreshCw className="w-5 h-5 animate-spin" /> : <Save className="w-5 h-5" />}
           <span>Save Day {selectedDay} Attendance</span>
@@ -335,31 +335,31 @@ export const Attendance: React.FC = () => {
         <div
           className={`p-4 rounded-2xl border flex items-center justify-between gap-3 text-sm font-medium animate-in fade-in duration-200 ${
             feedback.type === 'success'
-              ? 'bg-emerald-500/15 border-emerald-500/40 text-emerald-300'
+              ? 'bg-emerald-50 dark:bg-emerald-500/15 border-emerald-300 dark:border-emerald-500/40 text-emerald-800 dark:text-emerald-300'
               : feedback.type === 'warning'
-              ? 'bg-amber-500/15 border-amber-500/40 text-amber-300'
-              : 'bg-rose-500/15 border-rose-500/40 text-rose-300'
+              ? 'bg-amber-50 dark:bg-amber-500/15 border-amber-300 dark:border-amber-500/40 text-amber-800 dark:text-amber-300'
+              : 'bg-rose-50 dark:bg-rose-500/15 border-rose-300 dark:border-rose-500/40 text-rose-800 dark:text-rose-300'
           }`}
         >
           <div className="flex items-center gap-2.5">
-            {feedback.type === 'success' && <CheckCircle2 className="w-5 h-5 text-emerald-400" />}
-            {feedback.type === 'warning' && <AlertTriangle className="w-5 h-5 text-amber-400 animate-pulse" />}
-            {feedback.type === 'error' && <XCircle className="w-5 h-5 text-rose-400" />}
+            {feedback.type === 'success' && <CheckCircle2 className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />}
+            {feedback.type === 'warning' && <AlertTriangle className="w-5 h-5 text-amber-600 dark:text-amber-400 animate-pulse" />}
+            {feedback.type === 'error' && <XCircle className="w-5 h-5 text-rose-600 dark:text-rose-400" />}
             <span>{feedback.message}</span>
           </div>
-          <button onClick={() => setFeedback(null)} className="text-xs opacity-70 hover:opacity-100">
+          <button onClick={() => setFeedback(null)} className="text-xs opacity-70 hover:opacity-100 cursor-pointer">
             Dismiss
           </button>
         </div>
       )}
 
       {/* Day Selector & Category Filters */}
-      <div className="glass-card p-6 rounded-3xl border-white/10 space-y-6">
+      <div className="bg-white dark:bg-[#18122B] p-6 rounded-3xl border border-slate-200 dark:border-white/10 shadow-sm dark:shadow-2xl space-y-6">
         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
           {/* Day Selector Buttons 1-10 */}
           <div>
-            <label className="block text-xs font-mono font-bold text-slate-400 uppercase mb-2 flex items-center gap-1.5">
-              <Calendar className="w-4 h-4 text-carnival-gold" />
+            <label className="block text-xs font-mono font-bold text-slate-600 dark:text-slate-400 uppercase mb-2 flex items-center gap-1.5">
+              <Calendar className="w-4 h-4 text-amber-600 dark:text-carnival-gold" />
               <span>Select Festival Day Number (1 - 10):</span>
             </label>
             <div className="flex items-center gap-1.5 overflow-x-auto pb-2">
@@ -367,10 +367,10 @@ export const Attendance: React.FC = () => {
                 <button
                   key={day}
                   onClick={() => setSelectedDay(day)}
-                  className={`px-4 py-2 rounded-xl text-xs font-mono font-bold transition-all whitespace-nowrap ${
+                  className={`px-4 py-2 rounded-xl text-xs font-mono font-bold transition-all whitespace-nowrap cursor-pointer ${
                     selectedDay === day
-                      ? 'bg-gradient-to-r from-carnival-gold to-carnival-amber text-slate-950 shadow-neon-gold font-black scale-105'
-                      : 'bg-white/5 text-slate-300 hover:bg-white/10 hover:text-white border border-white/10'
+                      ? 'bg-gradient-to-r from-amber-500 to-amber-400 dark:from-carnival-gold dark:to-carnival-amber text-slate-950 shadow-md dark:shadow-neon-gold font-black scale-105'
+                      : 'bg-slate-100 dark:bg-white/5 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-white/10 hover:text-slate-900 dark:hover:text-white border border-slate-200 dark:border-white/10'
                   }`}
                 >
                   Day {day}
@@ -383,20 +383,20 @@ export const Attendance: React.FC = () => {
           <div className="flex items-center gap-2 self-start lg:self-auto">
             <button
               onClick={() => setResidenceFilter('All')}
-              className={`px-4 py-2 rounded-xl text-xs font-bold transition-all ${
+              className={`px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
                 residenceFilter === 'All'
-                  ? 'bg-carnival-cyan text-slate-950 shadow-neon-cyan'
-                  : 'bg-white/5 text-slate-300 hover:text-white border border-white/10'
+                  ? 'bg-cyan-500 dark:bg-carnival-cyan text-slate-950 shadow-sm dark:shadow-neon-cyan'
+                  : 'bg-slate-100 dark:bg-white/5 text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white border border-slate-200 dark:border-white/10'
               }`}
             >
               All Teams ({teams.length})
             </button>
             <button
               onClick={() => setResidenceFilter('Hosteller')}
-              className={`flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold transition-all ${
+              className={`flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
                 residenceFilter === 'Hosteller'
-                  ? 'bg-emerald-400 text-slate-950 shadow-neon-emerald'
-                  : 'bg-white/5 text-slate-300 hover:text-white border border-white/10'
+                  ? 'bg-emerald-500 dark:bg-emerald-400 text-slate-950 shadow-sm dark:shadow-neon-emerald'
+                  : 'bg-slate-100 dark:bg-white/5 text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white border border-slate-200 dark:border-white/10'
               }`}
             >
               <Home className="w-3.5 h-3.5" />
@@ -404,10 +404,10 @@ export const Attendance: React.FC = () => {
             </button>
             <button
               onClick={() => setResidenceFilter('Day Scholar')}
-              className={`flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold transition-all ${
+              className={`flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
                 residenceFilter === 'Day Scholar'
-                  ? 'bg-carnival-purple text-white shadow-neon-purple'
-                  : 'bg-white/5 text-slate-300 hover:text-white border border-white/10'
+                  ? 'bg-purple-600 dark:bg-carnival-purple text-white shadow-sm dark:shadow-neon-purple'
+                  : 'bg-slate-100 dark:bg-white/5 text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white border border-slate-200 dark:border-white/10'
               }`}
             >
               <Bus className="w-3.5 h-3.5" />
@@ -417,7 +417,7 @@ export const Attendance: React.FC = () => {
         </div>
 
         {/* Search Bar & Telemetry Overview Bar */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 pt-4 border-t border-white/10 items-center">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 pt-4 border-t border-slate-200 dark:border-white/10 items-center">
           <div className="md:col-span-2 relative">
             <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-3" />
             <input
@@ -425,20 +425,20 @@ export const Attendance: React.FC = () => {
               placeholder="Search team or member name..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full bg-[#13112a] border border-white/10 rounded-xl pl-9 pr-3 py-2 text-xs text-white placeholder-slate-400 focus:outline-none focus:border-carnival-gold"
+              className="w-full bg-slate-50 dark:bg-[#13112a] border border-slate-300 dark:border-white/10 rounded-xl pl-9 pr-3 py-2 text-xs text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:border-amber-500 dark:focus:border-carnival-gold"
             />
           </div>
 
-          <div className="bg-[#15132d] p-3 rounded-2xl border border-white/5 flex items-center justify-between text-xs">
-            <span className="text-slate-400 font-mono">Present Rate:</span>
-            <span className="font-extrabold text-carnival-gold font-mono">
+          <div className="bg-slate-50 dark:bg-[#15132d] p-3 rounded-2xl border border-slate-200 dark:border-white/5 flex items-center justify-between text-xs">
+            <span className="text-slate-600 dark:text-slate-400 font-mono">Present Rate:</span>
+            <span className="font-extrabold text-amber-700 dark:text-carnival-gold font-mono">
               {presentStudentsCount} / {totalStudents} ({totalStudents > 0 ? Math.round((presentStudentsCount / totalStudents) * 100) : 0}%)
             </span>
           </div>
 
-          <div className="bg-[#15132d] p-3 rounded-2xl border border-white/5 flex items-center justify-between text-xs">
-            <span className="text-slate-400 font-mono">Danger Warning:</span>
-            <span className={`font-extrabold font-mono flex items-center gap-1 ${dangerTeamsCount > 0 ? 'text-rose-400' : 'text-emerald-400'}`}>
+          <div className="bg-slate-50 dark:bg-[#15132d] p-3 rounded-2xl border border-slate-200 dark:border-white/5 flex items-center justify-between text-xs">
+            <span className="text-slate-600 dark:text-slate-400 font-mono">Danger Warning:</span>
+            <span className={`font-extrabold font-mono flex items-center gap-1 ${dangerTeamsCount > 0 ? 'text-rose-600 dark:text-rose-400' : 'text-emerald-600 dark:text-emerald-400'}`}>
               <ShieldAlert className="w-3.5 h-3.5" />
               {dangerTeamsCount} Team(s) &lt; 2 Present
             </span>
@@ -448,12 +448,12 @@ export const Attendance: React.FC = () => {
 
       {/* Teams Categorized Display */}
       {loading ? (
-        <div className="text-center py-20 glass-card rounded-3xl">
-          <RefreshCw className="w-10 h-10 animate-spin text-carnival-gold mx-auto mb-4" />
-          <p className="text-slate-300 font-mono text-sm">Loading Team Roster & Attendance Matrix...</p>
+        <div className="text-center py-20 bg-white dark:bg-[#18122B] rounded-3xl border border-slate-200 dark:border-white/10">
+          <RefreshCw className="w-10 h-10 animate-spin text-amber-500 dark:text-carnival-gold mx-auto mb-4" />
+          <p className="text-slate-600 dark:text-slate-300 font-mono text-sm">Loading Team Roster & Attendance Matrix...</p>
         </div>
       ) : filteredTeams.length === 0 ? (
-        <div className="text-center py-16 glass-card rounded-3xl text-slate-400 font-mono text-sm">
+        <div className="text-center py-16 bg-white dark:bg-[#18122B] rounded-3xl border border-slate-200 dark:border-white/10 text-slate-500 dark:text-slate-400 font-mono text-sm">
           No matching teams found for selected criteria.
         </div>
       ) : (
@@ -461,8 +461,8 @@ export const Attendance: React.FC = () => {
           {/* Section 1: Hostellers */}
           {(residenceFilter === 'All' || residenceFilter === 'Hosteller') && hostellerTeams.length > 0 && (
             <div className="space-y-4">
-              <div className="flex items-center gap-2 text-lg font-black text-white px-2">
-                <Home className="w-5 h-5 text-emerald-400" />
+              <div className="flex items-center gap-2 text-lg font-black text-slate-900 dark:text-white px-2">
+                <Home className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
                 <span>🏡 Hosteller Teams ({hostellerTeams.length})</span>
               </div>
 
@@ -475,8 +475,8 @@ export const Attendance: React.FC = () => {
           {/* Section 2: Day Scholars */}
           {(residenceFilter === 'All' || residenceFilter === 'Day Scholar') && dayScholarTeams.length > 0 && (
             <div className="space-y-4 pt-4">
-              <div className="flex items-center gap-2 text-lg font-black text-white px-2">
-                <Bus className="w-5 h-5 text-carnival-purple" />
+              <div className="flex items-center gap-2 text-lg font-black text-slate-900 dark:text-white px-2">
+                <Bus className="w-5 h-5 text-purple-600 dark:text-carnival-purple" />
                 <span>🚌 Day Scholar Teams ({dayScholarTeams.length})</span>
               </div>
 
@@ -502,29 +502,29 @@ export const Attendance: React.FC = () => {
     return (
       <div
         key={team._id}
-        className={`glass-card p-6 rounded-3xl border transition-all relative overflow-hidden flex flex-col justify-between ${
+        className={`p-6 rounded-3xl border transition-all relative overflow-hidden flex flex-col justify-between shadow-sm dark:shadow-xl ${
           isDangerRuleTriggered
-            ? 'border-rose-500/50 bg-gradient-to-b from-rose-950/20 to-[#120F24]/95 shadow-neon-crimson'
-            : 'border-white/10 hover:border-carnival-gold/40 bg-gradient-to-b from-[#1C172B]/90 to-[#120F24]/90'
+            ? 'border-rose-300 dark:border-rose-500/50 bg-rose-50 dark:bg-gradient-to-b dark:from-rose-950/20 dark:to-[#120F24]/95 dark:shadow-neon-crimson'
+            : 'border-slate-200 dark:border-white/10 hover:border-amber-400 dark:hover:border-carnival-gold/40 bg-white dark:bg-gradient-to-b dark:from-[#1C172B]/90 dark:to-[#120F24]/90'
         }`}
       >
         <div className="space-y-4">
           {/* Card Header */}
-          <div className="flex items-start justify-between gap-3 pb-3 border-b border-white/10">
+          <div className="flex items-start justify-between gap-3 pb-3 border-b border-slate-200 dark:border-white/10">
             <div>
               <div className="flex items-center gap-2 flex-wrap">
-                <h3 className="font-extrabold text-white text-lg tracking-tight">{team.teamName}</h3>
+                <h3 className="font-extrabold text-slate-900 dark:text-white text-lg tracking-tight">{team.teamName}</h3>
                 <span
                   className={`px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold ${
                     team.residenceType === 'Day Scholar'
-                      ? 'bg-carnival-purple/20 text-carnival-purple border border-carnival-purple/40'
-                      : 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/40'
+                      ? 'bg-purple-100 dark:bg-carnival-purple/20 text-purple-700 dark:text-carnival-purple border border-purple-300 dark:border-carnival-purple/40'
+                      : 'bg-emerald-100 dark:bg-emerald-500/20 text-emerald-700 dark:text-emerald-400 border border-emerald-300 dark:border-emerald-500/40'
                   }`}
                 >
                   {team.residenceType || 'Hosteller'}
                 </span>
               </div>
-              <p className="text-xs text-slate-400 font-mono mt-0.5">Leader: {team.leader.name}</p>
+              <p className="text-xs text-slate-600 dark:text-slate-400 font-mono mt-0.5">Leader: {team.leader.name}</p>
             </div>
 
             {/* Team Status Badge */}
@@ -532,16 +532,16 @@ export const Attendance: React.FC = () => {
               <span
                 className={`px-2.5 py-1 rounded-full text-xs font-mono font-bold flex items-center gap-1 ${
                   team.status === 'Danger' || isDangerRuleTriggered
-                    ? 'bg-rose-500/20 text-rose-400 border border-rose-500/40 animate-pulse'
+                    ? 'bg-rose-100 dark:bg-rose-500/20 text-rose-700 dark:text-rose-400 border border-rose-300 dark:border-rose-500/40 animate-pulse'
                     : team.status === 'Eliminated'
-                    ? 'bg-slate-800 text-slate-400 border border-slate-700'
-                    : 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/40'
+                    ? 'bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-400 border border-slate-300 dark:border-slate-700'
+                    : 'bg-emerald-100 dark:bg-emerald-500/20 text-emerald-700 dark:text-emerald-400 border border-emerald-300 dark:border-emerald-500/40'
                 }`}
               >
-                {isDangerRuleTriggered ? <AlertTriangle className="w-3 h-3 text-rose-400" /> : <CheckCircle2 className="w-3 h-3 text-emerald-400" />}
+                {isDangerRuleTriggered ? <AlertTriangle className="w-3 h-3 text-rose-600 dark:text-rose-400" /> : <CheckCircle2 className="w-3 h-3 text-emerald-600 dark:text-emerald-400" />}
                 {isDangerRuleTriggered ? 'Danger (< 2 Present)' : team.status || 'Safe'}
               </span>
-              <span className="text-[10px] font-mono text-slate-400">
+              <span className="text-[10px] font-mono text-slate-500 dark:text-slate-400">
                 {presentMembers.length} / {allMembersList.length} Present
               </span>
             </div>
@@ -549,19 +549,19 @@ export const Attendance: React.FC = () => {
 
           {/* Member Checklist */}
           <div className="space-y-2 py-1">
-            <div className="text-[11px] font-mono font-bold text-slate-400 uppercase tracking-wider mb-2 flex items-center justify-between">
+            <div className="text-[11px] font-mono font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wider mb-2 flex items-center justify-between">
               <span>Member Checklist (Toggle Day {selectedDay})</span>
               <div className="flex items-center gap-2">
                 <button
                   onClick={() => markTeamAllPresent(team)}
-                  className="text-[10px] text-carnival-cyan hover:underline font-mono"
+                  className="text-[10px] text-cyan-600 dark:text-carnival-cyan hover:underline font-mono cursor-pointer"
                 >
                   All Present
                 </button>
-                <span className="text-slate-600">•</span>
+                <span className="text-slate-400 dark:text-slate-600">•</span>
                 <button
                   onClick={() => clearTeamAttendance(team)}
-                  className="text-[10px] text-slate-400 hover:text-white font-mono"
+                  className="text-[10px] text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white font-mono cursor-pointer"
                 >
                   Clear
                 </button>
@@ -576,34 +576,34 @@ export const Attendance: React.FC = () => {
                   onClick={() => toggleMemberPresence(team._id, mem.name)}
                   className={`p-3 rounded-2xl border flex items-center justify-between cursor-pointer transition-all ${
                     isPresent
-                      ? 'bg-emerald-500/10 border-emerald-500/30 text-white'
-                      : 'bg-white/5 border-white/5 text-slate-400 hover:border-white/10'
+                      ? 'bg-emerald-50 dark:bg-emerald-500/10 border-emerald-200 dark:border-emerald-500/30 text-slate-900 dark:text-white'
+                      : 'bg-slate-50 dark:bg-white/5 border-slate-200 dark:border-white/5 text-slate-600 dark:text-slate-400 hover:border-slate-300 dark:hover:border-white/10'
                   }`}
                 >
                   <div className="flex items-center gap-3">
                     <div
                       className={`w-5 h-5 rounded-lg flex items-center justify-center font-bold text-xs transition-all ${
-                        isPresent ? 'bg-emerald-500 text-slate-950 shadow-neon-emerald' : 'bg-slate-800 text-slate-500 border border-white/10'
+                        isPresent ? 'bg-emerald-500 text-white dark:text-slate-950 shadow-sm dark:shadow-neon-emerald' : 'bg-slate-200 dark:bg-slate-800 text-slate-400 dark:text-slate-500 border border-slate-300 dark:border-white/10'
                       }`}
                     >
                       {isPresent ? '✓' : ''}
                     </div>
                     <div>
-                      <div className="text-xs font-bold text-white flex items-center gap-2">
+                      <div className="text-xs font-bold text-slate-900 dark:text-white flex items-center gap-2">
                         <span>{mem.name}</span>
                         {mem.role === 'Leader' && (
-                          <span className="px-1.5 py-0.2 rounded bg-carnival-gold/20 text-carnival-gold text-[9px] font-mono font-bold border border-carnival-gold/30">
+                          <span className="px-1.5 py-0.2 rounded bg-amber-100 dark:bg-carnival-gold/20 text-amber-800 dark:text-carnival-gold text-[9px] font-mono font-bold border border-amber-300 dark:border-carnival-gold/30">
                             LEADER
                           </span>
                         )}
                       </div>
-                      <div className="text-[10px] text-slate-400 font-mono">{mem.email}</div>
+                      <div className="text-[10px] text-slate-500 dark:text-slate-400 font-mono">{mem.email}</div>
                     </div>
                   </div>
 
                   <span
                     className={`text-[10px] font-mono font-bold px-2 py-0.5 rounded-full ${
-                      isPresent ? 'bg-emerald-500/20 text-emerald-300' : 'bg-rose-500/10 text-rose-400'
+                      isPresent ? 'bg-emerald-100 dark:bg-emerald-500/20 text-emerald-800 dark:text-emerald-300' : 'bg-rose-100 dark:bg-rose-500/10 text-rose-700 dark:text-rose-400'
                     }`}
                   >
                     {isPresent ? 'Present' : 'Absent'}
@@ -615,21 +615,21 @@ export const Attendance: React.FC = () => {
         </div>
 
         {/* Card Action Footer */}
-        <div className="pt-4 border-t border-white/10 flex items-center justify-between gap-3 mt-4">
-          <div className="text-[11px] font-mono text-slate-400">
+        <div className="pt-4 border-t border-slate-200 dark:border-white/10 flex items-center justify-between gap-3 mt-4">
+          <div className="text-[11px] font-mono text-slate-500 dark:text-slate-400">
             {isDangerRuleTriggered ? (
-              <span className="text-rose-400 font-bold flex items-center gap-1">
+              <span className="text-rose-600 dark:text-rose-400 font-bold flex items-center gap-1">
                 <AlertTriangle className="w-3 h-3" /> Auto-Danger Trigger Active
               </span>
             ) : (
-              <span className="text-emerald-400 font-bold">Rule Compliant (≥ 2 Present)</span>
+              <span className="text-emerald-600 dark:text-emerald-400 font-bold">Rule Compliant (≥ 2 Present)</span>
             )}
           </div>
 
           <button
             onClick={() => saveTeamAttendance(team)}
             disabled={saving}
-            className="px-4 py-2 rounded-xl bg-gradient-to-r from-carnival-gold to-amber-500 text-slate-950 font-black text-xs hover:brightness-110 transition-all shadow-neon-gold flex items-center gap-1.5"
+            className="px-4 py-2 rounded-xl bg-gradient-to-r from-amber-500 to-amber-400 dark:from-carnival-gold dark:to-amber-500 text-slate-950 font-black text-xs hover:brightness-110 transition-all shadow-sm dark:shadow-neon-gold flex items-center gap-1.5 cursor-pointer"
           >
             <Save className="w-3.5 h-3.5" />
             <span>Save Team</span>

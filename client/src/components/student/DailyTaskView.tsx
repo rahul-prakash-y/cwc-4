@@ -155,10 +155,10 @@ export const DailyTaskView: React.FC<DailyTaskViewProps> = ({ task = DEFAULT_TAS
   // Render markdown line breaks & bold formatting
   const renderMarkdownDescription = (text: string) => {
     return text.split('\n\n').map((paragraph, pIdx) => (
-      <p key={pIdx} className="text-slate-200 text-sm sm:text-base leading-relaxed mb-3">
+      <p key={pIdx} className="text-slate-800 dark:text-slate-200 text-sm sm:text-base leading-relaxed mb-3">
         {paragraph.split('**').map((chunk, cIdx) =>
           cIdx % 2 === 1 ? (
-            <strong key={cIdx} className="text-carnival-gold font-bold">
+            <strong key={cIdx} className="text-amber-600 dark:text-carnival-gold font-bold">
               {chunk}
             </strong>
           ) : (
@@ -173,32 +173,32 @@ export const DailyTaskView: React.FC<DailyTaskViewProps> = ({ task = DEFAULT_TAS
     <motion.div
       initial={{ opacity: 0, y: 15 }}
       animate={{ opacity: 1, y: 0 }}
-      className="p-6 sm:p-8 rounded-3xl glass-card border border-carnival-crimson/30 shadow-2xl space-y-8 bg-[#131128]/95 relative overflow-hidden"
+      className="p-6 sm:p-8 rounded-3xl glass-card border border-slate-200 dark:border-carnival-crimson/30 shadow-sm dark:shadow-2xl space-y-8 bg-white/90 dark:bg-[#131128]/95 relative overflow-hidden"
     >
       {/* Top Header & Metadata */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-white/10 pb-6">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-200 dark:border-white/10 pb-6">
         <div className="space-y-1">
           <div className="flex flex-wrap items-center gap-2">
-            <span className="px-3 py-1 rounded-full text-xs font-mono font-bold bg-carnival-crimson/20 text-carnival-crimson border border-carnival-crimson/40 animate-pulse">
+            <span className="px-3 py-1 rounded-full text-xs font-mono font-bold bg-rose-500/10 dark:bg-carnival-crimson/20 text-rose-700 dark:text-carnival-crimson border border-rose-500/30 dark:border-carnival-crimson/40 animate-pulse">
               DAY {task.dayNumber} ARENA TASK
             </span>
-            <span className="px-3 py-1 rounded-full text-xs font-mono font-bold bg-carnival-gold/20 text-carnival-gold border border-carnival-gold/40">
+            <span className="px-3 py-1 rounded-full text-xs font-mono font-bold bg-amber-500/10 dark:bg-carnival-gold/20 text-amber-700 dark:text-carnival-gold border border-amber-500/30 dark:border-carnival-gold/40">
               Point Weight: +{task.points} PTS
             </span>
           </div>
-          <h2 className="text-2xl sm:text-3xl font-black text-white flex items-center gap-3">
+          <h2 className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white flex items-center gap-3">
             {task.title}
           </h2>
         </div>
 
-        <div className="flex flex-wrap items-center gap-4 bg-black/40 px-4 py-2.5 rounded-2xl border border-white/10 text-xs font-mono">
-          <div className="flex items-center gap-2 text-slate-300">
-            <Clock className="w-4 h-4 text-carnival-cyan" />
-            <span>Duration: <strong className="text-white">{task.duration}</strong></span>
+        <div className="flex flex-wrap items-center gap-4 bg-slate-100 dark:bg-black/40 px-4 py-2.5 rounded-2xl border border-slate-200 dark:border-white/10 text-xs font-mono">
+          <div className="flex items-center gap-2 text-slate-600 dark:text-slate-300">
+            <Clock className="w-4 h-4 text-cyan-600 dark:text-carnival-cyan" />
+            <span>Duration: <strong className="text-slate-900 dark:text-white">{task.duration}</strong></span>
           </div>
-          <div className="h-4 w-px bg-white/20 hidden sm:block" />
-          <div className="text-slate-300">
-            Window: <strong className="text-white">{task.startTime} - {task.endTime}</strong>
+          <div className="h-4 w-px bg-slate-300 dark:bg-white/20 hidden sm:block" />
+          <div className="text-slate-600 dark:text-slate-300">
+            Window: <strong className="text-slate-900 dark:text-white">{task.startTime} - {task.endTime}</strong>
           </div>
         </div>
       </div>
@@ -209,11 +209,11 @@ export const DailyTaskView: React.FC<DailyTaskViewProps> = ({ task = DEFAULT_TAS
         <div className="lg:col-span-2 space-y-6">
           {/* Markdown Problem Description */}
           <div className="space-y-3">
-            <h3 className="text-sm font-mono font-bold text-carnival-cyan uppercase tracking-wider flex items-center gap-2">
-              <Code2 className="w-4 h-4 text-carnival-cyan" />
+            <h3 className="text-sm font-mono font-bold text-cyan-700 dark:text-carnival-cyan uppercase tracking-wider flex items-center gap-2">
+              <Code2 className="w-4 h-4 text-cyan-600 dark:text-carnival-cyan" />
               Markdown Problem Statement
             </h3>
-            <div className="bg-black/40 p-5 rounded-2xl border border-white/10 space-y-2">
+            <div className="bg-slate-50 dark:bg-black/40 p-5 rounded-2xl border border-slate-200 dark:border-white/10 space-y-2">
               {renderMarkdownDescription(task.description)}
             </div>
           </div>
@@ -221,14 +221,14 @@ export const DailyTaskView: React.FC<DailyTaskViewProps> = ({ task = DEFAULT_TAS
           {/* Constraints & Requirements */}
           {task.constraints && task.constraints.length > 0 && (
             <div className="space-y-3">
-              <h3 className="text-sm font-mono font-bold text-orange-400 uppercase tracking-wider flex items-center gap-2">
-                <AlertCircle className="w-4 h-4 text-orange-400" />
+              <h3 className="text-sm font-mono font-bold text-orange-600 dark:text-orange-400 uppercase tracking-wider flex items-center gap-2">
+                <AlertCircle className="w-4 h-4 text-orange-500 dark:text-orange-400" />
                 Task Constraints
               </h3>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                 {task.constraints.map((c, idx) => (
-                  <div key={idx} className="p-3 rounded-xl bg-orange-950/20 border border-orange-500/30 text-xs text-orange-200 font-mono flex items-center gap-2">
-                    <span className="w-2 h-2 rounded-full bg-orange-400" />
+                  <div key={idx} className="p-3 rounded-xl bg-orange-50 dark:bg-orange-950/20 border border-orange-200 dark:border-orange-500/30 text-xs text-orange-900 dark:text-orange-200 font-mono flex items-center gap-2">
+                    <span className="w-2 h-2 rounded-full bg-orange-500 dark:bg-orange-400" />
                     <span>{c}</span>
                   </div>
                 ))}
@@ -237,14 +237,14 @@ export const DailyTaskView: React.FC<DailyTaskViewProps> = ({ task = DEFAULT_TAS
           )}
 
           <div className="space-y-3">
-            <h3 className="text-sm font-mono font-bold text-carnival-gold uppercase tracking-wider flex items-center gap-2">
-              <ShieldCheck className="w-4 h-4 text-carnival-gold" />
+            <h3 className="text-sm font-mono font-bold text-amber-700 dark:text-carnival-gold uppercase tracking-wider flex items-center gap-2">
+              <ShieldCheck className="w-4 h-4 text-amber-600 dark:text-carnival-gold" />
               Evaluation Guidelines
             </h3>
             <ul className="space-y-2">
               {task.requirements.map((req, idx) => (
-                <li key={idx} className="flex items-start gap-2.5 text-xs text-slate-300 p-2.5 rounded-xl bg-white/5 border border-white/5">
-                  <span className="w-5 h-5 rounded-full bg-carnival-gold/20 text-carnival-gold font-mono font-bold flex items-center justify-center text-[10px]">
+                <li key={idx} className="flex items-start gap-2.5 text-xs text-slate-700 dark:text-slate-300 p-2.5 rounded-xl bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/5">
+                  <span className="w-5 h-5 rounded-full bg-amber-500/20 text-amber-700 dark:text-carnival-gold font-mono font-bold flex items-center justify-center text-[10px]">
                     {idx + 1}
                   </span>
                   <span>{req}</span>
@@ -255,42 +255,42 @@ export const DailyTaskView: React.FC<DailyTaskViewProps> = ({ task = DEFAULT_TAS
         </div>
 
         {/* Right Column: Arena Control Card & Draft Indicator */}
-        <div className="flex flex-col justify-between p-6 rounded-2xl bg-gradient-to-b from-[#1C1733] to-[#120F24] border border-white/15 space-y-6">
+        <div className="flex flex-col justify-between p-6 rounded-2xl bg-slate-50 dark:bg-gradient-to-b dark:from-[#1C1733] dark:to-[#120F24] border border-slate-200 dark:border-white/15 space-y-6">
           <div className="space-y-4">
-            <div className="text-xs font-mono font-bold text-slate-400 uppercase">Arena Portal Status</div>
+            <div className="text-xs font-mono font-bold text-slate-500 dark:text-slate-400 uppercase">Arena Portal Status</div>
 
             {status === 'Eliminated' ? (
-              <div className="p-4 rounded-2xl bg-rose-500/20 border border-rose-500/40 text-rose-300 text-xs font-mono font-bold text-center">
+              <div className="p-4 rounded-2xl bg-rose-100 dark:bg-rose-500/20 border border-rose-300 dark:border-rose-500/40 text-rose-800 dark:text-rose-300 text-xs font-mono font-bold text-center">
                 🔒 ELIMINATED STATUS • SUBMISSIONS LOCKED
               </div>
             ) : !isStarted ? (
               <button
                 onClick={() => setIsStarted(true)}
-                className="w-full py-4 px-6 rounded-2xl bg-gradient-to-r from-carnival-gold via-amber-500 to-carnival-crimson text-slate-950 font-black text-xs uppercase tracking-wider flex items-center justify-center gap-2 shadow-neon-gold hover:scale-[1.02] active:scale-95 transition-all"
+                className="w-full py-4 px-6 rounded-2xl bg-gradient-to-r from-amber-500 via-rose-500 to-amber-600 text-white font-black text-xs uppercase tracking-wider flex items-center justify-center gap-2 shadow-md dark:shadow-neon-gold hover:scale-[1.02] active:scale-95 transition-all"
               >
-                <Play className="w-4 h-4 fill-slate-950" />
+                <Play className="w-4 h-4 fill-white" />
                 <span>Initialize Task Portal</span>
               </button>
             ) : (
-              <div className="p-3 rounded-xl bg-emerald-500/20 border border-emerald-500/40 text-emerald-300 text-xs font-mono font-bold flex items-center gap-2">
-                <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+              <div className="p-3 rounded-xl bg-emerald-100 dark:bg-emerald-500/20 border border-emerald-300 dark:border-emerald-500/40 text-emerald-800 dark:text-emerald-300 text-xs font-mono font-bold flex items-center gap-2">
+                <CheckCircle2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
                 <span>Portal Active & Unlocked</span>
               </div>
             )}
 
             {/* Auto-Draft Saving Status Pills */}
-            <div className="p-3.5 rounded-xl bg-black/50 border border-white/10 space-y-1.5 font-mono text-[11px]">
-              <div className="flex items-center justify-between text-slate-300 font-bold">
-                <span className="flex items-center gap-1.5 text-carnival-cyan">
-                  <Save className="w-3.5 h-3.5 text-carnival-cyan" /> Auto-Draft Sync
+            <div className="p-3.5 rounded-xl bg-white dark:bg-black/50 border border-slate-200 dark:border-white/10 space-y-1.5 font-mono text-[11px]">
+              <div className="flex items-center justify-between text-slate-700 dark:text-slate-300 font-bold">
+                <span className="flex items-center gap-1.5 text-cyan-600 dark:text-carnival-cyan">
+                  <Save className="w-3.5 h-3.5 text-cyan-600 dark:text-carnival-cyan" /> Auto-Draft Sync
                 </span>
                 {isSaving ? (
-                  <span className="text-carnival-gold animate-pulse">Syncing...</span>
+                  <span className="text-amber-600 dark:text-carnival-gold animate-pulse">Syncing...</span>
                 ) : (
-                  <span className="text-emerald-400">Active (30s)</span>
+                  <span className="text-emerald-600 dark:text-emerald-400">Active (30s)</span>
                 )}
               </div>
-              <div className="text-slate-400 text-[10px]">
+              <div className="text-slate-500 dark:text-slate-400 text-[10px]">
                 {lastSavedTime ? `Last saved at: ${lastSavedTime}` : 'Saving changes automatically to localStorage & API...'}
               </div>
             </div>
@@ -306,7 +306,7 @@ export const DailyTaskView: React.FC<DailyTaskViewProps> = ({ task = DEFAULT_TAS
       {/* Interactive Task Widget Renderer (MCQ, Rapid Fire, Code Completion, Treasure Hunt, Puzzle) */}
       {task.type &&
         ['MCQ', 'Rapid Fire', 'Code Completion', 'Output Prediction', 'Treasure Hunt', 'Puzzle'].includes(task.type) && (
-          <div className="pt-4 border-t border-white/10">
+          <div className="pt-4 border-t border-slate-200 dark:border-white/10">
             <InteractiveTask
               id={task.id}
               title={task.title}
@@ -329,14 +329,14 @@ export const DailyTaskView: React.FC<DailyTaskViewProps> = ({ task = DEFAULT_TAS
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: 'auto' }}
             exit={{ opacity: 0, height: 0 }}
-            className="pt-6 border-t border-white/10 space-y-6"
+            className="pt-6 border-t border-slate-200 dark:border-white/10 space-y-6"
           >
             <div className="flex items-center justify-between">
-              <h3 className="text-xl font-black text-white flex items-center gap-2">
-                <Send className="w-5 h-5 text-carnival-cyan" />
+              <h3 className="text-xl font-black text-slate-900 dark:text-white flex items-center gap-2">
+                <Send className="w-5 h-5 text-cyan-600 dark:text-carnival-cyan" />
                 Code & Answer Deliverables Area
               </h3>
-              <span className="text-xs font-mono text-carnival-gold">
+              <span className="text-xs font-mono text-amber-600 dark:text-carnival-gold font-bold">
                 Render Jitter Protection Enabled ⚡
               </span>
             </div>
@@ -345,33 +345,33 @@ export const DailyTaskView: React.FC<DailyTaskViewProps> = ({ task = DEFAULT_TAS
               <motion.div
                 initial={{ scale: 0.95, opacity: 0 }}
                 animate={{ scale: 1, opacity: 1 }}
-                className="p-6 rounded-2xl bg-emerald-500/10 border border-emerald-500/40 space-y-4"
+                className="p-6 rounded-2xl bg-emerald-50 dark:bg-emerald-500/10 border border-emerald-300 dark:border-emerald-500/40 space-y-4"
               >
                 <div className="flex items-start gap-4">
-                  <div className="w-12 h-12 rounded-2xl bg-emerald-500/20 border border-emerald-500/40 flex items-center justify-center text-emerald-400 flex-shrink-0">
+                  <div className="w-12 h-12 rounded-2xl bg-emerald-100 dark:bg-emerald-500/20 border border-emerald-300 dark:border-emerald-500/40 flex items-center justify-center text-emerald-600 dark:text-emerald-400 flex-shrink-0">
                     <CheckCircle2 className="w-7 h-7" />
                   </div>
                   <div className="space-y-1">
-                    <h4 className="text-lg font-bold text-white">Deliverable Submitted Successfully! 🎉</h4>
-                    <p className="text-xs text-slate-300">
-                      Logged into evaluation server at <strong className="text-emerald-400 font-mono">{submissionTimestamp} IST</strong>.
+                    <h4 className="text-lg font-bold text-slate-900 dark:text-white">Deliverable Submitted Successfully! 🎉</h4>
+                    <p className="text-xs text-slate-600 dark:text-slate-300">
+                      Logged into evaluation server at <strong className="text-emerald-600 dark:text-emerald-400 font-mono">{submissionTimestamp} IST</strong>.
                     </p>
                     {jitterDelay !== null && (
-                      <p className="text-[11px] font-mono text-carnival-cyan">
+                      <p className="text-[11px] font-mono text-cyan-600 dark:text-carnival-cyan">
                         ⚡ Applied client-side jitter delay: {jitterDelay}ms (Render Free-Tier Server Shielded).
                       </p>
                     )}
                   </div>
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs font-mono p-4 rounded-xl bg-black/40 border border-white/10">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs font-mono p-4 rounded-xl bg-slate-100 dark:bg-black/40 border border-slate-200 dark:border-white/10">
                   <div>
-                    <span className="text-slate-400 block">GitHub Repo:</span>
-                    <span className="text-carnival-cyan font-semibold">{draft.githubUrl || 'N/A'}</span>
+                    <span className="text-slate-500 dark:text-slate-400 block">GitHub Repo:</span>
+                    <span className="text-cyan-600 dark:text-carnival-cyan font-semibold">{draft.githubUrl || 'N/A'}</span>
                   </div>
                   <div>
-                    <span className="text-slate-400 block">Cloudinary Deliverable:</span>
-                    <span className="text-carnival-gold font-semibold">{draft.fileUrl || 'N/A'}</span>
+                    <span className="text-slate-500 dark:text-slate-400 block">Cloudinary Deliverable:</span>
+                    <span className="text-amber-600 dark:text-carnival-gold font-semibold">{draft.fileUrl || 'N/A'}</span>
                   </div>
                 </div>
               </motion.div>
@@ -379,7 +379,7 @@ export const DailyTaskView: React.FC<DailyTaskViewProps> = ({ task = DEFAULT_TAS
               <form onSubmit={handleSubmit} className="space-y-6">
                 {/* Text/Code Response Textarea */}
                 <div className="space-y-2">
-                  <label className="block text-xs font-mono text-slate-200 font-bold">
+                  <label className="block text-xs font-mono text-slate-800 dark:text-slate-200 font-bold">
                     Text / Code Response Input Area
                   </label>
                   <textarea
@@ -387,14 +387,14 @@ export const DailyTaskView: React.FC<DailyTaskViewProps> = ({ task = DEFAULT_TAS
                     placeholder="// Type or paste your code snippet, solution explanation, or text response here..."
                     value={draft.codeResponse || ''}
                     onChange={(e) => updateDraft({ codeResponse: e.target.value })}
-                    className="w-full p-4 rounded-2xl bg-black/60 font-mono text-xs sm:text-sm text-emerald-300 border border-white/15 focus:border-carnival-cyan focus:ring-1 focus:ring-carnival-cyan focus:outline-none leading-relaxed"
+                    className="w-full p-4 rounded-2xl bg-slate-50 dark:bg-black/60 font-mono text-xs sm:text-sm text-slate-900 dark:text-emerald-300 border border-slate-300 dark:border-white/15 focus:border-cyan-500 dark:focus:border-carnival-cyan focus:ring-1 focus:ring-cyan-500 dark:focus:ring-carnival-cyan focus:outline-none leading-relaxed"
                   />
                 </div>
 
                 {/* Form Fields: GitHub URL & Demo URL */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div className="space-y-2">
-                    <label className="block text-xs font-mono text-slate-200 font-bold">
+                    <label className="block text-xs font-mono text-slate-800 dark:text-slate-200 font-bold">
                       GitHub Repository URL
                     </label>
                     <div className="relative">
@@ -404,14 +404,14 @@ export const DailyTaskView: React.FC<DailyTaskViewProps> = ({ task = DEFAULT_TAS
                         placeholder="https://github.com/your-team/cwc-season4-task"
                         value={draft.githubUrl || ''}
                         onChange={(e) => updateDraft({ githubUrl: e.target.value })}
-                        className="w-full pl-10 pr-4 py-3 rounded-xl bg-black/50 text-sm text-white border border-white/15 focus:border-carnival-cyan focus:ring-1 focus:ring-carnival-cyan focus:outline-none"
+                        className="w-full pl-10 pr-4 py-3 rounded-xl bg-slate-50 dark:bg-black/50 text-sm text-slate-900 dark:text-white border border-slate-300 dark:border-white/15 focus:border-cyan-500 dark:focus:border-carnival-cyan focus:ring-1 focus:ring-cyan-500 dark:focus:ring-carnival-cyan focus:outline-none"
                       />
                     </div>
                   </div>
 
                   {/* Cloudinary File Upload Form */}
                   <div className="space-y-2">
-                    <label className="block text-xs font-mono text-slate-200 font-bold">
+                    <label className="block text-xs font-mono text-slate-800 dark:text-slate-200 font-bold">
                       Cloudinary File Upload (PDF / Screenshots / Video)
                     </label>
                     <div className="relative">
@@ -421,9 +421,9 @@ export const DailyTaskView: React.FC<DailyTaskViewProps> = ({ task = DEFAULT_TAS
                         onChange={handleFileUpload}
                         className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
                       />
-                      <div className="w-full px-4 py-3 rounded-xl bg-black/50 text-xs text-slate-300 border border-white/15 flex items-center justify-between">
+                      <div className="w-full px-4 py-3 rounded-xl bg-slate-50 dark:bg-black/50 text-xs text-slate-700 dark:text-slate-300 border border-slate-300 dark:border-white/15 flex items-center justify-between">
                         <span>{isUploading ? `Uploading... (${uploadProgress}%)` : draft.fileUrl ? `Uploaded: ${uploadedFileName || 'Cloudinary File'}` : 'Click to Upload PDF/Screenshot to Cloudinary API'}</span>
-                        <UploadCloud className="w-4 h-4 text-carnival-purple" />
+                        <UploadCloud className="w-4 h-4 text-purple-600 dark:text-carnival-purple" />
                       </div>
                     </div>
                   </div>
@@ -433,11 +433,11 @@ export const DailyTaskView: React.FC<DailyTaskViewProps> = ({ task = DEFAULT_TAS
                 <button
                   type="submit"
                   disabled={isSubmitting || isUploading}
-                  className="w-full py-4 rounded-2xl bg-gradient-to-r from-carnival-crimson via-carnival-purple to-carnival-cyan text-white font-black text-xs sm:text-sm uppercase tracking-wider shadow-neon-crimson hover:brightness-110 active:scale-[0.98] transition-all disabled:opacity-50 flex items-center justify-center gap-2"
+                  className="w-full py-4 rounded-2xl bg-gradient-to-r from-rose-600 via-purple-600 to-indigo-600 dark:from-carnival-crimson dark:via-carnival-purple dark:to-carnival-cyan text-white font-black text-xs sm:text-sm uppercase tracking-wider shadow-md dark:shadow-neon-crimson hover:brightness-110 active:scale-[0.98] transition-all disabled:opacity-50 flex items-center justify-center gap-2"
                 >
                   {isSubmitting ? (
                     <>
-                      <RefreshCw className="w-4 h-4 animate-spin text-carnival-gold" />
+                      <RefreshCw className="w-4 h-4 animate-spin text-amber-300 dark:text-carnival-gold" />
                       <span>Auto-Submitting with Jitter Delay ({jitterDelay}ms)...</span>
                     </>
                   ) : (
