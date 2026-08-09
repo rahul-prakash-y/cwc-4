@@ -152,7 +152,7 @@ export const StudentDashboard: React.FC = () => {
             <span>7-Day Schedule</span>
           </button> */}
 
-          <button
+          {/* <button
             onClick={() => handleTabClick('advantages')}
             className={`flex items-center gap-2 px-4 py-2.5 rounded-xl font-mono text-xs font-bold transition-all whitespace-nowrap shrink-0 ${
               currentTab === 'advantages'
@@ -162,7 +162,7 @@ export const StudentDashboard: React.FC = () => {
           >
             <Zap className="w-4 h-4" />
             <span>Power-Up Advantages</span>
-          </button>
+          </button> */}
 
           <button
             onClick={() => handleTabClick('leaderboard')}
@@ -195,7 +195,7 @@ export const StudentDashboard: React.FC = () => {
         <div className="space-y-8">
           <TeamProgress />
           <MarksSection />
-          <DailyTaskView />
+          {/* <DailyTaskView /> */}
           <Leaderboard currentTeamId={studentTeam?.id || studentTeam?._id} />
         </div>
       )}
@@ -208,7 +208,7 @@ export const StudentDashboard: React.FC = () => {
 
       {currentTab === 'tasks' && (
         <div className="space-y-8">
-          <DailyTaskView />
+          {/* <DailyTaskView /> */}
           <DaySchedule />
         </div>
       )}

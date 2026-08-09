@@ -17,6 +17,7 @@ import {
   updateScoresBatch,
   upsertScore,
   getAdminScores,
+  getOverviewStats,
   getGrandFinale,
   toggleGrandFinale,
   getBuzzerQuestions,
@@ -62,6 +63,10 @@ export async function adminRoutes(fastify: FastifyInstance) {
   // All admin routes require authentication and admin role
   fastify.addHook('preHandler', verifyJWT);
   fastify.addHook('preHandler', isAdmin);
+
+  // Overview Telemetry & Stat Cards Route (DB Driven)
+  fastify.get('/overview-stats', getOverviewStats);
+  fastify.get('/stats', getOverviewStats);
 
   // Grand Finale State Toggle & Settings Routes
   fastify.get('/grand-finale', getGrandFinale);

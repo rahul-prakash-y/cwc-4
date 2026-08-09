@@ -22,7 +22,7 @@ export const StudentLayout: React.FC = () => {
   const studentNavItems = [
     { label: 'Overview', path: '/student', icon: LayoutDashboard },
     { label: 'Daily Arena Tasks', path: '/student/tasks', icon: CheckSquare },
-    { label: 'Power-Up Vault', path: '/student/advantages', icon: Zap },
+    // { label: 'Power-Up Vault', path: '/student/advantages', icon: Zap },
     { label: 'Team Leaderboard', path: '/student/leaderboard', icon: Trophy },
   ];
 

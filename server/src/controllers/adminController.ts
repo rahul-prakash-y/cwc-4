@@ -11,6 +11,7 @@ import { Setting } from '../models/Setting.js';
 import { Settings } from '../models/Settings.js';
 import { BuzzerQuestion } from '../models/BuzzerQuestion.js';
 import { DailyVoteLog } from '../models/VoteLog.js';
+import { Submission } from '../models/Submission.js';
 import { delCache } from '../utils/redis.js';
 import { logAdminAction } from '../utils/auditLogger.js';
 import {
@@ -28,6 +29,114 @@ import {
   getStatusAlertEmailHtml,
   getAnnouncementEmailHtml,
 } from '../utils/emailTemplates.js';
+
+/* ==========================================================================
+   ADMIN OVERVIEW TELEMETRY & STATS CONTROLLER (DB DRIVEN)
+   ========================================================================== */
+
+export async function getOverviewStats(_request: FastifyRequest, reply: FastifyReply) {
+  try {
+    // 1. Teams statistics
+    const totalTeams = await Team.countDocuments();
+    const qualifiedTeams = await Team.countDocuments({
+      status: { $in: ['Qualified', 'Safe', 'Approved'] },
+    });
+    const eliminatedTeams = await Team.countDocuments({ status: 'Eliminated' });
+
+    // Calculate total participants (leaders + members count)
+    const teamsList = await Team.find().select('members leader').lean();
+    let totalParticipants = 0;
+    teamsList.forEach((t: any) => {
+      let count = 0;
+      if (t.leader) count += 1;
+      if (Array.isArray(t.members)) count += t.members.length;
+      totalParticipants += count;
+    });
+
+    // 2. Submissions statistics
+    const startOfToday = new Date();
+    startOfToday.setHours(0, 0, 0, 0);
+
+    const todaySubmissions = await Submission.countDocuments({ submittedAt: { $gte: startOfToday } });
+    const totalSubmissions = await Submission.countDocuments();
+    const evaluatedSubmissions = await Submission.countDocuments({ status: 'Evaluated' });
+
+    let evaluationPercentage = 100;
+    if (totalSubmissions > 0) {
+      evaluationPercentage = Math.round((evaluatedSubmissions / totalSubmissions) * 100);
+    }
+
+    // 3. Daily Progression Chart Data
+    const topTeams = await Team.find()
+      .select('teamName themeColor')
+      .limit(6)
+      .lean();
+
+    const days = ['Day 1', 'Day 2', 'Day 3', 'Day 4', 'Day 5', 'Day 6', 'Day 7', 'Day 8', 'Day 9', 'Day 10'];
+    const curatedColors = ['#FFD700', '#FF0055', '#00F0FF', '#8A2BE2', '#10B981', '#F59E0B'];
+
+    // Fetch scores grouped by team and dayNumber
+    const allScores = await Score.find().lean();
+
+    // Map: teamId -> dayNumber -> score
+    const teamScoreMap: Record<string, Record<number, number>> = {};
+    allScores.forEach((s: any) => {
+      const tId = s.team?.toString();
+      if (!tId) return;
+      if (!teamScoreMap[tId]) teamScoreMap[tId] = {};
+      const dayNum = s.dayNumber || s.day || 1;
+      const pts = s.pointsEarned ?? s.total ?? s.scores?.total ?? 0;
+      teamScoreMap[tId][dayNum] = pts;
+    });
+
+    const datasets = topTeams.map((team: any, idx: number) => {
+      const color = team.themeColor || curatedColors[idx % curatedColors.length];
+      const tId = team._id.toString();
+
+      let runningTotal = 0;
+      const dataPoints = Array.from({ length: 10 }, (_, i) => {
+        const dayNum = i + 1;
+        const dayPts = teamScoreMap[tId]?.[dayNum] || 0;
+        runningTotal += dayPts;
+        return runningTotal;
+      });
+
+      return {
+        label: team.teamName,
+        data: dataPoints,
+        borderColor: color,
+        backgroundColor: `${color}20`,
+        fill: true,
+        tension: 0.4,
+        pointBackgroundColor: color,
+        pointBorderColor: '#0B0A16',
+        pointHoverRadius: 7,
+      };
+    });
+
+    return reply.send({
+      cards: {
+        totalTeams,
+        totalParticipants,
+        qualifiedTeams,
+        eliminatedTeams,
+        todaySubmissions,
+        totalSubmissions,
+        evaluatedSubmissions,
+        evaluationPercentage,
+      },
+      progressionChart: {
+        labels: days,
+        datasets,
+      },
+    });
+  } catch (error: any) {
+    return reply.status(500).send({
+      error: 'Internal Server Error',
+      message: error.message || 'Failed to fetch overview telemetry.',
+    });
+  }
+}
 
 /* ==========================================================================
    GRAND FINALE GLOBAL TOGGLE CONTROLLERS

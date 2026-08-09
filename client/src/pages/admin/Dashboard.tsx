@@ -1,10 +1,12 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Crown, Users, CheckCircle2, XCircle, FileCode, Megaphone, Zap, Sparkles, TrendingUp, Mail } from 'lucide-react';
+import { Crown, Users, CheckCircle2, XCircle, FileCode, Megaphone, Zap, Sparkles, TrendingUp, Mail, RefreshCw } from 'lucide-react';
 import { DailyProgressionChart } from '../../components/admin/DailyProgressionChart';
 import { triggerCarnivalConfetti } from '../../components/hero/ConfettiEffect';
+import { useAuth } from '../../context/AuthContext';
 
 export const Dashboard: React.FC = () => {
+  const { apiFetch } = useAuth();
   const [announcementText, setAnnouncementText] = useState('');
   const [sendEmailAlert, setSendEmailAlert] = useState(false);
   const [isBroadcasting, setIsBroadcasting] = useState(false);
@@ -13,6 +15,44 @@ export const Dashboard: React.FC = () => {
     '⚡ Power-Up Granted: Cyber Circus Kings unlocked 2x Multiplier Card.',
     '🛡️ Immunity Activated: High Wire Hackers deployed Safety Shield.',
   ]);
+
+  // Live Database Stats State
+  const [statsLoading, setStatsLoading] = useState<boolean>(true);
+  const [statsData, setStatsData] = useState<{
+    cards: {
+      totalTeams: number;
+      totalParticipants: number;
+      qualifiedTeams: number;
+      eliminatedTeams: number;
+      todaySubmissions: number;
+      totalSubmissions: number;
+      evaluatedSubmissions: number;
+      evaluationPercentage: number;
+    };
+    progressionChart: {
+      labels: string[];
+      datasets: any[];
+    };
+  } | null>(null);
+
+  const fetchOverviewStats = async () => {
+    setStatsLoading(true);
+    try {
+      const res = await apiFetch('/admin/overview-stats');
+      if (res.ok) {
+        const data = await res.json();
+        setStatsData(data);
+      }
+    } catch (e) {
+      console.error('Failed to fetch overview DB stats:', e);
+    } finally {
+      setStatsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchOverviewStats();
+  }, []);
 
   const handleBroadcast = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -82,7 +122,7 @@ export const Dashboard: React.FC = () => {
         </button>
       </div>
 
-      {/* Task 1 Stat Cards */}
+      {/* DB-Driven Stat Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
         {/* Card 1: Registered Teams */}
         <motion.div
@@ -96,10 +136,12 @@ export const Dashboard: React.FC = () => {
               <Users className="w-5 h-5" />
             </div>
           </div>
-          <div className="text-3xl sm:text-4xl font-black text-slate-900 dark:text-white font-mono">12 Teams</div>
+          <div className="text-3xl sm:text-4xl font-black text-slate-900 dark:text-white font-mono flex items-center gap-2">
+            {statsLoading ? <RefreshCw className="w-6 h-6 animate-spin text-cyan-500" /> : `${statsData?.cards?.totalTeams ?? 0} Teams`}
+          </div>
           <div className="text-xs text-cyan-700 dark:text-carnival-cyan mt-2 font-mono flex items-center gap-1 font-semibold">
             <span className="w-2 h-2 rounded-full bg-cyan-500 dark:bg-carnival-cyan animate-pulse" />
-            <span>36 Total Participants</span>
+            <span>{statsData?.cards?.totalParticipants ?? 0} Total Participants</span>
           </div>
         </motion.div>
 
@@ -115,7 +157,9 @@ export const Dashboard: React.FC = () => {
               <CheckCircle2 className="w-5 h-5" />
             </div>
           </div>
-          <div className="text-3xl sm:text-4xl font-black text-slate-900 dark:text-white font-mono">9 Teams</div>
+          <div className="text-3xl sm:text-4xl font-black text-slate-900 dark:text-white font-mono flex items-center gap-2">
+            {statsLoading ? <RefreshCw className="w-6 h-6 animate-spin text-emerald-500" /> : `${statsData?.cards?.qualifiedTeams ?? 0} Teams`}
+          </div>
           <div className="text-xs text-emerald-700 dark:text-emerald-400 mt-2 font-mono flex items-center gap-1 font-semibold">
             <span>✓ Safe & Advancing</span>
           </div>
@@ -133,13 +177,15 @@ export const Dashboard: React.FC = () => {
               <XCircle className="w-5 h-5" />
             </div>
           </div>
-          <div className="text-3xl sm:text-4xl font-black text-rose-600 dark:text-rose-400 font-mono">1 Team</div>
+          <div className="text-3xl sm:text-4xl font-black text-rose-600 dark:text-rose-400 font-mono flex items-center gap-2">
+            {statsLoading ? <RefreshCw className="w-6 h-6 animate-spin text-rose-500" /> : `${statsData?.cards?.eliminatedTeams ?? 0} Teams`}
+          </div>
           <div className="text-xs text-rose-700 dark:text-rose-400/80 mt-2 font-mono flex items-center gap-1 font-semibold">
             <span>⚠️ Evicted from Arena</span>
           </div>
         </motion.div>
 
-        {/* Card 4: Today's Submissions */}
+        {/* Card 4: Submissions Metric */}
         <motion.div
           whileHover={{ y: -4 }}
           className="bg-white dark:bg-[#18122B] p-6 rounded-2xl border border-slate-200 dark:border-white/10 hover:border-amber-500/50 dark:hover:border-carnival-gold/50 transition-all shadow-sm dark:shadow-lg relative overflow-hidden group"
@@ -151,15 +197,17 @@ export const Dashboard: React.FC = () => {
               <FileCode className="w-5 h-5" />
             </div>
           </div>
-          <div className="text-3xl sm:text-4xl font-black text-slate-900 dark:text-white font-mono">18 Repos</div>
+          <div className="text-3xl sm:text-4xl font-black text-slate-900 dark:text-white font-mono flex items-center gap-2">
+            {statsLoading ? <RefreshCw className="w-6 h-6 animate-spin text-amber-500" /> : `${statsData?.cards?.todaySubmissions ?? 0} Submissions`}
+          </div>
           <div className="text-xs text-amber-700 dark:text-carnival-gold mt-2 font-mono flex items-center gap-1 font-semibold">
             <Zap className="w-3.5 h-3.5" />
-            <span>100% Evaluated</span>
+            <span>{statsData?.cards?.evaluationPercentage ?? 100}% Evaluated ({statsData?.cards?.totalSubmissions ?? 0} Total)</span>
           </div>
         </motion.div>
       </div>
 
-      {/* Chart Section: react-chartjs-2 Line Chart */}
+      {/* Chart Section: DB-Driven Line Chart */}
       <div className="bg-white dark:bg-[#18122B] p-6 sm:p-8 rounded-2xl border border-slate-200 dark:border-white/10 shadow-sm dark:shadow-2xl space-y-4">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-200 dark:border-white/10">
           <div>
@@ -168,17 +216,29 @@ export const Dashboard: React.FC = () => {
               Daily Point Progression Analytics
             </h3>
             <p className="text-slate-500 dark:text-slate-400 text-xs mt-1">
-              Live line chart of accumulated points across 10 Days for top teams.
+              Live line chart of accumulated points across 10 Days from database score records.
             </p>
           </div>
           <div className="flex items-center gap-2 text-xs font-mono">
-            <span className="px-3 py-1 rounded-full bg-amber-500/10 dark:bg-carnival-gold/10 text-amber-700 dark:text-carnival-gold border border-amber-300 dark:border-carnival-gold/30 font-bold">
-              Chart.js Active
-            </span>
+            <button
+              onClick={fetchOverviewStats}
+              disabled={statsLoading}
+              className="px-3 py-1 rounded-full bg-amber-500/10 dark:bg-carnival-gold/10 text-amber-700 dark:text-carnival-gold border border-amber-300 dark:border-carnival-gold/30 font-bold flex items-center gap-1.5 hover:brightness-110 cursor-pointer disabled:opacity-50"
+            >
+              <RefreshCw className={`w-3.5 h-3.5 ${statsLoading ? 'animate-spin' : ''}`} />
+              <span>Live Sync DB</span>
+            </button>
           </div>
         </div>
 
-        <DailyProgressionChart />
+        {statsLoading ? (
+          <div className="w-full h-[360px] flex items-center justify-center font-mono text-xs text-slate-500">
+            <RefreshCw className="w-6 h-6 animate-spin text-amber-500 mr-2" />
+            <span>Fetching DB progression telemetry...</span>
+          </div>
+        ) : (
+          <DailyProgressionChart chartData={statsData?.progressionChart} />
+        )}
       </div>
 
       {/* Broadcast System & Feed */}
