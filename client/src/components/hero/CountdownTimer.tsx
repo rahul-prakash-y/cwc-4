@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { formatIST } from '../../utils/dateUtils';
 
 interface TimeLeft {
   days: number;
@@ -91,6 +92,8 @@ export const CountdownTimer: React.FC<CountdownTimerProps> = ({ eventStartDate }
     return () => clearInterval(interval);
   }, [eventStartDate]);
 
+  const istFormatted = eventStartDate ? formatIST(eventStartDate) : '';
+
   return (
     <div className="flex flex-col items-center my-8">
       <div className="text-xs tracking-widest text-amber-700 dark:text-cwc-gold font-display font-semibold uppercase mb-4 flex items-center gap-2 bg-white dark:bg-white/5 px-4 py-1.5 rounded-full border border-amber-400/30 dark:border-cwc-gold/20 shadow-sm dark:shadow-glow-gold/20">
@@ -108,6 +111,13 @@ export const CountdownTimer: React.FC<CountdownTimerProps> = ({ eventStartDate }
         <span className="text-2xl font-bold text-amber-600 dark:text-cwc-gold -mt-6 animate-pulse">:</span>
         <FlipCardUnit value={timeLeft.seconds} label="Secs" />
       </div>
+
+      {istFormatted && (
+        <div className="mt-4 inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-amber-500/10 dark:bg-carnival-gold/20 border border-amber-500/30 dark:border-carnival-gold/40 text-amber-800 dark:text-carnival-gold text-xs font-mono font-bold shadow-sm">
+          <span>🇮🇳 Launch Date & Time:</span>
+          <span>{istFormatted}</span>
+        </div>
+      )}
     </div>
   );
 };

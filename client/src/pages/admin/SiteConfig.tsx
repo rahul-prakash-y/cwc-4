@@ -18,6 +18,7 @@ import {
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { useAuth } from '../../context/AuthContext';
+import { formatIST } from '../../utils/dateUtils';
 
 export interface GlobalSettings {
   eventStartDate: string;
@@ -172,7 +173,7 @@ export const SiteConfig: React.FC = () => {
               <div className="space-y-2">
                 <label className="text-xs font-mono font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider flex items-center gap-2">
                   <Calendar className="w-3.5 h-3.5 text-amber-500 dark:text-carnival-gold" />
-                  <span>Event Start Date & Time *</span>
+                  <span>Event Start Date & Time (IST - Indian Standard Time) *</span>
                 </label>
                 <input
                   type="datetime-local"
@@ -181,8 +182,14 @@ export const SiteConfig: React.FC = () => {
                   className="w-full px-4 py-3 rounded-xl bg-slate-50 dark:bg-black/60 text-slate-900 dark:text-white text-xs font-mono border border-slate-300 dark:border-white/15 focus:border-amber-500 dark:focus:border-carnival-gold focus:outline-none transition"
                   required
                 />
+                {settings.eventStartDate && (
+                  <div className="p-2.5 rounded-xl bg-amber-500/10 dark:bg-carnival-gold/15 border border-amber-500/30 dark:border-carnival-gold/30 text-amber-800 dark:text-carnival-gold text-xs font-mono font-bold flex items-center gap-2">
+                    <span>🇮🇳 IST Preview:</span>
+                    <span>{formatIST(settings.eventStartDate)}</span>
+                  </div>
+                )}
                 <p className="text-[11px] text-slate-500 dark:text-slate-400">
-                  This timestamp drives the mechanical flip-clock countdown timer on the Hero section.
+                  This timestamp drives the mechanical flip-clock countdown timer on the Hero section in Indian Standard Time.
                 </p>
               </div>
 
