@@ -1,5 +1,8 @@
 import { FastifyRequest, FastifyReply } from 'fastify';
 import mongoose from 'mongoose';
+import bcrypt from 'bcryptjs';
+import * as XLSX from 'xlsx';
+import { User } from '../models/User.js';
 import { Team } from '../models/Team.js';
 import { Task, TaskType } from '../models/Task.js';
 import { Announcement } from '../models/Announcement.js';
@@ -914,5 +917,208 @@ export async function deleteBuzzerQuestion(
     message: 'Buzzer question deleted successfully.',
     id,
   });
+}
+
+/* ==========================================================================
+   BULK EXCEL TEAMS UPLOAD & TEMPLATE DOWNLOAD CONTROLLERS
+   ========================================================================== */
+
+export async function downloadTeamsTemplate(_request: FastifyRequest, reply: FastifyReply) {
+  const sampleData = [
+    {
+      "Team Name": "Cyber Knights",
+      "Tagline": "Hackers of Season 4",
+      "Theme Color": "#FF0055",
+      "Residence Type": "Hosteller",
+      "Member 1 Name (Leader)": "Alex Vance",
+      "Member 1 Email": "alex.vance@cwc.edu",
+      "Member 1 Roll No": "21CS001",
+      "Member 1 Phone": "9876543210",
+      "Member 1 Gender": "Male",
+      "Member 1 Residence": "Hosteller",
+      "Member 2 Name": "Sarah Connor",
+      "Member 2 Email": "sarah.c@cwc.edu",
+      "Member 2 Roll No": "21CS002",
+      "Member 2 Phone": "9876543211",
+      "Member 2 Gender": "Female",
+      "Member 2 Residence": "DayScholar",
+      "Member 3 Name": "Bruce Wayne",
+      "Member 3 Email": "bruce.w@cwc.edu",
+      "Member 3 Roll No": "21CS003",
+      "Member 3 Phone": "9876543212",
+      "Member 3 Gender": "Male",
+      "Member 3 Residence": "Hosteller",
+      "Member 4 Name": "Diana Prince",
+      "Member 4 Email": "diana.p@cwc.edu",
+      "Member 4 Roll No": "21CS004",
+      "Member 4 Phone": "9876543213",
+      "Member 4 Gender": "Female",
+      "Member 4 Residence": "DayScholar"
+    }
+  ];
+
+  const worksheet = XLSX.utils.json_to_sheet(sampleData);
+  const workbook = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(workbook, worksheet, "Teams Template");
+  const excelBuffer = XLSX.write(workbook, { bookType: 'xlsx', type: 'buffer' });
+
+  reply.header('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+  reply.header('Content-Disposition', 'attachment; filename="CWC_Season4_Teams_Import_Template.xlsx"');
+  return reply.send(excelBuffer);
+}
+
+export async function importTeamsBulk(
+  request: FastifyRequest,
+  reply: FastifyReply
+) {
+  try {
+    let teamsData: any[] = [];
+
+    if (request.isMultipart()) {
+      const fileData = await request.file();
+      if (!fileData) {
+        return reply.status(400).send({ error: 'Bad Request', message: 'No Excel file uploaded.' });
+      }
+      const buffer = await fileData.toBuffer();
+      const workbook = XLSX.read(buffer, { type: 'buffer' });
+      const firstSheetName = workbook.SheetNames[0];
+      const worksheet = workbook.Sheets[firstSheetName];
+      teamsData = XLSX.utils.sheet_to_json(worksheet);
+    } else if (request.body && typeof request.body === 'object') {
+      const body = request.body as any;
+      if (Array.isArray(body)) {
+        teamsData = body;
+      } else if (Array.isArray(body.teams)) {
+        teamsData = body.teams;
+      }
+    }
+
+    if (!Array.isArray(teamsData) || teamsData.length === 0) {
+      return reply.status(400).send({
+        error: 'Bad Request',
+        message: 'No valid team records found in uploaded file or request payload.',
+      });
+    }
+
+    const defaultPasswordHash = await bcrypt.hash('CWC4-Student-2026', 10);
+    const createdTeams: any[] = [];
+    const skippedTeams: Array<{ teamName: string; reason: string }> = [];
+
+    for (const row of teamsData) {
+      const getVal = (possibleKeys: string[]): string => {
+        for (const k of Object.keys(row)) {
+          const cleanK = k.trim().toLowerCase();
+          if (possibleKeys.some((pk) => pk.toLowerCase() === cleanK)) {
+            return String(row[k] || '').trim();
+          }
+        }
+        return '';
+      };
+
+      const teamName = getVal(['Team Name', 'teamName', 'TeamName', 'Name', 'Team']);
+      if (!teamName) {
+        skippedTeams.push({ teamName: 'Unknown Row', reason: 'Missing Team Name' });
+        continue;
+      }
+
+      const existingTeam = await Team.findOne({ teamName: new RegExp(`^${teamName.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, '\\$&')}$`, 'i') });
+      if (existingTeam) {
+        skippedTeams.push({ teamName, reason: 'Team name already exists in database' });
+        continue;
+      }
+
+      const tagline = getVal(['Tagline', 'tagline', 'Description', 'description']) || 'Carnival contender';
+      const themeColor = getVal(['Theme Color', 'themeColor', 'Color']) || '#FF0055';
+      const residenceTypeStr = getVal(['Residence Type', 'residenceType']);
+      const residenceType = (residenceTypeStr === 'DayScholar' || residenceTypeStr === 'Day Scholar') ? 'DayScholar' : 'Hosteller';
+
+      const parsedMembers: any[] = [];
+      for (let i = 1; i <= 4; i++) {
+        const mName = getVal([`Member ${i} Name (Leader)`, `Member ${i} Name`, `m${i}_name`, `member${i}Name`]);
+        const mEmail = getVal([`Member ${i} Email`, `m${i}_email`, `member${i}Email`]);
+        const mRoll = getVal([`Member ${i} Roll No`, `Member ${i} Roll Number`, `m${i}_roll`, `member${i}RollNo`]);
+        const mPhone = getVal([`Member ${i} Phone`, `m${i}_phone`, `member${i}Phone`]);
+        const mGenderStr = getVal([`Member ${i} Gender`, `m${i}_gender`]);
+        const mResStr = getVal([`Member ${i} Residence`, `Member ${i} Residence Type`, `m${i}_residence`]);
+
+        const gender = (mGenderStr === 'Male' || mGenderStr === 'Female') ? mGenderStr : 'Other';
+        const resType = (mResStr === 'DayScholar' || mResStr === 'Day Scholar') ? 'DayScholar' : 'Hosteller';
+
+        const finalName = mName || (i === 1 ? `${teamName} Leader` : `${teamName} Member ${i}`);
+        const finalEmail = (mEmail || `${teamName.toLowerCase().replace(/[^a-z0-9]/g, '')}.m${i}@cwc.edu`).toLowerCase();
+        const finalRoll = mRoll || `ROLL-${i}`;
+        const finalPhone = mPhone || '0000000000';
+
+        let userDoc = await User.findOne({ email: finalEmail });
+        if (!userDoc) {
+          userDoc = await User.create({
+            name: finalName,
+            email: finalEmail,
+            passwordHash: defaultPasswordHash,
+            role: 'student',
+            isFirstLogin: true,
+          });
+        }
+
+        parsedMembers.push({
+          name: finalName,
+          rollNo: finalRoll,
+          deptMailId: finalEmail,
+          email: finalEmail,
+          phone: finalPhone,
+          gender,
+          residenceType: resType,
+          role: i === 1 ? 'Leader' : 'Member',
+          userId: userDoc._id,
+        });
+      }
+
+      const leaderObj = {
+        name: parsedMembers[0].name,
+        email: parsedMembers[0].deptMailId,
+        phone: parsedMembers[0].phone,
+        rollNumber: parsedMembers[0].rollNo,
+        department: 'General',
+        userId: parsedMembers[0].userId,
+      };
+
+      const newTeam = await Team.create({
+        teamName,
+        leader: leaderObj,
+        members: parsedMembers,
+        themeColor,
+        status: 'Approved',
+        residenceType,
+        advantages: [],
+        immunity: false,
+        isBlocked: false,
+      });
+
+      createdTeams.push(newTeam);
+    }
+
+    await delCache('cwc:leaderboard');
+    await delCache('cwc:fan-favorite');
+
+    await logAdminAction(request, 'BULK_TEAMS_IMPORTED', null, {
+      importedCount: createdTeams.length,
+      skippedCount: skippedTeams.length,
+      skipped: skippedTeams,
+    });
+
+    return reply.status(201).send({
+      message: `🎉 Successfully imported ${createdTeams.length} approved teams!`,
+      importedCount: createdTeams.length,
+      skippedCount: skippedTeams.length,
+      skippedTeams,
+      teams: createdTeams,
+    });
+  } catch (err: any) {
+    console.error('Bulk Team Upload Error:', err);
+    return reply.status(500).send({
+      error: 'Internal Server Error',
+      message: err.message || 'Failed to process bulk team upload.',
+    });
+  }
 }
 

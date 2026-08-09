@@ -1,32 +1,47 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>CWC Season 4 🎪 | Code With Curious Carnival</title>
-    <meta name="description" content="Code With Curious (CWC) Season 4 - The Grand Carnival Coding Extravaganza. Compete, solve tasks, earn points, and conquer the leaderboard." />
-    <!-- Google Fonts: Outfit & Plus Jakarta Sans -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-    <script>
-      (function() {
-        try {
-          const saved = localStorage.getItem('cwc_theme');
-          if (saved === 'light') {
-            document.documentElement.classList.remove('dark');
-            document.documentElement.classList.add('light');
-          } else {
-            document.documentElement.classList.add('dark');
-            document.documentElement.classList.remove('light');
-          }
-        } catch (e) {}
-      })();
-    </script>
-  </head>
-  <body class="bg-slate-50 dark:bg-cwc-bg text-slate-900 dark:text-gray-200 selection:bg-[#E11D48] selection:text-white antialiased overflow-x-hidden transition-colors duration-300">
-    <div id="root"></div>
-    <script type="module" src="/src/main.tsx"></script>
-  </body>
+
+<head>
+  <meta charset="UTF-8" />
+  <meta http-equiv="Content-Security-Policy" content="
+    default-src 'self';
+    img-src 'self' data: blob: https://res.cloudinary.com;
+    font-src 'self' https://fonts.googleapis.com https://fonts.gstatic.com data:;
+    style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
+    script-src 'self' 'unsafe-inline';
+    connect-src 'self' https:;
+  " />
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CWC Season 4 🎪 | Code With Curious Carnival</title>
+  <meta name="description"
+    content="Code With Curious (CWC) Season 4 - The Grand Carnival Coding Extravaganza. Compete, solve tasks, earn points, and conquer the leaderboard." />
+  <!-- Google Fonts: Outfit & Plus Jakarta Sans -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap"
+    rel="stylesheet">
+  <script>
+    (function () {
+      try {
+        const saved = localStorage.getItem('cwc_theme');
+        if (saved === 'light') {
+          document.documentElement.classList.remove('dark');
+          document.documentElement.classList.add('light');
+        } else {
+          document.documentElement.classList.add('dark');
+          document.documentElement.classList.remove('light');
+        }
+      } catch (e) { }
+    })();
+  </script>
+</head>
+
+<body
+  class="bg-slate-50 dark:bg-cwc-bg text-slate-900 dark:text-gray-200 selection:bg-[#E11D48] selection:text-white antialiased overflow-x-hidden transition-colors duration-300">
+  <div id="root"></div>
+  <script type="module" src="/src/main.tsx"></script>
+</body>
+
 </html>

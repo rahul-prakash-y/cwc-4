@@ -20,6 +20,8 @@ import {
   createBuzzerQuestion,
   updateBuzzerQuestion,
   deleteBuzzerQuestion,
+  downloadTeamsTemplate,
+  importTeamsBulk,
 } from '../controllers/adminController.js';
 import {
   getGalleryItems,
@@ -63,6 +65,8 @@ export async function adminRoutes(fastify: FastifyInstance) {
   // Teams Management
   fastify.get('/teams', getAllTeams);
   fastify.get('/teams/events', streamTeamStatusEvents);
+  fastify.get('/teams/template', downloadTeamsTemplate);
+  fastify.post('/teams/bulk-upload', importTeamsBulk);
   fastify.patch('/teams/:id/status', { schema: updateTeamStatusSchema }, updateTeamStatus);
   fastify.patch('/teams/:id/eliminate', { schema: eliminateTeamSchema }, eliminateTeam);
 

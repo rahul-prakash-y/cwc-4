@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Users, Search, Filter, Edit3, Trash2, Save, X, Gift, CheckCircle, ShieldAlert, Sparkles, UserCheck } from 'lucide-react';
+import { Users, Search, Filter, Edit3, Trash2, Save, X, Gift, CheckCircle, ShieldAlert, Sparkles, UserCheck, FileSpreadsheet, UploadCloud, Download } from 'lucide-react';
 import { GrantAdvantageModal } from '../../components/admin/GrantAdvantageModal';
+import { BulkUploadTeamsModal } from '../../components/admin/BulkUploadTeamsModal';
 
 export type TeamStatus = 'Approved' | 'Pending' | 'Safe' | 'Danger' | 'Eliminated' | 'Qualified' | 'Rejected';
 
@@ -27,6 +28,7 @@ export interface TeamRecord {
 
 export const Teams: React.FC = () => {
   const [isGrantModalOpen, setIsGrantModalOpen] = useState(false);
+  const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('All');
   const [editingTeam, setEditingTeam] = useState<TeamRecord | null>(null);
@@ -165,13 +167,23 @@ export const Teams: React.FC = () => {
           </p>
         </div>
 
-        <button
-          onClick={() => setIsGrantModalOpen(true)}
-          className="px-4 py-2.5 rounded-xl bg-gradient-to-r from-amber-500 via-amber-400 to-rose-600 dark:from-carnival-gold dark:via-amber-400 dark:to-carnival-crimson text-slate-950 font-black text-xs uppercase tracking-wider shadow-md dark:shadow-neon-gold hover:scale-105 transition-all flex items-center gap-2 cursor-pointer"
-        >
-          <Gift className="w-4 h-4 text-slate-950 fill-slate-950" />
-          <span>Grant Advantage 🎁</span>
-        </button>
+        <div className="flex flex-wrap items-center gap-3">
+          <button
+            onClick={() => setIsUploadModalOpen(true)}
+            className="px-4 py-2.5 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 dark:from-carnival-cyan dark:to-blue-500 text-slate-950 dark:text-slate-950 font-black text-xs uppercase tracking-wider shadow-md dark:shadow-neon-cyan hover:scale-105 transition-all flex items-center gap-2 cursor-pointer"
+          >
+            <FileSpreadsheet className="w-4 h-4 text-slate-950" />
+            <span>Upload Teams Excel 📊</span>
+          </button>
+
+          <button
+            onClick={() => setIsGrantModalOpen(true)}
+            className="px-4 py-2.5 rounded-xl bg-gradient-to-r from-amber-500 via-amber-400 to-rose-600 dark:from-carnival-gold dark:via-amber-400 dark:to-carnival-crimson text-slate-950 font-black text-xs uppercase tracking-wider shadow-md dark:shadow-neon-gold hover:scale-105 transition-all flex items-center gap-2 cursor-pointer"
+          >
+            <Gift className="w-4 h-4 text-slate-950 fill-slate-950" />
+            <span>Grant Advantage 🎁</span>
+          </button>
+        </div>
       </div>
 
       {/* Search and Filter Bar */}
@@ -417,6 +429,51 @@ export const Teams: React.FC = () => {
         isOpen={isGrantModalOpen}
         onClose={() => setIsGrantModalOpen(false)}
         teams={teams.map((t) => ({ id: t.id, name: t.name }))}
+      />
+      <BulkUploadTeamsModal
+        isOpen={isUploadModalOpen}
+        onClose={() => setIsUploadModalOpen(false)}
+        onSuccess={() => {
+          // Re-trigger fetchAdminTeams
+          const token = localStorage.getItem('token');
+          fetch('/api/admin/teams', {
+            headers: token ? { Authorization: `Bearer ${token}` } : {},
+          })
+            .then((res) => res.json())
+            .then((data) => {
+              const rawTeams = data.teams || data;
+              if (Array.isArray(rawTeams)) {
+                const mapped: TeamRecord[] = rawTeams.map((t: any, idx: number) => ({
+                  id: t._id || t.id || `team-${idx + 1}`,
+                  name: t.name || t.teamName,
+                  tagline: t.tagline || t.description || 'Carnival contender',
+                  avatar: t.avatar || '🎪',
+                  rank: t.rank || idx + 1,
+                  points: t.points ?? 0,
+                  status: t.status || 'Approved',
+                  themeColor: t.themeColor || '#FFD700',
+                  members: Array.isArray(t.members)
+                    ? t.members.map((m: any, mIdx: number) => ({
+                        id: m._id || m.id || `m-${mIdx}`,
+                        name: typeof m === 'string' ? m : m.name || 'Member',
+                        rollNumber: m.rollNumber || `ROLL-${mIdx + 1}`,
+                        email: m.email || 'student@cwc.io',
+                        role: m.role || (mIdx === 0 ? 'Leader' : 'Member'),
+                      }))
+                    : [
+                        {
+                          id: 'lead-1',
+                          name: t.leaderName || 'Team Leader',
+                          rollNumber: t.leaderRollNumber || '21CS001',
+                          email: t.leaderEmail || 'leader@cwc.io',
+                          role: 'Leader',
+                        },
+                      ],
+                }));
+                setTeams(mapped);
+              }
+            });
+        }}
       />
     </div>
   );

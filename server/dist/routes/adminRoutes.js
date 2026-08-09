@@ -1,4 +1,4 @@
-import { getAllTeams, updateTeamStatus, eliminateTeam, streamTeamStatusEvents, createTask, getAllTasksAdmin, updateTask, deleteTask, createAnnouncement, getAllAnnouncementsAdmin, deleteAnnouncement, grantAdvantage, setTeamImmunity, updateScoresBatch, getGrandFinale, toggleGrandFinale, getBuzzerQuestions, createBuzzerQuestion, updateBuzzerQuestion, deleteBuzzerQuestion, } from '../controllers/adminController.js';
+import { getAllTeams, updateTeamStatus, eliminateTeam, streamTeamStatusEvents, createTask, getAllTasksAdmin, updateTask, deleteTask, createAnnouncement, getAllAnnouncementsAdmin, deleteAnnouncement, grantAdvantage, setTeamImmunity, updateScoresBatch, getGrandFinale, toggleGrandFinale, getBuzzerQuestions, createBuzzerQuestion, updateBuzzerQuestion, deleteBuzzerQuestion, downloadTeamsTemplate, importTeamsBulk, } from '../controllers/adminController.js';
 import { getGalleryItems, createGalleryItem, deleteGalleryItem, } from '../controllers/galleryController.js';
 import { getAttendance, saveAttendance, runAttendanceAutoChecker, } from '../controllers/attendanceController.js';
 import { verifyJWT, isAdmin } from '../middleware/auth.js';
@@ -17,6 +17,8 @@ export async function adminRoutes(fastify) {
     // Teams Management
     fastify.get('/teams', getAllTeams);
     fastify.get('/teams/events', streamTeamStatusEvents);
+    fastify.get('/teams/template', downloadTeamsTemplate);
+    fastify.post('/teams/bulk-upload', importTeamsBulk);
     fastify.patch('/teams/:id/status', { schema: updateTeamStatusSchema }, updateTeamStatus);
     fastify.patch('/teams/:id/eliminate', { schema: eliminateTeamSchema }, eliminateTeam);
     // Attendance Management & Auto-Checker
