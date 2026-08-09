@@ -1,4 +1,4 @@
-import { getPublicLeaderboard, getPublicAnnouncements, getPublicTeams, getFanFavoriteLeaderboard, getPublicTasks, getPublicTimeline, } from '../controllers/publicController.js';
+import { getPublicLeaderboard, getPublicAnnouncements, getPublicTeams, getFanFavoriteLeaderboard, getPublicTasks, getPublicTimeline, getPublicCoordinators, } from '../controllers/publicController.js';
 import { getGalleryItems } from '../controllers/galleryController.js';
 import { streamTeamStatusEvents } from '../controllers/adminController.js';
 export async function publicRoutes(fastify) {
@@ -6,10 +6,11 @@ export async function publicRoutes(fastify) {
     fastify.get('/leaderboard', getPublicLeaderboard);
     fastify.get('/fan-favorite', getFanFavoriteLeaderboard);
     fastify.get('/announcements', getPublicAnnouncements);
-    // Public Teams & Tasks & Event Timeline
+    // Public Teams & Tasks & Event Timeline & Coordinators
     fastify.get('/teams', getPublicTeams);
     fastify.get('/tasks', getPublicTasks);
     fastify.get('/timeline', getPublicTimeline);
+    fastify.get('/coordinators', getPublicCoordinators);
     // Public SSE endpoint for real-time team survival status updates
     fastify.get('/teams/events', streamTeamStatusEvents);
     // Public endpoint for Media & Gallery items grouped by season

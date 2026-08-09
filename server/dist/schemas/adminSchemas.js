@@ -141,11 +141,12 @@ export const createAnnouncementSchema = {
     body: {
         type: 'object',
         required: ['message'],
-        additionalProperties: false,
+        additionalProperties: true,
         properties: {
             message: { type: 'string', minLength: 1, maxLength: 2000 },
             pinned: { type: 'boolean' },
             author: { type: 'string', maxLength: 100 },
+            sendEmailAlert: { type: 'boolean' },
         },
     },
 };

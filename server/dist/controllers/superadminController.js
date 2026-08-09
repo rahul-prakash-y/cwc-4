@@ -297,10 +297,44 @@ export async function deleteUser(request, reply) {
     });
 }
 /**
+ * Auto-generate a conflict-free email address for an admin based on full name
+ */
+export async function generateUniqueAdminEmail(request, reply) {
+    const rawName = request.query.name || request.body?.name || '';
+    if (!rawName.trim()) {
+        return reply.status(400).send({ error: 'Bad Request', message: 'Name is required to generate email.' });
+    }
+    const cleanName = rawName.trim().toLowerCase().replace(/[^a-z0-9\s]/g, '');
+    const parts = cleanName.split(/\s+/).filter(Boolean);
+    let baseSlug = parts.join('.');
+    if (!baseSlug)
+        baseSlug = 'admin';
+    let candidateEmail = `${baseSlug}@cwc.com`;
+    let counter = 1;
+    while (true) {
+        const existingUser = await User.findOne({ email: candidateEmail });
+        const existingLeader = await Team.findOne({ 'leader.email': candidateEmail });
+        const existingMember = await Team.findOne({
+            $or: [{ 'members.email': candidateEmail }, { 'members.deptMailId': candidateEmail }],
+        });
+        if (!existingUser && !existingLeader && !existingMember) {
+            break;
+        }
+        candidateEmail = `${baseSlug}${counter}@cwc.com`;
+        counter++;
+    }
+    return reply.send({
+        success: true,
+        email: candidateEmail,
+        name: rawName.trim(),
+    });
+}
+/**
  * Task 3: Manage Admins (Create, list, update role, or revoke access)
  */
 export async function manageAdmins(request, reply) {
-    const { actionType = 'create', name, email, password, role = 'admin', adminId } = request.body || {};
+    const { actionType = 'create', name, password, role = 'admin', adminId } = request.body || {};
+    let email = request.body?.email;
     if (request.method === 'GET') {
         const adminList = await User.find({
             role: { $in: ['admin', 'superadmin'] },
@@ -338,12 +372,66 @@ export async function manageAdmins(request, reply) {
             message: `Admin access revoked for ${adminUser.email}. Demoted to student role.`,
         });
     }
+    const targetId = adminId || request.params.id || request.body?.id;
+    // Direct Role Change Handler by Admin ID
+    if (targetId && (actionType === 'update_role' || request.method === 'PUT' || request.method === 'PATCH')) {
+        const adminUser = await User.findById(targetId);
+        if (!adminUser) {
+            return reply.status(404).send({ error: 'Not Found', message: 'Admin account not found.' });
+        }
+        const oldRole = adminUser.role;
+        const newRole = role === 'superadmin' ? 'superadmin' : role === 'student' ? 'student' : 'admin';
+        adminUser.role = newRole;
+        adminUser.sessionVersion = (adminUser.sessionVersion || 0) + 1; // Invalidate session to refresh role
+        await adminUser.save();
+        await logAudit({
+            adminId: request.user.userId,
+            adminEmail: request.user.email,
+            action: 'UPDATE_ADMIN_ROLE',
+            targetId: adminUser._id.toString(),
+            targetType: 'User',
+            details: { name: adminUser.name, email: adminUser.email, oldRole, newRole },
+            ipAddress: request.ip,
+        });
+        return reply.send({
+            message: `Role for ${adminUser.name || adminUser.email} updated from ${oldRole.toUpperCase()} to ${newRole.toUpperCase()}!`,
+            admin: {
+                id: adminUser._id,
+                name: adminUser.name,
+                email: adminUser.email,
+                role: adminUser.role,
+            },
+        });
+    }
     // Create or Update Admin
-    if (!email || !name) {
+    if (!name) {
         return reply.status(400).send({
             error: 'Bad Request',
-            message: 'Name and email are required for admin management.',
+            message: 'Name is required for admin management.',
         });
+    }
+    // If email is not provided, auto-generate a conflict-free email from name
+    if (!email || !email.trim()) {
+        const cleanName = name.trim().toLowerCase().replace(/[^a-z0-9\s]/g, '');
+        const parts = cleanName.split(/\s+/).filter(Boolean);
+        let baseSlug = parts.join('.');
+        if (!baseSlug)
+            baseSlug = 'admin';
+        let candidateEmail = `${baseSlug}@cwc.com`;
+        let counter = 1;
+        while (true) {
+            const existingUser = await User.findOne({ email: candidateEmail });
+            const existingLeader = await Team.findOne({ 'leader.email': candidateEmail });
+            const existingMember = await Team.findOne({
+                $or: [{ 'members.email': candidateEmail }, { 'members.deptMailId': candidateEmail }],
+            });
+            if (!existingUser && !existingLeader && !existingMember) {
+                break;
+            }
+            candidateEmail = `${baseSlug}${counter}@cwc.com`;
+            counter++;
+        }
+        email = candidateEmail;
     }
     const normalizedEmail = email.toLowerCase().trim();
     let adminUser = await User.findOne({ email: normalizedEmail });
@@ -454,6 +542,9 @@ export async function updateGlobalSettings(request, reply) {
     if (body.isGrandFinale !== undefined) {
         updates.isGrandFinale = Boolean(body.isGrandFinale);
     }
+    if (body.isTaskPortalApproved !== undefined) {
+        updates.isTaskPortalApproved = Boolean(body.isTaskPortalApproved);
+    }
     let settings = await Settings.findOneAndUpdate({}, { $set: updates }, { upsert: true, new: true }).lean();
     if (!settings) {
         settings = await getGlobalSettings();
@@ -474,4 +565,116 @@ export async function updateGlobalSettings(request, reply) {
         message: '⚙️ Global Site Configuration updated successfully!',
         settings,
     });
+}
+/**
+ * Manage Coordinators (CRUD for SuperAdmin & Admin)
+ */
+export async function getCoordinators(_request, reply) {
+    const { Coordinator } = await import('../models/Coordinator.js');
+    const coordinators = await Coordinator.find().sort({ order: 1, createdAt: 1 }).lean();
+    return reply.send({ success: true, count: coordinators.length, coordinators });
+}
+export async function createCoordinator(request, reply) {
+    const { Coordinator } = await import('../models/Coordinator.js');
+    const { name, role, department, phone, email, type = 'faculty', order = 0 } = request.body || {};
+    if (!name || !role || !department || !phone || !email) {
+        return reply.status(400).send({
+            error: 'Bad Request',
+            message: 'Name, role, department, phone, and email are required fields.',
+        });
+    }
+    const coordinator = await Coordinator.create({
+        name: name.trim(),
+        role: role.trim(),
+        department: department.trim(),
+        phone: phone.trim(),
+        email: email.trim().toLowerCase(),
+        type,
+        order: Number(order) || 0,
+    });
+    return reply.status(201).send({
+        success: true,
+        message: `Coordinator ${coordinator.name} added successfully.`,
+        coordinator,
+    });
+}
+export async function updateCoordinator(request, reply) {
+    const { Coordinator } = await import('../models/Coordinator.js');
+    const { id } = request.params;
+    const updates = request.body || {};
+    const coordinator = await Coordinator.findByIdAndUpdate(id, { $set: updates }, { new: true, runValidators: true });
+    if (!coordinator) {
+        return reply.status(404).send({ error: 'Not Found', message: 'Coordinator not found' });
+    }
+    return reply.send({
+        success: true,
+        message: `Coordinator ${coordinator.name} updated successfully.`,
+        coordinator,
+    });
+}
+export async function deleteCoordinator(request, reply) {
+    const { Coordinator } = await import('../models/Coordinator.js');
+    const { id } = request.params;
+    const coordinator = await Coordinator.findByIdAndDelete(id);
+    if (!coordinator) {
+        return reply.status(404).send({ error: 'Not Found', message: 'Coordinator not found' });
+    }
+    return reply.send({
+        success: true,
+        message: `Coordinator ${coordinator.name} deleted successfully.`,
+    });
+}
+/**
+ * Lookup User/Member details by email for auto-completing coordinator forms
+ */
+export async function lookupUserByEmail(request, reply) {
+    const emailQuery = request.query.email?.trim().toLowerCase();
+    if (!emailQuery) {
+        return reply.status(400).send({ error: 'Bad Request', message: 'Email query parameter is required' });
+    }
+    const escapeRegex = (str) => str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const searchRegex = new RegExp(`^${escapeRegex(emailQuery)}$`, 'i');
+    // 1. Search in User collection
+    const user = await User.findOne({ email: searchRegex }).lean();
+    if (user) {
+        return reply.send({
+            found: true,
+            name: user.name,
+            email: user.email,
+            phone: user.phone || '',
+            department: user.department || user.dept || '',
+        });
+    }
+    // 2. Search in Team collection (leader)
+    const teamAsLeader = await Team.findOne({ 'leader.email': searchRegex }).lean();
+    if (teamAsLeader && teamAsLeader.leader) {
+        return reply.send({
+            found: true,
+            name: teamAsLeader.leader.name,
+            email: teamAsLeader.leader.email,
+            phone: teamAsLeader.leader.phone || '',
+            department: teamAsLeader.leader.department || '',
+        });
+    }
+    // 3. Search in Team collection (member)
+    const teamWithMember = await Team.findOne({
+        $or: [
+            { 'members.email': searchRegex },
+            { 'members.deptMailId': searchRegex },
+        ],
+    }).lean();
+    if (teamWithMember && Array.isArray(teamWithMember.members)) {
+        const member = teamWithMember.members.find((m) => (m.email && m.email.toLowerCase() === emailQuery) ||
+            (m.deptMailId && m.deptMailId.toLowerCase() === emailQuery));
+        if (member) {
+            return reply.send({
+                found: true,
+                name: member.name,
+                email: member.email || member.deptMailId,
+                phone: member.phone || '',
+                department: '',
+            });
+        }
+    }
+    return reply.send({ found: false, name: null });
 }

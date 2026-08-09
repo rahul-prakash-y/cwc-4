@@ -21,6 +21,7 @@ import { studentRoutes } from "./routes/studentRoutes.js";
 import { publicRoutes } from "./routes/publicRoutes.js";
 import { superadminRoutes } from "./routes/superadminRoutes.js";
 import { settingsRoutes } from "./routes/settings.js";
+import { advantagesRoutes } from "./routes/advantages.js";
 import { getActiveSocketsCount } from "./socket.js";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -80,14 +81,22 @@ export function buildApp() {
             ? {
                 useDefaults: true,
                 directives: {
+                    "default-src": ["'self'"],
+                    "script-src": ["'self'", "'unsafe-inline'", "'unsafe-eval'", "blob:"],
+                    "script-src-attr": ["'self'", "'unsafe-inline'"],
+                    "style-src": ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
+                    "font-src": ["'self'", "data:", "https://fonts.gstatic.com"],
                     "img-src": [
                         "'self'",
                         "data:",
+                        "blob:",
                         "https://res.cloudinary.com",
                         "https://images.unsplash.com",
                     ],
-                    // Add frame-src to allow Google iframes
+                    "connect-src": ["'self'", "https:", "wss:", "ws:"],
                     "frame-src": ["'self'", "https://www.google.com"],
+                    "worker-src": ["'self'", "blob:"],
+                    "object-src": ["'none'"],
                 },
             }
             : false,
@@ -237,6 +246,12 @@ export function buildApp() {
     fastify.register(studentRoutes, { prefix: "/api/student" });
     fastify.register(settingsRoutes, { prefix: "/api/v1/settings" });
     fastify.register(settingsRoutes, { prefix: "/api/settings" });
+    fastify.register(advantagesRoutes, { prefix: "/api/v1/student" });
+    fastify.register(advantagesRoutes, { prefix: "/api/student" });
+    fastify.register(advantagesRoutes, { prefix: "/api/v1/admin" });
+    fastify.register(advantagesRoutes, { prefix: "/api/admin" });
+    fastify.register(advantagesRoutes, { prefix: "/api/v1" });
+    fastify.register(advantagesRoutes, { prefix: "/api" });
     // Serve Frontend Static Files in Production (Render)
     const clientDistPath = path.resolve(__dirname, "../../client/dist");
     if (fs.existsSync(clientDistPath)) {

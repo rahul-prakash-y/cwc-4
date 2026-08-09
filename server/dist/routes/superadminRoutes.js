@@ -1,9 +1,13 @@
-import { getAuditLogs, toggleBlockStatus, forceResetPassword, forceLogout, deleteUser, manageAdmins, getSecurityTargets, updateGlobalSettings, } from '../controllers/superadminController.js';
+import { getAuditLogs, toggleBlockStatus, forceResetPassword, forceLogout, deleteUser, manageAdmins, generateUniqueAdminEmail, getSecurityTargets, updateGlobalSettings, getCoordinators, createCoordinator, updateCoordinator, deleteCoordinator, lookupUserByEmail, } from '../controllers/superadminController.js';
+import { updateTeamDetails } from '../controllers/adminController.js';
 import { verifyJWT, isSuperAdmin } from '../middleware/auth.js';
 export async function superadminRoutes(fastify) {
     // All SuperAdmin routes require JWT verification & SuperAdmin role enforcement
     fastify.addHook('preHandler', verifyJWT);
     fastify.addHook('preHandler', isSuperAdmin);
+    fastify.get('/lookup-user', lookupUserByEmail);
+    // Team Details & Roster Edit
+    fastify.put('/teams/:id', updateTeamDetails);
     // Task 3: Fetch paginated audit logs & threat telemetry
     fastify.get('/audit-logs', getAuditLogs);
     fastify.get('/threats', getAuditLogs);
@@ -18,13 +22,23 @@ export async function superadminRoutes(fastify) {
     // Task 3: Delete user or team permanently with data cleanup
     fastify.delete('/users/:id', deleteUser);
     fastify.delete('/teams/:id', deleteUser);
-    // Task 3: Manage standard 'admin' accounts (Create, list, update, revoke)
+    // Task 3: Manage standard 'admin' accounts (Create, list, update role, revoke, auto-email)
     fastify.get('/manage-admins', manageAdmins);
     fastify.post('/manage-admins', manageAdmins);
+    fastify.put('/manage-admins', manageAdmins);
+    fastify.put('/manage-admins/:id', manageAdmins);
+    fastify.patch('/manage-admins/:id', manageAdmins);
     fastify.delete('/manage-admins/:id', manageAdmins);
+    fastify.get('/generate-admin-email', generateUniqueAdminEmail);
+    fastify.post('/generate-admin-email', generateUniqueAdminEmail);
     // Security Center targets search helper
     fastify.get('/targets', getSecurityTargets);
     // Task 3: Update Global Singleton CMS Settings
     fastify.put('/settings/global', updateGlobalSettings);
+    // Coordinators Management (CRUD)
+    fastify.get('/coordinators', getCoordinators);
+    fastify.post('/coordinators', createCoordinator);
+    fastify.put('/coordinators/:id', updateCoordinator);
+    fastify.delete('/coordinators/:id', deleteCoordinator);
 }
 export default superadminRoutes;

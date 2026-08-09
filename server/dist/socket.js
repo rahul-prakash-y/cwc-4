@@ -61,6 +61,14 @@ export function broadcastAdvantageGranted(payload) {
         });
     }
 }
+export function broadcastSpinWheelResult(payload) {
+    if (ioInstance) {
+        ioInstance.to(GLOBAL_ROOM).to(STUDENT_ROOM).to(ADMIN_ROOM).emit('SPIN_WHEEL_RESULT', {
+            timestamp: new Date().toISOString(),
+            ...payload,
+        });
+    }
+}
 export function broadcastFinaleTriggered(payload) {
     if (ioInstance) {
         ioInstance.emit('FINALE_TRIGGERED', {

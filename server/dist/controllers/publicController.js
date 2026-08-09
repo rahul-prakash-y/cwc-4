@@ -166,3 +166,15 @@ export async function getPublicTimeline(_request, reply) {
         timeline,
     });
 }
+/**
+ * Public Coordinators Endpoint
+ */
+export async function getPublicCoordinators(_request, reply) {
+    const { Coordinator } = await import('../models/Coordinator.js');
+    let coordinators = await Coordinator.find().sort({ order: 1, createdAt: 1 }).lean();
+    return reply.send({
+        success: true,
+        count: coordinators.length,
+        coordinators,
+    });
+}

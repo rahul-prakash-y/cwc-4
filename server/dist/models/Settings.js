@@ -17,6 +17,7 @@ const settingsSchema = new Schema({
         enum: ['standard', 'carnival', 'finale'],
         default: 'standard',
     },
+    isTaskPortalApproved: { type: Boolean, default: true },
 }, { timestamps: true });
 export const Settings = mongoose.model('Settings', settingsSchema);
 /**
@@ -33,12 +34,13 @@ export async function getGlobalSettings() {
             heroBannerText: 'Welcome to Code With Curious Season 4! The Ultimate Coding Carnival.',
             isGrandFinale: false,
             eventMode: 'standard',
+            isTaskPortalApproved: true,
         });
         doc = created.toObject();
     }
     else if (!doc.eventMode) {
         const eventMode = doc.isGrandFinale ? 'finale' : 'standard';
-        await Settings.updateOne({ _id: doc._id }, { $set: { eventMode } });
+        await Settings.updateOne({ _id: doc._id }, { $set: { eventMode, isTaskPortalApproved: doc.isTaskPortalApproved ?? true } });
         doc.eventMode = eventMode;
     }
     return doc;

@@ -9,11 +9,112 @@ import { Score } from '../models/Score.js';
 import { Setting } from '../models/Setting.js';
 import { Settings } from '../models/Settings.js';
 import { BuzzerQuestion } from '../models/BuzzerQuestion.js';
+import { DailyVoteLog } from '../models/VoteLog.js';
+import { Submission } from '../models/Submission.js';
 import { delCache } from '../utils/redis.js';
 import { logAdminAction } from '../utils/auditLogger.js';
-import { broadcastScoreUpdated, broadcastNewAnnouncement, broadcastStatusChanged, broadcastAdvantageGranted, broadcastFinaleTriggered, } from '../socket.js';
+import { broadcastScoreUpdated, broadcastNewAnnouncement, broadcastStatusChanged, broadcastAdvantageGranted, broadcastFinaleTriggered, broadcastVotesUpdated, } from '../socket.js';
 import { sendEmail, sendBackgroundEmailBatch } from '../utils/mailer.js';
 import { getDailyTaskEmailHtml, getAdvantageGrantedEmailHtml, getStatusAlertEmailHtml, getAnnouncementEmailHtml, } from '../utils/emailTemplates.js';
+/* ==========================================================================
+   ADMIN OVERVIEW TELEMETRY & STATS CONTROLLER (DB DRIVEN)
+   ========================================================================== */
+export async function getOverviewStats(_request, reply) {
+    try {
+        // 1. Teams statistics
+        const totalTeams = await Team.countDocuments();
+        const qualifiedTeams = await Team.countDocuments({
+            status: { $in: ['Qualified', 'Safe', 'Approved'] },
+        });
+        const eliminatedTeams = await Team.countDocuments({ status: 'Eliminated' });
+        // Calculate total participants (leaders + members count)
+        const teamsList = await Team.find().select('members leader').lean();
+        let totalParticipants = 0;
+        teamsList.forEach((t) => {
+            let count = 0;
+            if (t.leader)
+                count += 1;
+            if (Array.isArray(t.members))
+                count += t.members.length;
+            totalParticipants += count;
+        });
+        // 2. Submissions statistics
+        const startOfToday = new Date();
+        startOfToday.setHours(0, 0, 0, 0);
+        const todaySubmissions = await Submission.countDocuments({ submittedAt: { $gte: startOfToday } });
+        const totalSubmissions = await Submission.countDocuments();
+        const evaluatedSubmissions = await Submission.countDocuments({ status: 'Evaluated' });
+        let evaluationPercentage = 100;
+        if (totalSubmissions > 0) {
+            evaluationPercentage = Math.round((evaluatedSubmissions / totalSubmissions) * 100);
+        }
+        // 3. Daily Progression Chart Data
+        const topTeams = await Team.find()
+            .select('teamName themeColor')
+            .limit(6)
+            .lean();
+        const days = ['Day 1', 'Day 2', 'Day 3', 'Day 4', 'Day 5', 'Day 6', 'Day 7', 'Day 8', 'Day 9', 'Day 10'];
+        const curatedColors = ['#FFD700', '#FF0055', '#00F0FF', '#8A2BE2', '#10B981', '#F59E0B'];
+        // Fetch scores grouped by team and dayNumber
+        const allScores = await Score.find().lean();
+        // Map: teamId -> dayNumber -> score
+        const teamScoreMap = {};
+        allScores.forEach((s) => {
+            const tId = s.team?.toString();
+            if (!tId)
+                return;
+            if (!teamScoreMap[tId])
+                teamScoreMap[tId] = {};
+            const dayNum = s.dayNumber || s.day || 1;
+            const pts = s.pointsEarned ?? s.total ?? s.scores?.total ?? 0;
+            teamScoreMap[tId][dayNum] = pts;
+        });
+        const datasets = topTeams.map((team, idx) => {
+            const color = team.themeColor || curatedColors[idx % curatedColors.length];
+            const tId = team._id.toString();
+            let runningTotal = 0;
+            const dataPoints = Array.from({ length: 10 }, (_, i) => {
+                const dayNum = i + 1;
+                const dayPts = teamScoreMap[tId]?.[dayNum] || 0;
+                runningTotal += dayPts;
+                return runningTotal;
+            });
+            return {
+                label: team.teamName,
+                data: dataPoints,
+                borderColor: color,
+                backgroundColor: `${color}20`,
+                fill: true,
+                tension: 0.4,
+                pointBackgroundColor: color,
+                pointBorderColor: '#0B0A16',
+                pointHoverRadius: 7,
+            };
+        });
+        return reply.send({
+            cards: {
+                totalTeams,
+                totalParticipants,
+                qualifiedTeams,
+                eliminatedTeams,
+                todaySubmissions,
+                totalSubmissions,
+                evaluatedSubmissions,
+                evaluationPercentage,
+            },
+            progressionChart: {
+                labels: days,
+                datasets,
+            },
+        });
+    }
+    catch (error) {
+        return reply.status(500).send({
+            error: 'Internal Server Error',
+            message: error.message || 'Failed to fetch overview telemetry.',
+        });
+    }
+}
 /* ==========================================================================
    GRAND FINALE GLOBAL TOGGLE CONTROLLERS
    ========================================================================== */
@@ -78,6 +179,7 @@ export async function getAllTeams(request, reply) {
         const totalPoints = scores.reduce((acc, curr) => acc + (curr.pointsEarned || 0), 0);
         return {
             ...team,
+            points: totalPoints,
             totalPoints,
         };
     }));
@@ -210,6 +312,123 @@ export async function eliminateTeam(request, reply) {
         team,
     });
 }
+export async function updateTeamDetails(request, reply) {
+    const teamId = request.params.id || request.params.teamId;
+    const { teamName, status, themeColor, residenceType, leader, members } = request.body || {};
+    if (!teamId) {
+        return reply.status(400).send({ error: 'Bad Request', message: 'Team ID is required' });
+    }
+    let team = null;
+    if (mongoose.Types.ObjectId.isValid(teamId)) {
+        team = await Team.findById(teamId);
+    }
+    if (!team) {
+        team = await Team.findOne({ teamName: teamId });
+    }
+    if (!team) {
+        return reply.status(404).send({ error: 'Not Found', message: 'Team not found' });
+    }
+    if (teamName !== undefined && teamName.trim())
+        team.teamName = teamName.trim();
+    if (status !== undefined)
+        team.status = status;
+    if (themeColor !== undefined && themeColor.trim())
+        team.themeColor = themeColor.trim();
+    if (residenceType !== undefined)
+        team.residenceType = residenceType;
+    if (leader) {
+        team.leader = {
+            name: leader.name ?? team.leader?.name ?? '',
+            email: (leader.email ?? team.leader?.email ?? '').toLowerCase().trim(),
+            phone: leader.phone ?? team.leader?.phone ?? '',
+            rollNumber: leader.rollNumber ?? team.leader?.rollNumber ?? '',
+            department: leader.department ?? team.leader?.department ?? '',
+            userId: team.leader?.userId,
+        };
+    }
+    if (Array.isArray(members)) {
+        team.members = members.map((m, idx) => {
+            const memberName = m.name?.trim() || `Member ${idx + 1}`;
+            const roll = m.rollNo?.trim() || m.rollNumber?.trim() || `ROLL-${idx + 1}`;
+            const mail = (m.deptMailId?.trim() || m.email?.trim() || `member${idx + 1}@cwc.io`).toLowerCase();
+            const resType = m.residenceType === 'Day Scholar' ? 'DayScholar' : (m.residenceType || 'Hosteller');
+            return {
+                name: memberName,
+                rollNo: roll,
+                rollNumber: roll,
+                deptMailId: mail,
+                email: mail,
+                phone: m.phone?.trim() || '0000000000',
+                gender: m.gender || 'Male',
+                residenceType: resType,
+                role: m.role || (idx === 0 ? 'Leader' : 'Member'),
+                userId: m.userId,
+            };
+        });
+    }
+    await team.save();
+    const targetPoints = request.body.points !== undefined ? request.body.points : request.body.totalPoints;
+    if (targetPoints !== undefined && typeof targetPoints === 'number' && targetPoints >= 0) {
+        let scoreDoc = await Score.findOne({ team: team._id }).sort({ dayNumber: 1 });
+        if (!scoreDoc) {
+            scoreDoc = new Score({
+                team: team._id,
+                dayNumber: 1,
+                day: 1,
+                date: new Date(),
+                scores: { adv: 0, main: targetPoints, special: 0, total: targetPoints },
+                adv: 0,
+                main: targetPoints,
+                special: 0,
+                total: targetPoints,
+                pointsEarned: targetPoints,
+            });
+        }
+        else {
+            const adv = scoreDoc.scores?.adv || scoreDoc.adv || 0;
+            const special = scoreDoc.scores?.special || scoreDoc.special || 0;
+            const computedTotal = adv + targetPoints + special;
+            scoreDoc.main = targetPoints;
+            scoreDoc.total = computedTotal;
+            scoreDoc.pointsEarned = computedTotal;
+            scoreDoc.scores = { adv, main: targetPoints, special, total: computedTotal };
+        }
+        await scoreDoc.save();
+        broadcastScoreUpdated({
+            teamId: team._id.toString(),
+            teamName: team.teamName,
+            points: targetPoints,
+        });
+    }
+    await delCache('cwc:leaderboard');
+    teamBroadcaster.emit('status-changed', {
+        teamId: team._id.toString(),
+        teamName: team.teamName,
+        status: team.status,
+        timestamp: new Date().toISOString(),
+    });
+    broadcastStatusChanged({
+        teamId: team._id.toString(),
+        teamName: team.teamName,
+        status: team.status,
+        timestamp: new Date().toISOString(),
+    });
+    await logAdminAction(request, 'TEAM_UPDATED', team._id, {
+        teamName: team.teamName,
+        status: team.status,
+        membersCount: team.members.length,
+    });
+    const teamScores = await Score.find({ team: team._id });
+    const updatedTotalPoints = teamScores.reduce((acc, curr) => acc + (curr.pointsEarned || 0), 0);
+    return reply.send({
+        message: `Team '${team.teamName}' and member details updated successfully! 🎪`,
+        team: {
+            ...team.toObject(),
+            points: updatedTotalPoints,
+            totalPoints: updatedTotalPoints,
+        },
+    });
+}
 export async function createTask(request, reply) {
     const { title, description, type, points, startTime, endTime, visibility = false } = request.body;
     if (!title || !type || points === undefined) {
@@ -301,7 +520,7 @@ export async function deleteTask(request, reply) {
     });
 }
 export async function createAnnouncement(request, reply) {
-    const { message, pinned = false, author, sendEmailAlert = false } = request.body;
+    const { message, pinned = false, author, sendEmailAlert = true } = request.body;
     if (!message) {
         return reply.status(400).send({
             error: 'Bad Request',
@@ -316,10 +535,11 @@ export async function createAnnouncement(request, reply) {
         timestamp: new Date(),
     });
     await delCache('cwc:announcements');
+    const shouldSendEmail = sendEmailAlert !== false;
     await logAdminAction(request, 'ANNOUNCEMENT_CREATED', announcement._id, {
         message: announcement.message,
         author: announcement.author,
-        sendEmailAlert: Boolean(sendEmailAlert),
+        sendEmailAlert: shouldSendEmail,
     });
     // Broadcast WebSocket event for NEW_ANNOUNCEMENT
     broadcastNewAnnouncement({
@@ -329,12 +549,34 @@ export async function createAnnouncement(request, reply) {
         author: announcement.author,
         timestamp: announcement.timestamp,
     });
-    // Task 3: Trigger background email broadcast if sendEmailAlert is checked
-    if (sendEmailAlert) {
+    // Trigger background email broadcast if sendEmailAlert is true or not explicitly set to false
+    if (shouldSendEmail) {
         setImmediate(async () => {
             try {
-                const teams = await Team.find({ 'leader.email': { $exists: true } });
-                const recipients = Array.from(new Set(teams.map((t) => t.leader?.email).filter((e) => Boolean(e))));
+                const [users, teams] = await Promise.all([
+                    User.find({ role: { $in: ['student', 'leader', 'member', 'user'] } }).select('email').lean(),
+                    Team.find().lean(),
+                ]);
+                const emails = [];
+                users.forEach((u) => {
+                    if (u.email)
+                        emails.push(u.email);
+                });
+                teams.forEach((t) => {
+                    if (t.leader?.email)
+                        emails.push(t.leader.email);
+                    if (Array.isArray(t.members)) {
+                        t.members.forEach((m) => {
+                            if (m.email)
+                                emails.push(m.email);
+                            if (m.deptMailId)
+                                emails.push(m.deptMailId);
+                        });
+                    }
+                });
+                const recipients = Array.from(new Set(emails
+                    .map((e) => (typeof e === 'string' ? e.trim().toLowerCase() : ''))
+                    .filter((e) => e && e.includes('@'))));
                 if (recipients.length > 0) {
                     const html = getAnnouncementEmailHtml({
                         announcementMessage: message,
@@ -354,11 +596,11 @@ export async function createAnnouncement(request, reply) {
         });
     }
     return reply.status(201).send({
-        message: sendEmailAlert
+        message: shouldSendEmail
             ? 'Global announcement posted & background email alerts dispatched! 📢📧'
             : 'Global announcement posted! 📢',
         announcement,
-        emailAlertTriggered: Boolean(sendEmailAlert),
+        emailAlertTriggered: shouldSendEmail,
     });
 }
 export async function getAllAnnouncementsAdmin(_request, reply) {
@@ -590,6 +832,125 @@ export async function updateScoresBatch(request, reply) {
         message: 'Batch score sheet updated successfully! 📊',
         updatedCount: results.length,
         results,
+    });
+}
+export async function upsertScore(request, reply) {
+    const { teamId, date, adv = 0, main = 0, special = 0 } = request.body || {};
+    const dayNum = Number(request.body?.dayNumber || request.body?.day || 1);
+    if (!teamId) {
+        return reply.status(400).send({
+            error: 'Bad Request',
+            message: 'teamId is required for score updates',
+        });
+    }
+    const isRealObjectId = mongoose.Types.ObjectId.isValid(teamId);
+    let team = null;
+    if (isRealObjectId) {
+        team = await Team.findById(teamId);
+    }
+    if (!team) {
+        team = await Team.findOne({ teamName: teamId });
+    }
+    const teamName = team ? team.teamName : (teamId.includes('team-') ? teamId.replace('team-', 'Team ') : teamId);
+    const numAdv = Number(adv) || 0;
+    const numMain = Number(main) || 0;
+    const numSpecial = Number(special) || 0;
+    const computedTotal = numAdv + numMain + numSpecial;
+    const scoreDate = date ? new Date(date) : new Date();
+    let scoreDoc = null;
+    if (isRealObjectId) {
+        const prevScore = await Score.findOne({ team: teamId, dayNumber: dayNum });
+        const beforeValues = prevScore
+            ? {
+                scores: prevScore.scores || { adv: prevScore.adv, main: prevScore.main, special: prevScore.special, total: prevScore.total },
+                dayNumber: prevScore.dayNumber,
+                date: prevScore.date,
+            }
+            : null;
+        scoreDoc = await Score.findOneAndUpdate({ team: teamId, dayNumber: dayNum }, {
+            team: teamId,
+            dayNumber: dayNum,
+            day: dayNum,
+            date: scoreDate,
+            scores: {
+                adv: numAdv,
+                main: numMain,
+                special: numSpecial,
+                total: computedTotal,
+            },
+            adv: numAdv,
+            main: numMain,
+            special: numSpecial,
+            total: computedTotal,
+            pointsEarned: computedTotal,
+            recordedBy: request.user?.id && mongoose.Types.ObjectId.isValid(request.user?.id) ? request.user?.id : null,
+        }, { upsert: true, new: true, setDefaultsOnInsert: true });
+        await delCache('cwc:leaderboard');
+        await logAdminAction(request, 'SCORE_UPDATED', teamId, {
+            teamName,
+            dayNumber: dayNum,
+            before: beforeValues,
+            after: { scores: scoreDoc.scores, dayNumber: scoreDoc.dayNumber, date: scoreDoc.date },
+        });
+    }
+    else {
+        scoreDoc = {
+            team: teamId,
+            dayNumber: dayNum,
+            day: dayNum,
+            date: scoreDate,
+            scores: { adv: numAdv, main: numMain, special: numSpecial, total: computedTotal },
+            total: computedTotal,
+        };
+    }
+    broadcastScoreUpdated({
+        teamId,
+        teamName,
+        dayNumber: dayNum,
+        scores: scoreDoc.scores,
+    });
+    return reply.send({
+        message: `Score updated for team '${teamName}' on Day ${dayNum} successfully! 📊`,
+        score: scoreDoc,
+    });
+}
+export async function getAdminScores(request, reply) {
+    const query = (request.query || {});
+    const dayNumber = Number(query.dayNumber || query.day || 1);
+    const teams = await Team.find().lean();
+    const scores = await Score.find({ dayNumber }).lean();
+    const scoresMap = new Map();
+    scores.forEach((s) => scoresMap.set(s.team.toString(), s));
+    const result = teams.map((team, idx) => {
+        const scoreDoc = scoresMap.get(team._id.toString());
+        const adv = scoreDoc?.scores?.adv ?? scoreDoc?.adv ?? 0;
+        const main = scoreDoc?.scores?.main ?? scoreDoc?.main ?? 0;
+        const special = scoreDoc?.scores?.special ?? scoreDoc?.special ?? 0;
+        const total = scoreDoc?.scores?.total ?? scoreDoc?.total ?? (adv + main + special);
+        return {
+            teamId: team._id.toString(),
+            teamName: team.teamName,
+            teamAvatar: team.teamAvatar || '🎪',
+            leaderName: team.leader?.name || 'Team Leader',
+            advantage: team.advantages && team.advantages.length > 0 ? team.advantages[team.advantages.length - 1].advantage : 'None',
+            advScore: adv,
+            mainTaskScore: main,
+            specialTaskScore: special,
+            totalScore: total,
+            elimination: team.status === 'Eliminated',
+            immunity: Boolean(team.immunity),
+            status: team.status || 'Safe',
+            rank: idx + 1,
+        };
+    });
+    // Sort by totalScore descending and re-assign rank
+    result.sort((a, b) => b.totalScore - a.totalScore);
+    result.forEach((item, index) => {
+        item.rank = index + 1;
+    });
+    return reply.send({
+        dayNumber,
+        scores: result,
     });
 }
 /* ==========================================================================
@@ -887,5 +1248,112 @@ export async function updateTimelineTask(request, reply) {
     return reply.send({
         message: `Task '${task.category}' updated successfully! 🎯`,
         task,
+    });
+}
+/* ==========================================================================
+   VOTING & AUDIT CONTROLLERS FOR ADMIN & SUPERADMIN
+   ========================================================================== */
+export async function getAdminVotes(_request, reply) {
+    // Fetch all teams sorted by totalPublicVotes descending
+    const teams = await Team.find().sort({ totalPublicVotes: -1, createdAt: 1 }).lean();
+    const standings = teams.map((t, idx) => ({
+        rank: idx + 1,
+        teamId: t._id.toString(),
+        teamName: t.teamName,
+        leaderName: t.leader?.name || 'N/A',
+        leaderEmail: t.leader?.email || 'N/A',
+        residenceType: t.residenceType || 'Hosteller',
+        totalPublicVotes: t.totalPublicVotes || 0,
+        status: t.status || 'Approved',
+        avatar: t.avatar || '🎪',
+        themeColor: t.themeColor || '#FFD700',
+    }));
+    const totalVotesCast = standings.reduce((acc, t) => acc + t.totalPublicVotes, 0);
+    // Fetch detailed vote audit logs populated with voter team and target team
+    const rawLogs = await DailyVoteLog.find()
+        .populate('voterTeamId', 'teamName leader')
+        .populate('targetTeamId', 'teamName leader')
+        .sort({ createdAt: -1 })
+        .limit(500)
+        .lean();
+    const voteAuditLogs = rawLogs.map((log) => {
+        const isAdmin = log.voterType === 'Admin' || !log.voterTeamId;
+        return {
+            id: log._id.toString(),
+            date: log.date,
+            votesCast: log.votesCast,
+            voterType: log.voterType || (isAdmin ? 'Admin' : 'Team'),
+            voterName: isAdmin
+                ? `Admin (${log.voterEmail || 'Ringmaster'})`
+                : log.voterTeamId?.teamName || 'Unknown Team',
+            voterEmail: isAdmin
+                ? log.voterEmail || 'admin@cwc.org'
+                : log.voterTeamId?.leader?.email || 'student@cwc.io',
+            voterLeaderName: !isAdmin ? log.voterTeamId?.leader?.name || 'Team Leader' : 'Administrator',
+            targetTeamId: log.targetTeamId?._id?.toString() || log.targetTeamId?.toString(),
+            targetTeamName: log.targetTeamId?.teamName || 'Unknown Team',
+            targetTeamLeader: log.targetTeamId?.leader?.name || 'Team Leader',
+            createdAt: log.createdAt || log.updatedAt || new Date().toISOString(),
+        };
+    });
+    return reply.send({
+        success: true,
+        totalVotesCast,
+        totalTeams: standings.length,
+        standings,
+        voteAuditLogs,
+    });
+}
+export async function adminCastVote(request, reply) {
+    const { targetTeamId, voteCount } = request.body || {};
+    if (!targetTeamId) {
+        return reply.status(400).send({ error: 'Bad Request', message: 'Target team ID is required' });
+    }
+    const numVotes = Number(voteCount);
+    if (isNaN(numVotes) || numVotes <= 0 || !Number.isInteger(numVotes)) {
+        return reply.status(400).send({ error: 'Bad Request', message: 'voteCount must be a positive integer' });
+    }
+    const targetTeam = await Team.findById(targetTeamId);
+    if (!targetTeam) {
+        return reply.status(404).send({ error: 'Not Found', message: 'Target team not found' });
+    }
+    const adminEmail = request.user?.email || 'admin@cwc.org';
+    const today = new Date().toISOString().split('T')[0];
+    // Increment target team's totalPublicVotes
+    targetTeam.totalPublicVotes = (targetTeam.totalPublicVotes || 0) + numVotes;
+    await targetTeam.save();
+    // Record Admin Vote Log
+    await DailyVoteLog.create({
+        targetTeamId: targetTeam._id,
+        voterType: 'Admin',
+        voterEmail: adminEmail,
+        date: today,
+        votesCast: numVotes,
+    });
+    // Invalidate Redis Caches
+    await delCache('cwc:leaderboard');
+    await delCache('cwc:fan-favorite');
+    // Broadcast WebSocket event
+    broadcastVotesUpdated({
+        voterTeamId: 'ADMIN',
+        voterTeamName: `Admin (${adminEmail})`,
+        targetTeamId: targetTeam._id.toString(),
+        targetTeamName: targetTeam.teamName,
+        votesCast: numVotes,
+        totalPublicVotes: targetTeam.totalPublicVotes,
+    });
+    await logAdminAction(request, 'ADMIN_CAST_VOTE', targetTeam._id, {
+        votesCast: numVotes,
+        targetTeamName: targetTeam.teamName,
+        adminEmail,
+    });
+    return reply.send({
+        success: true,
+        message: `🎉 Successfully cast ${numVotes} admin vote(s) for '${targetTeam.teamName}'!`,
+        team: {
+            id: targetTeam._id,
+            teamName: targetTeam.teamName,
+            totalPublicVotes: targetTeam.totalPublicVotes,
+        },
     });
 }

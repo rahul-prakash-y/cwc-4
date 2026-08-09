@@ -47,8 +47,8 @@ const teamSchema = new Schema({
         type: [memberSchema],
         validate: [
             {
-                validator: (val) => Array.isArray(val) && val.length === 4,
-                message: 'Every team MUST contain exactly 4 complete member profile objects.',
+                validator: (val) => Array.isArray(val) && val.length >= 1 && val.length <= 6,
+                message: 'Every team MUST contain between 1 and 6 member profile objects.',
             },
         ],
         required: [true, 'Team members are required'],
@@ -84,6 +84,15 @@ const teamSchema = new Schema({
     isBlocked: {
         type: Boolean,
         default: false,
+    },
+    spinTokens: {
+        type: Number,
+        default: 1,
+        min: 0,
+    },
+    spunDays: {
+        type: [Number],
+        default: [],
     },
     totalPublicVotes: {
         type: Number,

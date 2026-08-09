@@ -124,7 +124,7 @@ const BASE_STYLING = `
  * 1. Team Registration Confirmation & Passcodes Email
  */
 export function getRegistrationEmailHtml(data) {
-    const portalUrl = data.portalUrl || 'http://localhost:5173';
+    const portalUrl = data.portalUrl || 'https://cwc-4.onrender.com/';
     const passcode = data.passcode || 'CWC4-LDR-PASS';
     return `
   <!DOCTYPE html>
