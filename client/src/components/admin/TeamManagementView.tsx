@@ -5,6 +5,8 @@ import { TicketTeamCard } from '../common/TicketTeamCard';
 import { GrantAdvantageModal } from './GrantAdvantageModal';
 import { DailyAttendanceView } from './DailyAttendanceView';
 import { EliminationControls } from './EliminationControls';
+import { TableSkeleton, CardSkeleton } from '../ui/Skeletons';
+import { EmptyState } from '../ui/EmptyState';
 
 export interface ExtendedTeam {
   id: string;
@@ -25,6 +27,7 @@ export const TeamManagementView: React.FC = () => {
   const [viewMode, setViewMode] = useState<'tickets' | 'table' | 'attendance'>('tickets');
   const [isGrantModalOpen, setIsGrantModalOpen] = useState(false);
   const [teams, setTeams] = useState<ExtendedTeam[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     const fetchTeams = async () => {
@@ -56,6 +59,8 @@ export const TeamManagementView: React.FC = () => {
         }
       } catch (err) {
         console.warn('Failed to fetch admin teams:', err);
+      } finally {
+        setIsLoading(false);
       }
     };
 
@@ -232,119 +237,135 @@ export const TeamManagementView: React.FC = () => {
           </div>
 
           {/* 3D Physical Admission Ticket Cards Grid */}
-          {viewMode === 'tickets' ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {filteredTeams.map((team) => (
-                <TicketTeamCard
-                  key={team.id}
-                  team={{
-                    _id: team.id,
-                    teamName: team.name,
-                    leaderName: team.leaderName,
-                    leaderEmail: team.leaderEmail,
-                    members: [team.leaderName, 'Priya Patel', 'Rohan Gupta'].slice(0, team.membersCount),
-                    track: 'Full-Stack Web',
-                    totalPoints: team.points,
-                    status: team.status,
-                    immunity: team.rank <= 2,
-                    advantages: team.rank === 1 ? [{ advantage: 'Double Points' }] : [],
-                    repoUrl: 'https://github.com/cwc/arena',
-                  }}
-                  rank={team.rank}
-                  onStatusChange={(id, status) => handleUpdateStatus(id, status as ExtendedTeam['status'])}
-                />
-              ))}
-            </div>
-          ) : null}
-
-          {/* Data Table */}
-          {viewMode === 'table' ? (
-            <div className="glass-card rounded-2xl border border-white/10 overflow-hidden shadow-2xl">
-        <div className="overflow-x-auto">
-          <table className="w-full text-left text-xs font-mono">
-            <thead>
-              <tr className="border-b border-white/10 bg-white/5 text-slate-300 uppercase tracking-wider">
-                <th className="p-4">Rank & Team</th>
-                <th className="p-4">Leader Details</th>
-                <th className="p-4">Points</th>
-                <th className="p-4">Status Tag</th>
-                <th className="p-4 text-center">Status Action</th>
-                <th className="p-4 text-right">Actions</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-white/5">
-              {filteredTeams.map((team) => (
-                <tr key={team.id} className="hover:bg-white/5 transition-colors">
-                  {/* Rank & Team */}
-                  <td className="p-4 font-bold text-white">
-                    <div className="flex items-center gap-3">
-                      <span className="text-carnival-gold text-sm font-extrabold">#{team.rank}</span>
-                      <span className="text-xl p-1.5 rounded-xl bg-white/5 border border-white/10">{team.avatar}</span>
-                      <div>
-                        <div className="font-extrabold text-white text-sm flex items-center gap-2">
-                          {team.name}
-                          <span
-                            className="w-2.5 h-2.5 rounded-full"
-                            style={{ backgroundColor: team.themeColor }}
-                            title={`Theme: ${team.themeColor}`}
-                          />
-                        </div>
-                        <div className="text-[11px] text-slate-400 font-sans font-normal truncate max-w-xs">{team.tagline}</div>
-                      </div>
-                    </div>
-                  </td>
-
-                  {/* Leader */}
-                  <td className="p-4">
-                    <div className="font-bold text-slate-200">{team.leaderName}</div>
-                    <div className="text-[10px] text-slate-400">{team.leaderEmail}</div>
-                  </td>
-
-                  {/* Points */}
-                  <td className="p-4 font-extrabold text-carnival-cyan text-sm">{team.points} PTS</td>
-
-                  {/* Status Tag */}
-                  <td className="p-4">
-                    <span className={`px-2.5 py-1 rounded-lg border font-sans font-bold text-[11px] inline-block ${getStatusBadge(team.status)}`}>
-                      {team.status}
-                    </span>
-                  </td>
-
-                  {/* Quick Status Controls — EliminationControls with built-in Elimination confirmation modal */}
-                  <td className="p-4 text-center">
-                    <EliminationControls
-                      teamId={team.id}
-                      teamName={team.name}
-                      currentStatus={team.status}
+          {isLoading ? (
+            viewMode === 'tickets' ? (
+              <CardSkeleton count={6} />
+            ) : (
+              <TableSkeleton rows={5} cols={6} className="min-h-[400px]" />
+            )
+          ) : filteredTeams.length === 0 ? (
+            <EmptyState
+              title="No Teams Found"
+              description="No teams have registered or matched your search filter."
+              icon={Users}
+            />
+          ) : (
+            <>
+              {viewMode === 'tickets' ? (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {filteredTeams.map((team) => (
+                    <TicketTeamCard
+                      key={team.id}
+                      team={{
+                        _id: team.id,
+                        teamName: team.name,
+                        leaderName: team.leaderName,
+                        leaderEmail: team.leaderEmail,
+                        members: [team.leaderName, 'Priya Patel', 'Rohan Gupta'].slice(0, team.membersCount),
+                        track: 'Full-Stack Web',
+                        totalPoints: team.points,
+                        status: team.status,
+                        immunity: team.rank <= 2,
+                        advantages: team.rank === 1 ? [{ advantage: 'Double Points' }] : [],
+                        repoUrl: 'https://github.com/cwc/arena',
+                      }}
+                      rank={team.rank}
                       onStatusChange={(id, status) => handleUpdateStatus(id, status as ExtendedTeam['status'])}
-                      compact
                     />
-                  </td>
+                  ))}
+                </div>
+              ) : null}
 
-                  {/* Action Buttons: Edit, Reject */}
-                  <td className="p-4 text-right space-x-2">
-                    <button
-                      onClick={() => setEditingTeam(team)}
-                      className="px-3 py-1.5 rounded-lg bg-carnival-gold/20 text-carnival-gold hover:bg-carnival-gold hover:text-slate-950 font-sans font-bold text-xs transition-all inline-flex items-center gap-1"
-                    >
-                      <Edit3 className="w-3.5 h-3.5" />
-                      <span>Edit</span>
-                    </button>
-                    <button
-                      onClick={() => handleDeleteTeam(team.id)}
-                      className="px-3 py-1.5 rounded-lg bg-rose-500/20 text-rose-400 hover:bg-rose-500 hover:text-white font-sans font-bold text-xs transition-all inline-flex items-center gap-1"
-                    >
-                      <Trash2 className="w-3.5 h-3.5" />
-                      <span>Reject</span>
-                    </button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </div>
-      ) : null}
+              {/* Data Table */}
+              {viewMode === 'table' ? (
+                <div className="glass-card rounded-2xl border border-white/10 overflow-hidden shadow-2xl">
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-xs font-mono">
+                <thead>
+                  <tr className="border-b border-white/10 bg-white/5 text-slate-300 uppercase tracking-wider">
+                    <th className="p-4">Rank & Team</th>
+                    <th className="p-4">Leader Details</th>
+                    <th className="p-4">Points</th>
+                    <th className="p-4">Status Tag</th>
+                    <th className="p-4 text-center">Status Action</th>
+                    <th className="p-4 text-right">Actions</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-white/5">
+                  {filteredTeams.map((team) => (
+                    <tr key={team.id} className="hover:bg-white/5 transition-colors">
+                      {/* Rank & Team */}
+                      <td className="p-4 font-bold text-white">
+                        <div className="flex items-center gap-3">
+                          <span className="text-carnival-gold text-sm font-extrabold">#{team.rank}</span>
+                          <span className="text-xl p-1.5 rounded-xl bg-white/5 border border-white/10">{team.avatar}</span>
+                          <div>
+                            <div className="font-extrabold text-white text-sm flex items-center gap-2">
+                              {team.name}
+                              <span
+                                className="w-2.5 h-2.5 rounded-full"
+                                style={{ backgroundColor: team.themeColor }}
+                                title={`Theme: ${team.themeColor}`}
+                              />
+                            </div>
+                            <div className="text-[11px] text-slate-400 font-sans font-normal truncate max-w-xs">{team.tagline}</div>
+                          </div>
+                        </div>
+                      </td>
+
+                      {/* Leader */}
+                      <td className="p-4">
+                        <div className="font-bold text-slate-200">{team.leaderName}</div>
+                        <div className="text-[10px] text-slate-400">{team.leaderEmail}</div>
+                      </td>
+
+                      {/* Points */}
+                      <td className="p-4 font-extrabold text-carnival-cyan text-sm">{team.points} PTS</td>
+
+                      {/* Status Tag */}
+                      <td className="p-4">
+                        <span className={`px-2.5 py-1 rounded-lg border font-sans font-bold text-[11px] inline-block ${getStatusBadge(team.status)}`}>
+                          {team.status}
+                        </span>
+                      </td>
+
+                      {/* Quick Status Controls */}
+                      <td className="p-4 text-center">
+                        <EliminationControls
+                          teamId={team.id}
+                          teamName={team.name}
+                          currentStatus={team.status}
+                          onStatusChange={(id, status) => handleUpdateStatus(id, status as ExtendedTeam['status'])}
+                          compact
+                        />
+                      </td>
+
+                      {/* Action Buttons: Edit, Reject */}
+                      <td className="p-4 text-right space-x-2">
+                        <button
+                          onClick={() => setEditingTeam(team)}
+                          className="px-3 py-1.5 rounded-lg bg-carnival-gold/20 text-carnival-gold hover:bg-carnival-gold hover:text-slate-950 font-sans font-bold text-xs transition-all inline-flex items-center gap-1"
+                        >
+                          <Edit3 className="w-3.5 h-3.5" />
+                          <span>Edit</span>
+                        </button>
+                        <button
+                          onClick={() => handleDeleteTeam(team.id)}
+                          className="px-3 py-1.5 rounded-lg bg-rose-500/20 text-rose-400 hover:bg-rose-500 hover:text-white font-sans font-bold text-xs transition-all inline-flex items-center gap-1"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                          <span>Reject</span>
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+          ) : null}
+            </>
+          )}
       </>
       )}
 

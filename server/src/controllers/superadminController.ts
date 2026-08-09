@@ -604,3 +604,105 @@ export async function updateGlobalSettings(
   });
 }
 
+/**
+ * Manage Coordinators (CRUD for SuperAdmin & Admin)
+ */
+export async function getCoordinators(_request: FastifyRequest, reply: FastifyReply) {
+  const { Coordinator } = await import('../models/Coordinator.js');
+  const coordinators = await Coordinator.find().sort({ order: 1, createdAt: 1 }).lean();
+  return reply.send({ success: true, count: coordinators.length, coordinators });
+}
+
+export async function createCoordinator(
+  request: FastifyRequest<{
+    Body: {
+      name: string;
+      role: string;
+      department: string;
+      phone: string;
+      email: string;
+      type?: 'faculty' | 'student';
+      order?: number;
+    };
+  }>,
+  reply: FastifyReply
+) {
+  const { Coordinator } = await import('../models/Coordinator.js');
+  const { name, role, department, phone, email, type = 'faculty', order = 0 } = request.body || {};
+
+  if (!name || !role || !department || !phone || !email) {
+    return reply.status(400).send({
+      error: 'Bad Request',
+      message: 'Name, role, department, phone, and email are required fields.',
+    });
+  }
+
+  const coordinator = await Coordinator.create({
+    name: name.trim(),
+    role: role.trim(),
+    department: department.trim(),
+    phone: phone.trim(),
+    email: email.trim().toLowerCase(),
+    type,
+    order: Number(order) || 0,
+  });
+
+  return reply.status(201).send({
+    success: true,
+    message: `Coordinator ${coordinator.name} added successfully.`,
+    coordinator,
+  });
+}
+
+export async function updateCoordinator(
+  request: FastifyRequest<{
+    Params: { id: string };
+    Body: {
+      name?: string;
+      role?: string;
+      department?: string;
+      phone?: string;
+      email?: string;
+      type?: 'faculty' | 'student';
+      order?: number;
+    };
+  }>,
+  reply: FastifyReply
+) {
+  const { Coordinator } = await import('../models/Coordinator.js');
+  const { id } = request.params;
+  const updates = request.body || {};
+
+  const coordinator = await Coordinator.findByIdAndUpdate(id, { $set: updates }, { new: true, runValidators: true });
+
+  if (!coordinator) {
+    return reply.status(404).send({ error: 'Not Found', message: 'Coordinator not found' });
+  }
+
+  return reply.send({
+    success: true,
+    message: `Coordinator ${coordinator.name} updated successfully.`,
+    coordinator,
+  });
+}
+
+export async function deleteCoordinator(
+  request: FastifyRequest<{ Params: { id: string } }>,
+  reply: FastifyReply
+) {
+  const { Coordinator } = await import('../models/Coordinator.js');
+  const { id } = request.params;
+
+  const coordinator = await Coordinator.findByIdAndDelete(id);
+
+  if (!coordinator) {
+    return reply.status(404).send({ error: 'Not Found', message: 'Coordinator not found' });
+  }
+
+  return reply.send({
+    success: true,
+    message: `Coordinator ${coordinator.name} deleted successfully.`,
+  });
+}
+
+

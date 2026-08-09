@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { CheckCircle2, Flame, Star, Lightbulb } from 'lucide-react';
 
@@ -16,13 +16,105 @@ interface TeamProgressProps {
   currentDayNumber?: number;
 }
 
-export const TeamProgress: React.FC<TeamProgressProps> = ({ timeline, currentDayNumber = 5 }) => {
-  const days: DayStatus[] =
-    timeline && timeline.length === 10
-      ? timeline
-      : Array.from({ length: 10 }, (_, i) => {
+export const TeamProgress: React.FC<TeamProgressProps> = ({ timeline: propsTimeline, currentDayNumber = 1 }) => {
+  const [fetchedTimeline, setFetchedTimeline] = useState<DayStatus[]>([]);
+
+  useEffect(() => {
+    if (!propsTimeline || propsTimeline.length === 0) {
+      const fetchLiveTrackerData = async () => {
+        try {
+          const token = localStorage.getItem('cwc_token') || localStorage.getItem('token');
+          const headers: Record<string, string> = token ? { Authorization: `Bearer ${token}` } : {};
+
+          // 1. Fetch Timeline Days & Tasks from MongoDB
+          let res = await fetch('/api/public/timeline');
+          if (!res.ok) {
+            res = await fetch('/api/admin/timeline', { headers });
+          }
+
+          let timelineDays: any[] = [];
+          if (res.ok) {
+            const data = await res.json();
+            timelineDays = data.timeline || data.days || (Array.isArray(data) ? data : []);
+          }
+
+          // 2. Fetch Student Dashboard Submissions/Scores to accurately set Completed vs Active status
+          let completedDayNumbers: Set<number> = new Set();
+          let activeDay: number = currentDayNumber;
+
+          try {
+            const studentRes = await fetch('/api/student/dashboard', { headers });
+            if (studentRes.ok) {
+              const studentData = await studentRes.json();
+              const submissions = studentData.submissions || [];
+              submissions.forEach((sub: any) => {
+                if (sub.status === 'Submitted' || sub.status === 'Evaluated') {
+                  const day = sub.task?.dayNumber;
+                  if (day) completedDayNumbers.add(day);
+                }
+              });
+            }
+          } catch (e) {
+            console.warn('Could not fetch student submissions for completed days status check:', e);
+          }
+
+          // 3. Map total days (up to 7 or 10 timeline days)
+          const totalDaysCount = Math.max(7, timelineDays.length || 7);
+          const mapped: DayStatus[] = Array.from({ length: totalDaysCount }, (_, idx) => {
+            const dayNum = idx + 1;
+            const dbDay = timelineDays.find((d: any) => d.dayNumber === dayNum);
+
+            const title = dbDay
+              ? dbDay.daywiseName || dbDay.theme || (dbDay.tasks && dbDay.tasks[0]?.title) || `Sprint Task #${dayNum}`
+              : dayNum === 5
+              ? 'Boss Fight'
+              : dayNum === 7 || dayNum === 10
+              ? 'Grand Finale'
+              : `Sprint Task #${dayNum}`;
+
+            const points = dbDay && dbDay.tasks && dbDay.tasks[0]?.points
+              ? dbDay.tasks[0].points
+              : dayNum === 5 || dayNum === 7 || dayNum === 10
+              ? 500
+              : 250;
+
+            const isBonus = dayNum === 5 || dayNum === 7 || dayNum === 10;
+
+            let status: 'Completed' | 'Active' | 'Upcoming' = 'Upcoming';
+            if (completedDayNumbers.has(dayNum) || dayNum < activeDay) {
+              status = 'Completed';
+            } else if (dayNum === activeDay) {
+              status = 'Active';
+            }
+
+            return {
+              dayNumber: dayNum,
+              date: `Day ${dayNum}`,
+              title,
+              points,
+              status,
+              isHighScoreBonus: isBonus,
+            };
+          });
+
+          setFetchedTimeline(mapped);
+        } catch (e) {
+          console.warn('Failed to fetch live tracker data:', e);
+        }
+      };
+
+      fetchLiveTrackerData();
+    }
+  }, [propsTimeline, currentDayNumber]);
+
+  const activeTimeline =
+    propsTimeline && propsTimeline.length > 0
+      ? propsTimeline
+      : fetchedTimeline.length > 0
+      ? fetchedTimeline
+      : Array.from({ length: 7 }, (_, i) => {
           const dayNum = i + 1;
-          const isBonus = dayNum === 5 || dayNum === 10;
+          const isBonus = dayNum === 5 || dayNum === 7;
           let status: 'Completed' | 'Active' | 'Upcoming' = 'Upcoming';
           if (dayNum < currentDayNumber) status = 'Completed';
           else if (dayNum === currentDayNumber) status = 'Active';
@@ -30,7 +122,7 @@ export const TeamProgress: React.FC<TeamProgressProps> = ({ timeline, currentDay
           return {
             dayNumber: dayNum,
             date: `Day ${dayNum}`,
-            title: dayNum === 5 ? 'Boss Fight' : dayNum === 10 ? 'Grand Finale' : `Sprint Task #${dayNum}`,
+            title: dayNum === 5 ? 'Boss Fight' : dayNum === 7 ? 'Grand Finale' : `Sprint Task #${dayNum}`,
             points: isBonus ? 500 : 250,
             status,
             isHighScoreBonus: isBonus,
@@ -45,7 +137,7 @@ export const TeamProgress: React.FC<TeamProgressProps> = ({ timeline, currentDay
             <span className="px-3 py-1 rounded-full text-xs font-mono font-bold bg-amber-500/10 dark:bg-carnival-gold/20 text-amber-700 dark:text-carnival-gold border border-amber-500/30 dark:border-carnival-gold/40 shadow-sm dark:shadow-neon-gold">
               🎪 CARNIVAL TRACKER
             </span>
-            <span className="text-xs font-mono text-slate-500 dark:text-slate-400">10-Day Carnival Lights Journey</span>
+            <span className="text-xs font-mono text-slate-500 dark:text-slate-400">Live DB Event Timeline</span>
           </div>
           <h2 className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white mt-1">
             Team Progress Carnival Tracker
@@ -65,13 +157,12 @@ export const TeamProgress: React.FC<TeamProgressProps> = ({ timeline, currentDay
         </div>
       </div>
 
-      {/* 10 Glowing Carnival Lights Grid */}
-      <div className="grid grid-cols-2 sm:grid-cols-5 lg:grid-cols-10 gap-3 sm:gap-4">
-        {days.map((day) => {
+      {/* Glowing Carnival Lights Grid */}
+      <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-3 sm:gap-4">
+        {activeTimeline.map((day) => {
           const isCompleted = day.status === 'Completed' || day.status === 'completed';
-          const isActive =
-            day.status === 'Active' || day.status === 'In Progress' || day.dayNumber === currentDayNumber;
-          const isBonus = day.isHighScoreBonus || day.dayNumber === 5 || day.dayNumber === 10;
+          const isActive = day.status === 'Active' || day.status === 'In Progress' || day.dayNumber === currentDayNumber;
+          const isBonus = day.isHighScoreBonus || day.dayNumber === 5 || day.dayNumber === 7;
 
           return (
             <motion.div
@@ -118,7 +209,11 @@ export const TeamProgress: React.FC<TeamProgressProps> = ({ timeline, currentDay
                 <div className="text-[11px] font-bold text-slate-900 dark:text-white truncate max-w-full">
                   {day.title}
                 </div>
-                <div className={`text-[10px] font-mono font-semibold ${isBonus ? 'text-amber-600 dark:text-carnival-gold' : 'text-slate-500 dark:text-slate-400'}`}>
+                <div
+                  className={`text-[10px] font-mono font-semibold ${
+                    isBonus ? 'text-amber-600 dark:text-carnival-gold' : 'text-slate-500 dark:text-slate-400'
+                  }`}
+                >
                   +{day.points} PTS
                 </div>
               </div>
@@ -129,3 +224,5 @@ export const TeamProgress: React.FC<TeamProgressProps> = ({ timeline, currentDay
     </div>
   );
 };
+
+export default TeamProgress;

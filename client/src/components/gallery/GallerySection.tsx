@@ -16,6 +16,8 @@ import {
 } from 'lucide-react';
 
 import apiClient from '../../api/axios';
+import { CardSkeleton } from '../ui/Skeletons';
+import { EmptyState } from '../ui/EmptyState';
 
 export interface PublicGalleryItem {
   _id: string;
@@ -278,12 +280,14 @@ export const GallerySection: React.FC = () => {
       </div>
 
       {/* Responsive Masonry Grid */}
-      {filteredItems.length === 0 ? (
-        <div className="p-16 text-center rounded-3xl glass-card border border-white/10 space-y-3">
-          <Layers className="w-12 h-12 text-slate-500 mx-auto" />
-          <h3 className="text-white font-bold text-lg">No gallery items in this filter</h3>
-          <p className="text-xs text-slate-400">Switch tabs above to view media from other seasons.</p>
-        </div>
+      {loading ? (
+        <CardSkeleton count={6} />
+      ) : filteredItems.length === 0 ? (
+        <EmptyState
+          title="No Media Found"
+          description="No gallery items found in this season or filter. Switch tabs above to view media from other seasons."
+          icon={ImageIcon}
+        />
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
           {filteredItems.map((item, index) => (

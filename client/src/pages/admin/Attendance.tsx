@@ -48,6 +48,44 @@ export interface AttendanceRecord {
 }
 
 export const Attendance: React.FC = () => {
+  // Helper to normalize team members list without duplicating the team leader
+  const getTeamMembersList = (team: TeamData): { name: string; email: string; role: string }[] => {
+    if (!team) return [];
+
+    const leaderName = team.leader?.name?.trim().toLowerCase();
+    const leaderEmail = team.leader?.email?.trim().toLowerCase();
+
+    const members = team.members || [];
+
+    // Check if team.members already contains an entry for the team leader
+    const hasLeaderInMembers = members.some(
+      (m) =>
+        (leaderEmail && m.email && m.email.trim().toLowerCase() === leaderEmail) ||
+        (leaderName && m.name && m.name.trim().toLowerCase() === leaderName) ||
+        m.role === 'Leader'
+    );
+
+    if (hasLeaderInMembers) {
+      return members.map((m) => {
+        const isLeader =
+          (leaderEmail && m.email && m.email.trim().toLowerCase() === leaderEmail) ||
+          (leaderName && m.name && m.name.trim().toLowerCase() === leaderName) ||
+          m.role === 'Leader';
+        return {
+          name: m.name,
+          email: m.email || team.leader?.email || '',
+          role: isLeader ? 'Leader' : (m.role || 'Member'),
+        };
+      });
+    }
+
+    // Leader is separate from members (e.g. fallback mock data)
+    return [
+      { name: team.leader.name, email: team.leader.email, role: 'Leader' },
+      ...members.map((m) => ({ name: m.name, email: m.email, role: m.role || 'Member' })),
+    ];
+  };
+
   const [teams, setTeams] = useState<TeamData[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedDay, setSelectedDay] = useState<number>(1);
@@ -150,7 +188,7 @@ export const Attendance: React.FC = () => {
           attMap[t._id] = record.memberIdsPresent || [];
         } else {
           // By default, mark all members present if no attendance saved yet for this day
-          const allMemberNames = [t.leader.name, ...(t.members || []).map((m) => m.name)];
+          const allMemberNames = getTeamMembersList(t).map((m) => m.name);
           attMap[t._id] = allMemberNames;
         }
       });
@@ -179,7 +217,7 @@ export const Attendance: React.FC = () => {
 
   // Mark all members present for a specific team
   const markTeamAllPresent = (team: TeamData) => {
-    const allMembers = [team.leader.name, ...(team.members || []).map((m) => m.name)];
+    const allMembers = getTeamMembersList(team).map((m) => m.name);
     setAttendanceState((prev) => ({ ...prev, [team._id]: allMembers }));
   };
 
@@ -284,8 +322,7 @@ export const Attendance: React.FC = () => {
   const filteredTeams = teams.filter((team) => {
     const matchesSearch =
       team.teamName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      team.leader.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      (team.members || []).some((m) => m.name.toLowerCase().includes(searchQuery.toLowerCase()));
+      getTeamMembersList(team).some((m) => m.name.toLowerCase().includes(searchQuery.toLowerCase()));
 
     const matchesResidence =
       residenceFilter === 'All' ||
@@ -299,7 +336,7 @@ export const Attendance: React.FC = () => {
   const dayScholarTeams = filteredTeams.filter((t) => t.residenceType === 'Day Scholar');
 
   // Attendance metrics summary
-  const totalStudents = teams.reduce((acc, t) => acc + 1 + (t.members?.length || 0), 0);
+  const totalStudents = teams.reduce((acc, t) => acc + getTeamMembersList(t).length, 0);
   const presentStudentsCount = teams.reduce((acc, t) => acc + (attendanceState[t._id]?.length || 0), 0);
   const dangerTeamsCount = teams.filter((t) => (attendanceState[t._id]?.length || 0) < 2).length;
 
@@ -493,10 +530,7 @@ export const Attendance: React.FC = () => {
   // Helper render for individual team card checklist
   function renderTeamAttendanceCard(team: TeamData) {
     const presentMembers = attendanceState[team._id] || [];
-    const allMembersList = [
-      { name: team.leader.name, email: team.leader.email, role: 'Leader' },
-      ...(team.members || []).map((m) => ({ name: m.name, email: m.email, role: m.role || 'Member' })),
-    ];
+    const allMembersList = getTeamMembersList(team);
     const isDangerRuleTriggered = presentMembers.length < 2;
 
     return (
@@ -568,11 +602,11 @@ export const Attendance: React.FC = () => {
               </div>
             </div>
 
-            {allMembersList.map((mem) => {
+            {allMembersList.map((mem, memIdx) => {
               const isPresent = presentMembers.includes(mem.name);
               return (
                 <div
-                  key={mem.name}
+                  key={mem.email || mem.name || memIdx}
                   onClick={() => toggleMemberPresence(team._id, mem.name)}
                   className={`p-3 rounded-2xl border flex items-center justify-between cursor-pointer transition-all ${
                     isPresent

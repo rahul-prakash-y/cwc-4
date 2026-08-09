@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { Trophy, CheckSquare, Zap, Heart, LayoutDashboard, Flame, Radio, Calendar } from 'lucide-react';
@@ -15,6 +15,26 @@ export const StudentDashboard: React.FC = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const [isVotingOpen, setIsVotingOpen] = useState(false);
+  const [studentTeam, setStudentTeam] = useState<any>(null);
+
+  useEffect(() => {
+    const fetchStudentData = async () => {
+      try {
+        const token = localStorage.getItem('cwc_token') || localStorage.getItem('token');
+        const res = await fetch('/api/student/dashboard', {
+          headers: token ? { Authorization: `Bearer ${token}` } : {},
+        });
+        if (res.ok) {
+          const data = await res.json();
+          setStudentTeam(data.team);
+        }
+      } catch (err) {
+        console.warn('Failed to fetch student dashboard data:', err);
+      }
+    };
+
+    fetchStudentData();
+  }, []);
 
   // Derive current active tab strictly from URL pathname
   const path = location.pathname.toLowerCase();
@@ -120,7 +140,7 @@ export const StudentDashboard: React.FC = () => {
             <span>Daily Tasks</span>
           </button>
 
-          <button
+          {/* <button
             onClick={() => handleTabClick('schedule')}
             className={`flex items-center gap-2 px-4 py-2.5 rounded-xl font-mono text-xs font-bold transition-all whitespace-nowrap shrink-0 ${
               currentTab === 'schedule'
@@ -130,7 +150,7 @@ export const StudentDashboard: React.FC = () => {
           >
             <Calendar className="w-4 h-4" />
             <span>7-Day Schedule</span>
-          </button>
+          </button> */}
 
           <button
             onClick={() => handleTabClick('advantages')}
@@ -176,7 +196,7 @@ export const StudentDashboard: React.FC = () => {
           <TeamProgress />
           <MarksSection />
           <DailyTaskView />
-          <Leaderboard />
+          <Leaderboard currentTeamId={studentTeam?.id || studentTeam?._id} />
         </div>
       )}
 

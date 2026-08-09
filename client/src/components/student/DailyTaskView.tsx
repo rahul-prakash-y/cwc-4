@@ -67,8 +67,55 @@ const DEFAULT_TASK: TaskDetail = {
   ],
 };
 
-export const DailyTaskView: React.FC<DailyTaskViewProps> = ({ task = DEFAULT_TASK, onTaskSubmitted, status = 'Safe' }) => {
+import { CardSkeleton } from '../ui/Skeletons';
+
+export const DailyTaskView: React.FC<DailyTaskViewProps> = ({ task: propTask, onTaskSubmitted, status = 'Safe' }) => {
+  const [fetchedTask, setFetchedTask] = useState<TaskDetail | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const task = propTask && propTask.id !== 'task-1' ? propTask : (fetchedTask || propTask || DEFAULT_TASK);
+
   const [isStarted, setIsStarted] = useState(false);
+
+  useEffect(() => {
+    const fetchActiveTask = async () => {
+      try {
+        const token = localStorage.getItem('cwc_token') || localStorage.getItem('token');
+        const res = await fetch('/api/student/tasks/active', {
+          headers: token ? { Authorization: `Bearer ${token}` } : {},
+        });
+        if (res.ok) {
+          const data = await res.json();
+          if (Array.isArray(data.activeTasks) && data.activeTasks.length > 0) {
+            const active = data.activeTasks[0];
+            setFetchedTask({
+              id: active._id || active.id,
+              dayNumber: active.dayNumber || 1,
+              title: active.title,
+              category: active.category || active.type || 'Task',
+              type: active.type,
+              points: active.points || 500,
+              duration: active.duration || '4 Hours',
+              startTime: active.startTime ? new Date(active.startTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '10:00 AM',
+              endTime: active.endTime ? new Date(active.endTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '02:00 PM',
+              deadline: active.endTime || active.deadline,
+              description: active.description,
+              constraints: active.constraints,
+              requirements: active.requirements || ['Submit complete solution by deadline'],
+              mcqOptions: active.mcqOptions,
+              interactiveTimeLimit: active.interactiveTimeLimit,
+              testCases: active.testCases,
+            });
+          }
+        }
+      } catch (err) {
+        console.warn('Failed to load active student task:', err);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchActiveTask();
+  }, []);
 
   // Hook 1: Draft Saving (auto 30s + localStorage)
   const { draft, updateDraft, lastSavedTime, isSaving } = useDraftSave(task.id, {
@@ -168,6 +215,10 @@ export const DailyTaskView: React.FC<DailyTaskViewProps> = ({ task = DEFAULT_TAS
       </p>
     ));
   };
+
+  if (isLoading) {
+    return <CardSkeleton count={1} />;
+  }
 
   return (
     <motion.div

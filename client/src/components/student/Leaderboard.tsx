@@ -13,6 +13,8 @@ import {
 } from 'lucide-react';
 import { Team } from '../../types';
 import { useSocket } from '../../context/SocketContext';
+import { TableSkeleton } from '../ui/Skeletons';
+import { EmptyState } from '../ui/EmptyState';
 
 export interface LeaderboardItem {
   id: string;
@@ -41,11 +43,13 @@ export const Leaderboard: React.FC<StudentLeaderboardProps> = ({
   const [teams, setTeams] = useState<LeaderboardItem[]>(initialTeams || []);
   const [searchQuery, setSearchQuery] = useState('');
   const [isLeaderboardVisible, setIsLeaderboardVisible] = useState<boolean>(true);
+  const [isLoading, setIsLoading] = useState<boolean>(!initialTeams || initialTeams.length === 0);
   const { socket } = useSocket();
 
   useEffect(() => {
     if (initialTeams && initialTeams.length > 0) {
       setTeams(initialTeams);
+      setIsLoading(false);
       return;
     }
 
@@ -76,6 +80,8 @@ export const Leaderboard: React.FC<StudentLeaderboardProps> = ({
         }
       } catch (err) {
         console.warn('Failed to fetch leaderboard:', err);
+      } finally {
+        setIsLoading(false);
       }
     };
 
@@ -247,8 +253,17 @@ export const Leaderboard: React.FC<StudentLeaderboardProps> = ({
       </div>
 
       {/* Privacy-Refactored Points Table (EXACT NUMERICAL MARKS HIDDEN) */}
-      <div className="overflow-x-auto">
-        <table className="w-full text-left border-separate border-spacing-y-2.5">
+      {isLoading ? (
+        <TableSkeleton rows={5} cols={showScores ? 5 : 4} className="min-h-[350px]" />
+      ) : filteredTeams.length === 0 ? (
+        <EmptyState
+          title="Leaderboard Loading or Empty"
+          description="No teams have scored points yet or matched your search. Complete today's task to take the lead!"
+          icon={Trophy}
+        />
+      ) : (
+        <div className="overflow-x-auto">
+          <table className="w-full text-left border-separate border-spacing-y-2.5">
           <thead>
             <tr className="text-[11px] font-mono font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wider px-4">
               <th className="py-2 px-4">Rank</th>
@@ -395,6 +410,7 @@ export const Leaderboard: React.FC<StudentLeaderboardProps> = ({
           </tbody>
         </table>
       </div>
+      )}
     </div>
   );
 };

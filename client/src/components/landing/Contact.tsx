@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Phone, Mail, MapPin, User, GraduationCap, Building2, Copy, Check, ExternalLink, MessageSquare, Sparkles } from 'lucide-react';
 
 interface ContactPerson {
+  _id?: string;
   name: string;
   role: string;
   department: string;
@@ -13,59 +14,38 @@ interface ContactPerson {
 export const Contact: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'all' | 'faculty' | 'student'>('all');
   const [copiedText, setCopiedText] = useState<string | null>(null);
+  const [coordinators, setCoordinators] = useState<ContactPerson[]>([]);
 
-  const facultyCoordinators: ContactPerson[] = [
-    // {
-    //   name: 'Dr. Rajesh Sharma',
-    //   role: 'Faculty Convener & Head of CS',
-    //   department: 'Dept of Computer Science & Engineering',
-    //   phone: '+91 98765 43210',
-    //   email: 'r.sharma@cwc.edu',
-    //   type: 'faculty',
-    // },
-    // {
-    //   name: 'Prof. Ananya Patel',
-    //   role: 'Co-Convener & Technical Advisor',
-    //   department: 'Dept of Information Technology',
-    //   phone: '+91 98765 43211',
-    //   email: 'a.patel@cwc.edu',
-    //   type: 'faculty',
-    // },
-  ];
+  useEffect(() => {
+    const fetchCoordinators = async () => {
+      try {
+        let res = await fetch('/api/public/coordinators');
+        if (!res.ok) {
+          res = await fetch('/api/coordinators');
+        }
+        if (res.ok) {
+          const data = await res.json();
+          if (Array.isArray(data.coordinators)) {
+            setCoordinators(data.coordinators);
+          }
+        }
+      } catch (err) {
+        console.warn('Failed to fetch coordinators from DB:', err);
+      }
+    };
 
-  const studentCoordinators: ContactPerson[] = [
-    // {
-    //   name: 'Alex Rivers',
-    //   role: 'Lead Student Convener',
-    //   department: 'Final Year CSE',
-    //   phone: '+91 91234 56789',
-    //   email: 'alex@cwc.dev',
-    //   type: 'student',
-    // },
-    // {
-    //   name: 'Maya Lin',
-    //   role: 'Event Operations & Logistics Head',
-    //   department: 'Final Year IT',
-    //   phone: '+91 91234 56790',
-    //   email: 'maya@cwc.dev',
-    //   type: 'student',
-    // },
-    // {
-    //   name: 'Rohan Gupta',
-    //   role: 'Technical Platform Lead',
-    //   department: 'Pre-Final CSE',
-    //   phone: '+91 91234 56791',
-    //   email: 'rohan@cwc.dev',
-    //   type: 'student',
-    // },
-  ];
+    fetchCoordinators();
+  }, []);
+
+  const facultyCoordinators = coordinators.filter((c) => c.type === 'faculty');
+  const studentCoordinators = coordinators.filter((c) => c.type === 'student');
 
   const allCoordinators =
     activeTab === 'faculty'
       ? facultyCoordinators
       : activeTab === 'student'
       ? studentCoordinators
-      : [...facultyCoordinators, ...studentCoordinators];
+      : coordinators;
 
   const handleCopy = (text: string) => {
     navigator.clipboard.writeText(text);

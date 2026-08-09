@@ -5,6 +5,8 @@ import { triggerCarnivalConfetti } from '../hero/ConfettiEffect';
 import { GrantAdvantageModal } from './GrantAdvantageModal';
 import { EliminationControls } from './EliminationControls';
 import { SpinWheel } from '../student/SpinWheel';
+import { TableSkeleton } from '../ui/Skeletons';
+import { EmptyState } from '../ui/EmptyState';
 
 export interface ScoreRowItem {
   teamId: string;
@@ -343,168 +345,179 @@ export const ScoreSheet: React.FC = () => {
       )}
 
       {/* Spreadsheet Data Grid */}
-      <div className="bg-white dark:bg-[#140D21] rounded-2xl border border-slate-200 dark:border-white/10 overflow-hidden shadow-sm dark:shadow-2xl">
-        <div className="overflow-x-auto">
-          <table className="w-full text-left text-xs font-mono border-collapse min-w-[1100px]">
-            <thead>
-              <tr className="border-b border-slate-200 dark:border-white/10 bg-slate-100 dark:bg-[#140D21] text-slate-700 dark:text-slate-300 uppercase tracking-wider font-bold">
-                <th className="p-3.5 border-r border-slate-200 dark:border-white/10 text-center min-w-[60px]">Rank</th>
-                <th className="p-3.5 border-r border-slate-200 dark:border-white/10 min-w-[170px]">Team Name</th>
-                <th className="p-3.5 border-r border-slate-200 dark:border-white/10 min-w-[160px]">Wheel Spin Trigger</th>
-                <th className="p-3.5 border-r border-slate-200 dark:border-white/10 min-w-[160px]">Advantage Used</th>
-                <th className="p-3.5 border-r border-slate-200 dark:border-white/10 text-center min-w-[100px]">Adv Score (adv)</th>
-                <th className="p-3.5 border-r border-slate-200 dark:border-white/10 text-center min-w-[110px]">Main Score</th>
-                <th className="p-3.5 border-r border-slate-200 dark:border-white/10 text-center min-w-[110px]">Special Score</th>
-                <th className="p-3.5 border-r border-slate-200 dark:border-white/10 text-center min-w-[110px]">Total Score</th>
-                <th className="p-3.5 border-r border-slate-200 dark:border-white/10 text-center min-w-[210px]">Status Controls</th>
-                <th className="p-3.5 text-center min-w-[100px]">Immunity</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-200 dark:divide-white/5">
-              {rows.map((row, idx) => (
-                <tr
-                  key={row.teamId}
-                  className={`hover:bg-slate-50 dark:hover:bg-white/5 transition-colors ${
-                    row.elimination ? 'bg-rose-50 dark:bg-rose-950/20' : ''
-                  }`}
-                >
-                  <td className="p-3.5 border-r border-slate-200 dark:border-white/5 text-center">
-                    <span
-                      className={`inline-flex items-center justify-center w-7 h-7 rounded-full font-black text-xs ${
-                        row.rank === 1
-                          ? 'bg-amber-400 dark:bg-carnival-gold text-slate-950 shadow-sm'
-                          : row.rank === 2
-                          ? 'bg-slate-200 dark:bg-slate-300 text-slate-950'
-                          : row.rank === 3
-                          ? 'bg-amber-600 text-white'
-                          : 'bg-slate-100 dark:bg-white/5 text-slate-600 dark:text-slate-400'
-                      }`}
-                    >
-                      {row.rank}
-                    </span>
-                  </td>
-
-                  <td className="p-3.5 border-r border-slate-200 dark:border-white/5 font-extrabold text-slate-900 dark:text-white">
-                    <div className="flex items-center gap-2">
-                      <span className="text-lg">{row.teamAvatar}</span>
-                      <span className="truncate">{row.teamName}</span>
-                    </div>
-                  </td>
-
-                  <td className="p-3.5 border-r border-slate-200 dark:border-white/5">
-                    {row.status === 'Eliminated' ? (
-                      <span className="text-[11px] text-rose-400 font-mono italic">Eliminated</span>
-                    ) : row.advantage !== 'None' && row.advScore > 0 ? (
-                      <span className="px-2.5 py-1 rounded bg-amber-500/20 text-amber-300 font-mono text-[10px] font-bold border border-amber-400/30">
-                        Advantage Claimed 🎁
+      {isLoadingScores ? (
+        <TableSkeleton rows={5} cols={10} className="min-h-[420px]" />
+      ) : rows.length === 0 ? (
+        <EmptyState
+          title="No Scores Found"
+          description="No team scores have been recorded yet for Day 1 or the selected day."
+          icon={Trophy}
+        />
+      ) : (
+        <div className="bg-white dark:bg-[#140D21] rounded-2xl border border-slate-200 dark:border-white/10 overflow-hidden shadow-sm dark:shadow-2xl">
+          <div className="overflow-x-auto">
+            <table className="w-full text-left text-xs font-mono border-collapse min-w-[1100px]">
+              <thead>
+                <tr className="border-b border-slate-200 dark:border-white/10 bg-slate-100 dark:bg-[#140D21] text-slate-700 dark:text-slate-300 uppercase tracking-wider font-bold">
+                  <th className="p-3.5 border-r border-slate-200 dark:border-white/10 text-center min-w-[60px]">Rank</th>
+                  <th className="p-3.5 border-r border-slate-200 dark:border-white/10 min-w-[170px]">Team Name</th>
+                  <th className="p-3.5 border-r border-slate-200 dark:border-white/10 min-w-[160px]">Wheel Spin Trigger</th>
+                  <th className="p-3.5 border-r border-slate-200 dark:border-white/10 min-w-[160px]">Advantage Used</th>
+                  <th className="p-3.5 border-r border-slate-200 dark:border-white/10 text-center min-w-[100px]">Adv Score (adv)</th>
+                  <th className="p-3.5 border-r border-slate-200 dark:border-white/10 text-center min-w-[110px]">Main Score</th>
+                  <th className="p-3.5 border-r border-slate-200 dark:border-white/10 text-center min-w-[110px]">Special Score</th>
+                  <th className="p-3.5 border-r border-slate-200 dark:border-white/10 text-center min-w-[110px]">Total Score</th>
+                  <th className="p-3.5 border-r border-slate-200 dark:border-white/10 text-center min-w-[210px]">Status Controls</th>
+                  <th className="p-3.5 text-center min-w-[100px]">Immunity</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-200 dark:divide-white/5">
+                {rows.map((row, idx) => (
+                  <tr
+                    key={row.teamId}
+                    className={`hover:bg-slate-50 dark:hover:bg-white/5 transition-colors ${
+                      row.elimination ? 'bg-rose-50 dark:bg-rose-950/20' : ''
+                    }`}
+                  >
+                    <td className="p-3.5 border-r border-slate-200 dark:border-white/5 text-center">
+                      <span
+                        className={`inline-flex items-center justify-center w-7 h-7 rounded-full font-black text-xs ${
+                          row.rank === 1
+                            ? 'bg-amber-400 dark:bg-carnival-gold text-slate-950 shadow-sm'
+                            : row.rank === 2
+                            ? 'bg-slate-200 dark:bg-slate-300 text-slate-950'
+                            : row.rank === 3
+                            ? 'bg-amber-600 text-white'
+                            : 'bg-slate-100 dark:bg-white/5 text-slate-600 dark:text-slate-400'
+                        }`}
+                      >
+                        {row.rank}
                       </span>
-                    ) : (
+                    </td>
+
+                    <td className="p-3.5 border-r border-slate-200 dark:border-white/5 font-extrabold text-slate-900 dark:text-white">
+                      <div className="flex items-center gap-2">
+                        <span className="text-lg">{row.teamAvatar}</span>
+                        <span className="truncate">{row.teamName}</span>
+                      </div>
+                    </td>
+
+                    <td className="p-3.5 border-r border-slate-200 dark:border-white/5">
+                      {row.status === 'Eliminated' ? (
+                        <span className="text-[11px] text-rose-400 font-mono italic">Eliminated</span>
+                      ) : row.advantage !== 'None' && row.advScore > 0 ? (
+                        <span className="px-2.5 py-1 rounded bg-amber-500/20 text-amber-300 font-mono text-[10px] font-bold border border-amber-400/30">
+                          Advantage Claimed 🎁
+                        </span>
+                      ) : (
+                        <button
+                          type="button"
+                          onClick={() => setIsSpinModalOpen(true)}
+                          className="w-full px-3 py-1.5 rounded-lg bg-gradient-to-r from-amber-500 via-rose-500 to-purple-600 text-slate-950 font-black text-[11px] uppercase tracking-wider shadow hover:scale-105 transition-all flex items-center justify-center gap-1.5 cursor-pointer"
+                        >
+                          <Dices className="w-3.5 h-3.5 text-slate-950 fill-slate-950" />
+                          <span>Spin Wheel 🎡</span>
+                        </button>
+                      )}
+                    </td>
+
+                    <td className="p-3.5 border-r border-slate-200 dark:border-white/5">
+                      <select
+                        value={row.advantage}
+                        onChange={(e) => updateRow(idx, 'advantage', e.target.value)}
+                        className="w-full px-2 py-1.5 rounded-lg bg-slate-50 dark:bg-[#1A1228] border border-slate-300 dark:border-carnival-purple/40 text-[11px] text-purple-700 dark:text-carnival-purple font-mono font-bold focus:outline-none cursor-pointer"
+                      >
+                        <option value="None">None (0x)</option>
+                        <option value="Double Points (2x)">Double Points (2x)</option>
+                        <option value="Golden Coin (+100)">Golden Coin (+100)</option>
+                        <option value="Extra Time (+50)">Extra Time (+50)</option>
+                        <option value="Skip Card (+30)">Skip Card (+30)</option>
+                        <option value="Hint Wheel (+25)">Hint Wheel (+25)</option>
+                      </select>
+                    </td>
+
+                    <td className="p-3.5 border-r border-slate-200 dark:border-white/5 text-center">
+                      <input
+                        type="number"
+                        min={0}
+                        value={row.advScore}
+                        onChange={(e) => updateRow(idx, 'advScore', Number(e.target.value))}
+                        className="w-20 px-2 py-1 rounded bg-amber-50 dark:bg-amber-950/40 border border-amber-300 dark:border-carnival-gold/40 text-center font-mono font-bold text-amber-700 dark:text-carnival-gold text-xs focus:outline-none"
+                      />
+                    </td>
+
+                    <td className="p-3.5 border-r border-slate-200 dark:border-white/5 text-center">
+                      <input
+                        type="number"
+                        min={0}
+                        max={1000}
+                        value={row.mainTaskScore}
+                        onChange={(e) => updateRow(idx, 'mainTaskScore', Number(e.target.value))}
+                        className="w-20 px-2 py-1 rounded bg-slate-50 dark:bg-black/60 border border-slate-300 dark:border-carnival-cyan/40 text-center font-mono font-bold text-cyan-700 dark:text-carnival-cyan text-xs focus:outline-none"
+                      />
+                    </td>
+
+                    <td className="p-3.5 border-r border-slate-200 dark:border-white/5 text-center">
+                      <input
+                        type="number"
+                        min={0}
+                        max={500}
+                        value={row.specialTaskScore}
+                        onChange={(e) => updateRow(idx, 'specialTaskScore', Number(e.target.value))}
+                        className="w-20 px-2 py-1 rounded bg-slate-50 dark:bg-black/60 border border-slate-300 dark:border-carnival-cyan/40 text-center font-mono font-bold text-cyan-700 dark:text-carnival-cyan text-xs focus:outline-none"
+                      />
+                    </td>
+
+                    <td className="p-3.5 border-r border-slate-200 dark:border-white/5 text-center">
+                      <span className="px-2.5 py-1 rounded-full bg-amber-100 dark:bg-carnival-gold/20 text-amber-800 dark:text-carnival-gold font-extrabold text-xs border border-amber-300 dark:border-carnival-gold/40">
+                        {row.totalScore} PTS
+                      </span>
+                    </td>
+
+                    <td className="p-3.5 border-r border-slate-200 dark:border-white/5 text-center">
+                      <EliminationControls
+                        teamId={row.teamId}
+                        teamName={row.teamName}
+                        currentStatus={row.status}
+                        compact
+                        onStatusChange={(tid, newStatus) => {
+                          const updated = rows.map((r) => {
+                            if (r.teamId === tid) {
+                              return {
+                                ...r,
+                                status: newStatus,
+                                elimination: newStatus === 'Eliminated',
+                              };
+                            }
+                            return r;
+                          }
+                          );
+                          setRows(recalculateRanks(updated));
+                        }}
+                      />
+                    </td>
+
+                    <td className="p-3.5 text-center">
                       <button
                         type="button"
-                        onClick={() => setIsSpinModalOpen(true)}
-                        className="w-full px-3 py-1.5 rounded-lg bg-gradient-to-r from-amber-500 via-rose-500 to-purple-600 text-slate-950 font-black text-[11px] uppercase tracking-wider shadow hover:scale-105 transition-all flex items-center justify-center gap-1.5 cursor-pointer"
+                        onClick={() => updateRow(idx, 'immunity', !row.immunity)}
+                        className={`p-1.5 rounded-lg transition-all mx-auto cursor-pointer ${
+                          row.immunity
+                            ? 'bg-cyan-100 dark:bg-cyan-500/20 text-cyan-700 dark:text-carnival-cyan border border-cyan-300 dark:border-carnival-cyan/50'
+                            : 'bg-slate-100 dark:bg-white/5 text-slate-400 hover:text-slate-700 dark:hover:text-slate-300'
+                        }`}
+                        title={row.immunity ? 'Immunity Active' : 'No Immunity'}
                       >
-                        <Dices className="w-3.5 h-3.5 text-slate-950 fill-slate-950" />
-                        <span>Spin Wheel 🎡</span>
+                        <Shield className={`w-4 h-4 ${row.immunity ? 'fill-cyan-500/30' : ''}`} />
                       </button>
-                    )}
-                  </td>
-
-                  <td className="p-3.5 border-r border-slate-200 dark:border-white/5">
-                    <select
-                      value={row.advantage}
-                      onChange={(e) => updateRow(idx, 'advantage', e.target.value)}
-                      className="w-full px-2 py-1.5 rounded-lg bg-slate-50 dark:bg-[#1A1228] border border-slate-300 dark:border-carnival-purple/40 text-[11px] text-purple-700 dark:text-carnival-purple font-mono font-bold focus:outline-none cursor-pointer"
-                    >
-                      <option value="None">None (0x)</option>
-                      <option value="Double Points (2x)">Double Points (2x)</option>
-                      <option value="Golden Coin (+100)">Golden Coin (+100)</option>
-                      <option value="Extra Time (+50)">Extra Time (+50)</option>
-                      <option value="Skip Card (+30)">Skip Card (+30)</option>
-                      <option value="Hint Wheel (+25)">Hint Wheel (+25)</option>
-                    </select>
-                  </td>
-
-                  <td className="p-3.5 border-r border-slate-200 dark:border-white/5 text-center">
-                    <input
-                      type="number"
-                      min={0}
-                      value={row.advScore}
-                      onChange={(e) => updateRow(idx, 'advScore', Number(e.target.value))}
-                      className="w-20 px-2 py-1 rounded bg-amber-50 dark:bg-amber-950/40 border border-amber-300 dark:border-carnival-gold/40 text-center font-mono font-bold text-amber-700 dark:text-carnival-gold text-xs focus:outline-none"
-                    />
-                  </td>
-
-                  <td className="p-3.5 border-r border-slate-200 dark:border-white/5 text-center">
-                    <input
-                      type="number"
-                      min={0}
-                      max={1000}
-                      value={row.mainTaskScore}
-                      onChange={(e) => updateRow(idx, 'mainTaskScore', Number(e.target.value))}
-                      className="w-20 px-2 py-1 rounded bg-slate-50 dark:bg-black/60 border border-slate-300 dark:border-carnival-cyan/40 text-center font-mono font-bold text-cyan-700 dark:text-carnival-cyan text-xs focus:outline-none"
-                    />
-                  </td>
-
-                  <td className="p-3.5 border-r border-slate-200 dark:border-white/5 text-center">
-                    <input
-                      type="number"
-                      min={0}
-                      max={500}
-                      value={row.specialTaskScore}
-                      onChange={(e) => updateRow(idx, 'specialTaskScore', Number(e.target.value))}
-                      className="w-20 px-2 py-1 rounded bg-slate-50 dark:bg-black/60 border border-slate-300 dark:border-carnival-cyan/40 text-center font-mono font-bold text-cyan-700 dark:text-carnival-cyan text-xs focus:outline-none"
-                    />
-                  </td>
-
-                  <td className="p-3.5 border-r border-slate-200 dark:border-white/5 text-center">
-                    <span className="px-2.5 py-1 rounded-full bg-amber-100 dark:bg-carnival-gold/20 text-amber-800 dark:text-carnival-gold font-extrabold text-xs border border-amber-300 dark:border-carnival-gold/40">
-                      {row.totalScore} PTS
-                    </span>
-                  </td>
-
-                  <td className="p-3.5 border-r border-slate-200 dark:border-white/5 text-center">
-                    <EliminationControls
-                      teamId={row.teamId}
-                      teamName={row.teamName}
-                      currentStatus={row.status}
-                      compact
-                      onStatusChange={(tid, newStatus) => {
-                        const updated = rows.map((r) => {
-                          if (r.teamId === tid) {
-                            return {
-                              ...r,
-                              status: newStatus,
-                              elimination: newStatus === 'Eliminated',
-                            };
-                          }
-                          return r;
-                        });
-                        setRows(recalculateRanks(updated));
-                      }}
-                    />
-                  </td>
-
-                  <td className="p-3.5 text-center">
-                    <button
-                      type="button"
-                      onClick={() => updateRow(idx, 'immunity', !row.immunity)}
-                      className={`p-1.5 rounded-lg transition-all mx-auto cursor-pointer ${
-                        row.immunity
-                          ? 'bg-cyan-100 dark:bg-cyan-500/20 text-cyan-700 dark:text-carnival-cyan border border-cyan-300 dark:border-carnival-cyan/50'
-                          : 'bg-slate-100 dark:bg-white/5 text-slate-400 hover:text-slate-700 dark:hover:text-slate-300'
-                      }`}
-                      title={row.immunity ? 'Immunity Active' : 'No Immunity'}
-                    >
-                      <Shield className={`w-4 h-4 ${row.immunity ? 'fill-cyan-500/30' : ''}`} />
-                    </button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </div>
-      </div>
+      )}
 
       {/* Modal for Team Advantage Spin Wheel */}
       <AnimatePresence>

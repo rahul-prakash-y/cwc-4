@@ -31,6 +31,9 @@ import {
 import { useAuth } from '../../context/AuthContext';
 import { SiteConfig } from './SiteConfig';
 import { TimelineCMS } from './TimelineCMS';
+import { CoordinatorsCMS } from '../../components/admin/CoordinatorsCMS';
+import { TableSkeleton } from '../../components/ui/Skeletons';
+import { EmptyState } from '../../components/ui/EmptyState';
 
 interface AuditLog {
   _id: string;
@@ -391,6 +394,18 @@ export const SuperAdminDashboard: React.FC = () => {
             <Calendar className="w-4 h-4" />
             <span>Timeline CMS</span>
           </button>
+
+          <button
+            onClick={() => setSearchParams({ tab: 'coordinators' })}
+            className={`flex items-center gap-2 px-4 py-2.5 rounded-xl font-mono text-xs font-bold transition-all cursor-pointer ${
+              activeTab === 'coordinators'
+                ? 'bg-gradient-to-r from-emerald-500 to-teal-600 text-white shadow-lg font-black'
+                : 'bg-slate-100 dark:bg-white/5 text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white border border-slate-200 dark:border-white/10'
+            }`}
+          >
+            <UserCheck className="w-4 h-4" />
+            <span>Coordinators CMS</span>
+          </button>
         </div>
       </div>
 
@@ -697,34 +712,29 @@ export const SuperAdminDashboard: React.FC = () => {
           </div>
 
           {/* Audit Logs Data Table */}
-          <div className="bg-white dark:bg-[#18122B] rounded-3xl border border-slate-200 dark:border-white/10 shadow-sm dark:shadow-xl overflow-hidden">
-            <div className="overflow-x-auto">
-              <table className="w-full text-left font-mono text-xs">
-                <thead className="bg-slate-100 dark:bg-[#1A1228] text-slate-700 dark:text-slate-300 uppercase border-b border-slate-200 dark:border-white/10 text-[10px] tracking-wider">
-                  <tr>
-                    <th className="py-3.5 px-4">Timestamp</th>
-                    <th className="py-3.5 px-4">Admin Executer</th>
-                    <th className="py-3.5 px-4">Action</th>
-                    <th className="py-3.5 px-4">Target ID / Type</th>
-                    <th className="py-3.5 px-4">Operation Details</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-200 dark:divide-white/5 text-slate-800 dark:text-slate-200">
-                  {logsLoading ? (
+          {logsLoading ? (
+            <TableSkeleton rows={5} cols={5} className="min-h-[380px]" />
+          ) : logs.length === 0 ? (
+            <EmptyState
+              title="No Audit Logs Found"
+              description="No audit log records match the specified filter criteria."
+              icon={FileText}
+            />
+          ) : (
+            <div className="bg-white dark:bg-[#18122B] rounded-3xl border border-slate-200 dark:border-white/10 shadow-sm dark:shadow-xl overflow-hidden">
+              <div className="overflow-x-auto">
+                <table className="w-full text-left font-mono text-xs">
+                  <thead className="bg-slate-100 dark:bg-[#1A1228] text-slate-700 dark:text-slate-300 uppercase border-b border-slate-200 dark:border-white/10 text-[10px] tracking-wider">
                     <tr>
-                      <td colSpan={5} className="py-8 text-center text-slate-500 dark:text-slate-400">
-                        <RefreshCw className="w-5 h-5 animate-spin mx-auto mb-2 text-purple-600 dark:text-purple-400" />
-                        <span>Loading audit records...</span>
-                      </td>
+                      <th className="py-3.5 px-4">Timestamp</th>
+                      <th className="py-3.5 px-4">Admin Executer</th>
+                      <th className="py-3.5 px-4">Action</th>
+                      <th className="py-3.5 px-4">Target ID / Type</th>
+                      <th className="py-3.5 px-4">Operation Details</th>
                     </tr>
-                  ) : logs.length === 0 ? (
-                    <tr>
-                      <td colSpan={5} className="py-8 text-center text-slate-500 dark:text-slate-400">
-                        <span>No audit log records matching the specified filter criteria.</span>
-                      </td>
-                    </tr>
-                  ) : (
-                    logs.map((log) => (
+                  </thead>
+                  <tbody className="divide-y divide-slate-200 dark:divide-white/5 text-slate-800 dark:text-slate-200">
+                    {logs.map((log) => (
                       <tr key={log._id} className="hover:bg-slate-50 dark:hover:bg-white/5 transition-colors">
                         <td className="py-3 px-4 text-slate-600 dark:text-slate-400 whitespace-nowrap">
                           <div className="flex items-center gap-1.5">
@@ -762,9 +772,8 @@ export const SuperAdminDashboard: React.FC = () => {
                           </pre>
                         </td>
                       </tr>
-                    ))
-                  )}
-                </tbody>
+                    ))}
+                  </tbody>
               </table>
             </div>
 
@@ -794,6 +803,7 @@ export const SuperAdminDashboard: React.FC = () => {
               </div>
             </div>
           </div>
+          )}
         </div>
       )}
 
@@ -897,6 +907,11 @@ export const SuperAdminDashboard: React.FC = () => {
       {/* TAB 5: TIMELINE CMS */}
       {/* ========================================================================= */}
       {activeTab === 'timeline' && <TimelineCMS />}
+
+      {/* ========================================================================= */}
+      {/* TAB 6: COORDINATORS CMS */}
+      {/* ========================================================================= */}
+      {activeTab === 'coordinators' && <CoordinatorsCMS />}
 
       {/* ========================================================================= */}
       {/* MODAL 1: CONFIRM DESTRUCTIVE ACTION MODAL */}

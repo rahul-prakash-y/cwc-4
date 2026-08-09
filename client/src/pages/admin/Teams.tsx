@@ -3,6 +3,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Users, Search, Filter, Edit3, Trash2, Save, X, Gift, CheckCircle, ShieldAlert, Sparkles, UserCheck, FileSpreadsheet, UploadCloud, Download } from 'lucide-react';
 import { GrantAdvantageModal } from '../../components/admin/GrantAdvantageModal';
 import { BulkUploadTeamsModal } from '../../components/admin/BulkUploadTeamsModal';
+import { TableSkeleton } from '../../components/ui/Skeletons';
+import { EmptyState } from '../../components/ui/EmptyState';
 
 export type TeamStatus = 'Approved' | 'Pending' | 'Safe' | 'Danger' | 'Eliminated' | 'Qualified' | 'Rejected';
 
@@ -32,6 +34,7 @@ export const Teams: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('All');
   const [editingTeam, setEditingTeam] = useState<TeamRecord | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
 
   const [teams, setTeams] = useState<TeamRecord[]>([]);
 
@@ -78,6 +81,8 @@ export const Teams: React.FC = () => {
         }
       } catch (err) {
         console.warn('Failed to fetch admin teams roster:', err);
+      } finally {
+        setIsLoading(false);
       }
     };
 
@@ -222,22 +227,31 @@ export const Teams: React.FC = () => {
       </div>
 
       {/* Team Data Table */}
-      <div className="bg-white dark:bg-[#140D21] rounded-2xl border border-slate-200 dark:border-white/10 overflow-hidden shadow-sm dark:shadow-2xl">
-        <div className="overflow-x-auto">
-          <table className="w-full text-left text-xs font-mono border-collapse min-w-[950px]">
-            <thead>
-              <tr className="border-b border-slate-200 dark:border-white/10 bg-slate-100 dark:bg-[#140D21] text-slate-700 dark:text-slate-300 uppercase tracking-wider font-bold">
-                <th className="p-4 border-r border-slate-200 dark:border-white/10 min-w-[200px]">Team & Tagline</th>
-                <th className="p-4 border-r border-slate-200 dark:border-white/10 min-w-[280px]">Members & Roll Numbers</th>
-                <th className="p-4 border-r border-slate-200 dark:border-white/10 text-center min-w-[100px]">Points</th>
-                <th className="p-4 border-r border-slate-200 dark:border-white/10 text-center min-w-[120px]">Current Status</th>
-                <th className="p-4 border-r border-slate-200 dark:border-white/10 text-center min-w-[200px]">Quick Status Action</th>
-                <th className="p-4 text-right min-w-[140px]">Actions</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-200 dark:divide-white/5">
-              {filteredTeams.map((team) => (
-                <tr key={team.id} className="hover:bg-slate-50 dark:hover:bg-white/5 transition-colors">
+      {isLoading ? (
+        <TableSkeleton rows={5} cols={6} className="min-h-[400px]" />
+      ) : filteredTeams.length === 0 ? (
+        <EmptyState
+          title="No Teams Found"
+          description="No teams have registered or matched your search filter."
+          icon={Users}
+        />
+      ) : (
+        <div className="bg-white dark:bg-[#140D21] rounded-2xl border border-slate-200 dark:border-white/10 overflow-hidden shadow-sm dark:shadow-2xl">
+          <div className="overflow-x-auto">
+            <table className="w-full text-left text-xs font-mono border-collapse min-w-[950px]">
+              <thead>
+                <tr className="border-b border-slate-200 dark:border-white/10 bg-slate-100 dark:bg-[#140D21] text-slate-700 dark:text-slate-300 uppercase tracking-wider font-bold">
+                  <th className="p-4 border-r border-slate-200 dark:border-white/10 min-w-[200px]">Team & Tagline</th>
+                  <th className="p-4 border-r border-slate-200 dark:border-white/10 min-w-[280px]">Members & Roll Numbers</th>
+                  <th className="p-4 border-r border-slate-200 dark:border-white/10 text-center min-w-[100px]">Points</th>
+                  <th className="p-4 border-r border-slate-200 dark:border-white/10 text-center min-w-[120px]">Current Status</th>
+                  <th className="p-4 border-r border-slate-200 dark:border-white/10 text-center min-w-[200px]">Quick Status Action</th>
+                  <th className="p-4 text-right min-w-[140px]">Actions</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-200 dark:divide-white/5">
+                {filteredTeams.map((team) => (
+                  <tr key={team.id} className="hover:bg-slate-50 dark:hover:bg-white/5 transition-colors">
                   {/* Team & Tagline */}
                   <td className="p-4 border-r border-slate-200 dark:border-white/5 font-bold text-slate-900 dark:text-white">
                     <div className="flex items-center gap-3">
@@ -326,6 +340,7 @@ export const Teams: React.FC = () => {
           </table>
         </div>
       </div>
+      )}
 
       {/* Edit Team Modal */}
       <AnimatePresence>

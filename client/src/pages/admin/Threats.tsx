@@ -22,6 +22,8 @@ import {
   Server
 } from 'lucide-react';
 import api from '../../api/axios';
+import { TableSkeleton } from '../../components/ui/Skeletons';
+import { EmptyState } from '../../components/ui/EmptyState';
 
 interface AuditLogItem {
   _id: string;
@@ -314,36 +316,30 @@ export const Threats: React.FC = () => {
       </div>
 
       {/* Main Audit Telemetry Table */}
-      <div className="bg-white dark:bg-[#18122B] border border-slate-200 dark:border-white/10 rounded-2xl shadow-xl overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="w-full text-left border-collapse">
-            <thead>
-              <tr className="border-b border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-black/40 text-[11px] font-extrabold uppercase tracking-wider text-slate-500 dark:text-slate-400">
-                <th className="py-3.5 px-4">Timestamp</th>
-                <th className="py-3.5 px-4">Client IP</th>
-                <th className="py-3.5 px-4">Action Event</th>
-                <th className="py-3.5 px-4">Actor / Role</th>
-                <th className="py-3.5 px-4">Resource Endpoint</th>
-                <th className="py-3.5 px-4 text-right">Details & Payload</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-100 dark:divide-white/5 text-xs font-mono">
-              {loading && logs.length === 0 ? (
-                <tr>
-                  <td colSpan={6} className="py-12 text-center text-slate-400">
-                    <RefreshCw className="w-6 h-6 animate-spin mx-auto mb-2 text-rose-500" />
-                    Fetching security telemetry stream...
-                  </td>
+      {loading && logs.length === 0 ? (
+        <TableSkeleton rows={5} cols={6} className="min-h-[380px]" />
+      ) : !loading && logs.length === 0 ? (
+        <EmptyState
+          title="No Security Logs Found"
+          description="No security threat logs match the current filter parameters."
+          icon={ShieldAlert}
+        />
+      ) : (
+        <div className="bg-white dark:bg-[#18122B] border border-slate-200 dark:border-white/10 rounded-2xl shadow-xl overflow-hidden">
+          <div className="overflow-x-auto">
+            <table className="w-full text-left border-collapse">
+              <thead>
+                <tr className="border-b border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-black/40 text-[11px] font-extrabold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                  <th className="py-3.5 px-4">Timestamp</th>
+                  <th className="py-3.5 px-4">Client IP</th>
+                  <th className="py-3.5 px-4">Action Event</th>
+                  <th className="py-3.5 px-4">Actor / Role</th>
+                  <th className="py-3.5 px-4">Resource Endpoint</th>
+                  <th className="py-3.5 px-4 text-right">Details & Payload</th>
                 </tr>
-              ) : logs.length === 0 ? (
-                <tr>
-                  <td colSpan={6} className="py-12 text-center text-slate-400">
-                    <CheckCircle2 className="w-8 h-8 mx-auto mb-2 text-emerald-500 opacity-60" />
-                    No security threat logs found matching current filter parameters.
-                  </td>
-                </tr>
-              ) : (
-                logs.map((log) => {
+              </thead>
+              <tbody className="divide-y divide-slate-100 dark:divide-white/5 text-xs font-mono">
+                {logs.map((log) => {
                   const isThreat = isThreatAction(log.action);
                   const { date, time } = formatTimestamp(log.timestamp);
                   const actorEmail =
@@ -441,8 +437,7 @@ export const Threats: React.FC = () => {
                       </td>
                     </tr>
                   );
-                })
-              )}
+                })}
             </tbody>
           </table>
         </div>
@@ -475,6 +470,7 @@ export const Threats: React.FC = () => {
           </div>
         </div>
       </div>
+      )}
 
       {/* Forensic Details Modal */}
       <AnimatePresence>

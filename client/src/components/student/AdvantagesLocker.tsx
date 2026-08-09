@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Zap, Clock, FastForward, Coins, Lightbulb, Gift, CheckCircle2, Lock, Sparkles, AlertCircle } from 'lucide-react';
 import { triggerCarnivalConfetti } from '../hero/ConfettiEffect';
@@ -12,7 +12,8 @@ export interface AdvantageCard {
   icon: string;
   description: string;
   state: AdvantageState;
-  color: string; // Tailored glow color accent
+  color: string;
+  quantity?: number;
 }
 
 interface AdvantagesLockerProps {
@@ -33,6 +34,7 @@ export const AdvantagesLocker: React.FC<AdvantagesLockerProps> = ({
       description: 'Doubles all score points awarded for your next task submission.',
       state: 'Available',
       color: 'from-amber-500 to-yellow-400',
+      quantity: 1,
     },
     {
       id: 'adv-extra-time',
@@ -40,8 +42,9 @@ export const AdvantagesLocker: React.FC<AdvantagesLockerProps> = ({
       type: 'Extra Time',
       icon: '⏳',
       description: 'Extends your task submission countdown timer by +30 minutes.',
-      state: 'Active',
+      state: 'Available',
       color: 'from-cyan-500 to-blue-400',
+      quantity: 1,
     },
     {
       id: 'adv-skip-question',
@@ -51,15 +54,17 @@ export const AdvantagesLocker: React.FC<AdvantagesLockerProps> = ({
       description: 'Pass 1 troublesome sprint question without point deduction.',
       state: 'Available',
       color: 'from-purple-500 to-indigo-400',
+      quantity: 1,
     },
     {
       id: 'adv-golden-coin',
       name: 'Golden Coin Surge',
       type: 'Golden Coin',
       icon: '🪙',
-      description: 'Grants 150 instant bonus points straight to total team score.',
-      state: 'Used',
+      description: 'Grants instant bonus points straight to total team score.',
+      state: 'Available',
       color: 'from-emerald-500 to-teal-400',
+      quantity: 1,
     },
     {
       id: 'adv-hint-card',
@@ -69,33 +74,95 @@ export const AdvantagesLocker: React.FC<AdvantagesLockerProps> = ({
       description: 'Reveals 1 architectural hint or hidden solution clue.',
       state: 'Available',
       color: 'from-rose-500 to-pink-400',
+      quantity: 1,
     },
     {
       id: 'adv-bonus-question',
       name: 'Bonus Question Challenge',
       type: 'Bonus Question',
       icon: '🎁',
-      description: 'Unlocks a secret bonus mini-game worth +300 bonus points.',
-      state: 'Locked',
+      description: 'Unlocks a secret bonus challenge worth extra bonus points.',
+      state: 'Available',
       color: 'from-[#8A2BE2] to-[#DA70D6]',
+      quantity: 0,
     },
   ]);
 
   const [notification, setNotification] = useState<string | null>(null);
 
-  const handleApply = (card: AdvantageCard) => {
+  // Fetch live team inventory from MongoDB
+  useEffect(() => {
+    const fetchInventory = async () => {
+      try {
+        const token = localStorage.getItem('cwc_token') || localStorage.getItem('token');
+        const res = await fetch('/api/student/dashboard', {
+          headers: token ? { Authorization: `Bearer ${token}` } : {},
+        });
+        if (res.ok) {
+          const data = await res.json();
+          const inv = data.team?.inventory;
+          if (inv) {
+            setCards((prev) =>
+              prev.map((card) => {
+                let qty = 0;
+                if (card.type === 'Double Points') qty = inv.doublePoints || 0;
+                else if (card.type === 'Extra Time') qty = inv.extraTime || 0;
+                else if (card.type === 'Skip Question') qty = inv.skipQuestion || 0;
+                else if (card.type === 'Golden Coin') qty = inv.goldenCoin || 0;
+                else if (card.type === 'Hint Card') qty = inv.hintCard || 0;
+                else if (card.type === 'Bonus Question') qty = inv.bonusQuestion || 0;
+
+                const state: AdvantageState = qty > 0 ? 'Available' : 'Used';
+                return { ...card, quantity: qty, state };
+              })
+            );
+          }
+        }
+      } catch (err) {
+        console.warn('Failed to load live student advantage inventory:', err);
+      }
+    };
+
+    fetchInventory();
+  }, []);
+
+  const handleApply = async (card: AdvantageCard) => {
     if (card.state !== 'Available') return;
 
-    triggerCarnivalConfetti();
-    setCards((prev) =>
-      prev.map((c) => (c.id === card.id ? { ...c, state: 'Active' as AdvantageState } : c))
-    );
+    try {
+      const token = localStorage.getItem('cwc_token') || localStorage.getItem('token');
+      const res = await fetch('/api/student/advantages/use', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+        body: JSON.stringify({ advantage: card.type, taskId: activeTaskId }),
+      });
 
-    setNotification(`Successfully Applied ${card.name}! 🔥`);
-    setTimeout(() => setNotification(null), 4000);
+      if (res.ok) {
+        triggerCarnivalConfetti();
+        setCards((prev) =>
+          prev.map((c) =>
+            c.id === card.id
+              ? {
+                  ...c,
+                  quantity: Math.max(0, (c.quantity || 1) - 1),
+                  state: (c.quantity || 1) - 1 > 0 ? 'Available' : ('Used' as AdvantageState),
+                }
+              : c
+          )
+        );
 
-    if (onApplyAdvantage) {
-      onApplyAdvantage(card.id, card.type);
+        setNotification(`Successfully Applied ${card.name}! ⚡`);
+        setTimeout(() => setNotification(null), 4000);
+
+        if (onApplyAdvantage) {
+          onApplyAdvantage(card.id, card.type);
+        }
+      }
+    } catch (err) {
+      console.warn('Advantage API call error:', err);
     }
   };
 
@@ -127,12 +194,12 @@ export const AdvantagesLocker: React.FC<AdvantagesLockerProps> = ({
         )}
       </div>
 
-      {/* Grid of 6 Collectable Carnival Cards */}
+      {/* Grid of Collectable Carnival Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
         {cards.map((card) => {
           const isActive = card.state === 'Active';
-          const isAvailable = card.state === 'Available';
-          const isUsed = card.state === 'Used';
+          const isAvailable = card.state === 'Available' && (card.quantity ?? 1) > 0;
+          const isUsed = card.state === 'Used' || (card.quantity ?? 0) <= 0;
           const isLocked = card.state === 'Locked';
 
           return (
@@ -155,25 +222,15 @@ export const AdvantagesLocker: React.FC<AdvantagesLockerProps> = ({
                   {card.icon}
                 </span>
 
-                {/* State Badge */}
-                {isActive && (
-                  <span className="px-3 py-1 rounded-full text-xs font-mono font-bold bg-emerald-100 dark:bg-emerald-500/20 text-emerald-700 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-500/40 flex items-center gap-1 shadow-sm dark:shadow-neon-gold animate-pulse">
-                    <Sparkles className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" /> ACTIVE
-                  </span>
-                )}
+                {/* State & Quantity Badge */}
                 {isAvailable && (
                   <span className="px-3 py-1 rounded-full text-xs font-mono font-bold bg-cyan-100 dark:bg-carnival-cyan/20 text-cyan-700 dark:text-carnival-cyan border border-cyan-300 dark:border-carnival-cyan/40">
-                    UNLOCKED
+                    UNLOCKED ({card.quantity}x)
                   </span>
                 )}
                 {isUsed && (
                   <span className="px-3 py-1 rounded-full text-xs font-mono font-medium bg-slate-200 dark:bg-white/10 text-slate-600 dark:text-slate-400">
-                    USED
-                  </span>
-                )}
-                {isLocked && (
-                  <span className="px-3 py-1 rounded-full text-xs font-mono font-bold bg-slate-200 dark:bg-white/5 text-slate-500 border border-slate-300 dark:border-white/10 flex items-center gap-1">
-                    <Lock className="w-3 h-3" /> LOCKED
+                    EXHAUSTED (0x)
                   </span>
                 )}
               </div>
@@ -194,24 +251,14 @@ export const AdvantagesLocker: React.FC<AdvantagesLockerProps> = ({
                 {isAvailable ? (
                   <button
                     onClick={() => handleApply(card)}
-                    className="w-full py-3 px-4 rounded-2xl bg-gradient-to-r from-amber-500 via-rose-500 to-amber-600 text-white font-black text-xs uppercase tracking-wider shadow-md dark:shadow-neon-gold hover:scale-[1.02] active:scale-95 transition-all flex items-center justify-center gap-2"
+                    className="w-full py-3 px-4 rounded-2xl bg-gradient-to-r from-amber-500 via-rose-500 to-amber-600 text-white font-black text-xs uppercase tracking-wider shadow-md dark:shadow-neon-gold hover:scale-[1.02] active:scale-95 transition-all flex items-center justify-center gap-2 cursor-pointer"
                   >
                     <Zap className="w-4 h-4 fill-white" />
-                    <span>Apply Advantage</span>
+                    <span>Apply Advantage ({card.quantity} left)</span>
                   </button>
-                ) : isActive ? (
-                  <div className="w-full py-2.5 px-4 rounded-2xl bg-emerald-100 dark:bg-emerald-500/20 text-emerald-800 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-500/40 text-xs font-mono font-bold flex items-center justify-center gap-2">
-                    <CheckCircle2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
-                    <span>Advantage Applied to Task</span>
-                  </div>
-                ) : isUsed ? (
-                  <div className="w-full py-2.5 px-4 rounded-2xl bg-slate-200 dark:bg-white/5 text-slate-600 dark:text-slate-400 text-xs font-mono text-center">
-                    Already Used This Season
-                  </div>
                 ) : (
-                  <div className="w-full py-2.5 px-4 rounded-2xl bg-slate-200 dark:bg-white/5 text-slate-500 text-xs font-mono text-center flex items-center justify-center gap-1.5">
-                    <Lock className="w-3.5 h-3.5" />
-                    <span>Requires Streak Level 5</span>
+                  <div className="w-full py-2.5 px-4 rounded-2xl bg-slate-200 dark:bg-white/5 text-slate-600 dark:text-slate-400 text-xs font-mono text-center">
+                    0 Remaining in Inventory
                   </div>
                 )}
               </div>
@@ -222,3 +269,5 @@ export const AdvantagesLocker: React.FC<AdvantagesLockerProps> = ({
     </div>
   );
 };
+
+export default AdvantagesLocker;

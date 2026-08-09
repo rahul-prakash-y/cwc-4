@@ -8,6 +8,10 @@ import {
   manageAdmins,
   getSecurityTargets,
   updateGlobalSettings,
+  getCoordinators,
+  createCoordinator,
+  updateCoordinator,
+  deleteCoordinator,
 } from '../controllers/superadminController.js';
 import { verifyJWT, isSuperAdmin } from '../middleware/auth.js';
 
@@ -45,6 +49,12 @@ export async function superadminRoutes(fastify: FastifyInstance) {
 
   // Task 3: Update Global Singleton CMS Settings
   fastify.put('/settings/global', updateGlobalSettings);
+
+  // Coordinators Management (CRUD)
+  fastify.get('/coordinators', getCoordinators);
+  fastify.post('/coordinators', createCoordinator);
+  fastify.put('/coordinators/:id', updateCoordinator);
+  fastify.delete('/coordinators/:id', deleteCoordinator);
 }
 
 export default superadminRoutes;
