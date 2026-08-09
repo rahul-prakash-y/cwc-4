@@ -27,6 +27,8 @@ import {
   getAdminTimeline,
   updateTimelineDay,
   updateTimelineTask,
+  getAdminVotes,
+  adminCastVote,
 } from '../controllers/adminController.js';
 import {
   getGalleryItems,
@@ -115,6 +117,11 @@ export async function adminRoutes(fastify: FastifyInstance) {
   fastify.post('/buzzer-questions', createBuzzerQuestion);
   fastify.put('/buzzer-questions/:id', updateBuzzerQuestion);
   fastify.delete('/buzzer-questions/:id', deleteBuzzerQuestion);
+
+  // Voting & Fan Favorite Management for Admins & SuperAdmins
+  fastify.get('/votes', getAdminVotes);
+  fastify.get('/votes/audit', getAdminVotes);
+  fastify.post('/votes/cast', adminCastVote);
 }
 
 

@@ -10,6 +10,7 @@ import { Score } from '../models/Score.js';
 import { Setting } from '../models/Setting.js';
 import { Settings } from '../models/Settings.js';
 import { BuzzerQuestion } from '../models/BuzzerQuestion.js';
+import { DailyVoteLog } from '../models/VoteLog.js';
 import { delCache } from '../utils/redis.js';
 import { logAdminAction } from '../utils/auditLogger.js';
 import {
@@ -18,6 +19,7 @@ import {
   broadcastStatusChanged,
   broadcastAdvantageGranted,
   broadcastFinaleTriggered,
+  broadcastVotesUpdated,
 } from '../socket.js';
 import { sendEmail, sendCarnivalEmail, sendBackgroundEmailBatch } from '../utils/mailer.js';
 import {
@@ -1377,5 +1379,134 @@ export async function updateTimelineTask(
     task,
   });
 }
+
+/* ==========================================================================
+   VOTING & AUDIT CONTROLLERS FOR ADMIN & SUPERADMIN
+   ========================================================================== */
+
+export async function getAdminVotes(_request: FastifyRequest, reply: FastifyReply) {
+  // Fetch all teams sorted by totalPublicVotes descending
+  const teams = await Team.find().sort({ totalPublicVotes: -1, createdAt: 1 }).lean();
+
+  const standings = teams.map((t: any, idx: number) => ({
+    rank: idx + 1,
+    teamId: t._id.toString(),
+    teamName: t.teamName,
+    leaderName: t.leader?.name || 'N/A',
+    leaderEmail: t.leader?.email || 'N/A',
+    residenceType: t.residenceType || 'Hosteller',
+    totalPublicVotes: t.totalPublicVotes || 0,
+    status: t.status || 'Approved',
+    avatar: t.avatar || '🎪',
+    themeColor: t.themeColor || '#FFD700',
+  }));
+
+  const totalVotesCast = standings.reduce((acc, t) => acc + t.totalPublicVotes, 0);
+
+  // Fetch detailed vote audit logs populated with voter team and target team
+  const rawLogs = await DailyVoteLog.find()
+    .populate('voterTeamId', 'teamName leader')
+    .populate('targetTeamId', 'teamName leader')
+    .sort({ createdAt: -1 })
+    .limit(500)
+    .lean();
+
+  const voteAuditLogs = rawLogs.map((log: any) => {
+    const isAdmin = log.voterType === 'Admin' || !log.voterTeamId;
+    return {
+      id: log._id.toString(),
+      date: log.date,
+      votesCast: log.votesCast,
+      voterType: log.voterType || (isAdmin ? 'Admin' : 'Team'),
+      voterName: isAdmin
+        ? `Admin (${log.voterEmail || 'Ringmaster'})`
+        : log.voterTeamId?.teamName || 'Unknown Team',
+      voterEmail: isAdmin
+        ? log.voterEmail || 'admin@cwc.org'
+        : log.voterTeamId?.leader?.email || 'student@cwc.io',
+      voterLeaderName: !isAdmin ? log.voterTeamId?.leader?.name || 'Team Leader' : 'Administrator',
+      targetTeamId: log.targetTeamId?._id?.toString() || log.targetTeamId?.toString(),
+      targetTeamName: log.targetTeamId?.teamName || 'Unknown Team',
+      targetTeamLeader: log.targetTeamId?.leader?.name || 'Team Leader',
+      createdAt: log.createdAt || log.updatedAt || new Date().toISOString(),
+    };
+  });
+
+  return reply.send({
+    success: true,
+    totalVotesCast,
+    totalTeams: standings.length,
+    standings,
+    voteAuditLogs,
+  });
+}
+
+export async function adminCastVote(
+  request: FastifyRequest<{ Body: { targetTeamId: string; voteCount: number } }>,
+  reply: FastifyReply
+) {
+  const { targetTeamId, voteCount } = request.body || {};
+
+  if (!targetTeamId) {
+    return reply.status(400).send({ error: 'Bad Request', message: 'Target team ID is required' });
+  }
+
+  const numVotes = Number(voteCount);
+  if (isNaN(numVotes) || numVotes <= 0 || !Number.isInteger(numVotes)) {
+    return reply.status(400).send({ error: 'Bad Request', message: 'voteCount must be a positive integer' });
+  }
+
+  const targetTeam = await Team.findById(targetTeamId);
+  if (!targetTeam) {
+    return reply.status(404).send({ error: 'Not Found', message: 'Target team not found' });
+  }
+
+  const adminEmail = (request.user as any)?.email || 'admin@cwc.org';
+  const today = new Date().toISOString().split('T')[0];
+
+  // Increment target team's totalPublicVotes
+  targetTeam.totalPublicVotes = (targetTeam.totalPublicVotes || 0) + numVotes;
+  await targetTeam.save();
+
+  // Record Admin Vote Log
+  await DailyVoteLog.create({
+    targetTeamId: targetTeam._id,
+    voterType: 'Admin',
+    voterEmail: adminEmail,
+    date: today,
+    votesCast: numVotes,
+  });
+
+  // Invalidate Redis Caches
+  await delCache('cwc:leaderboard');
+  await delCache('cwc:fan-favorite');
+
+  // Broadcast WebSocket event
+  broadcastVotesUpdated({
+    voterTeamId: 'ADMIN',
+    voterTeamName: `Admin (${adminEmail})`,
+    targetTeamId: targetTeam._id.toString(),
+    targetTeamName: targetTeam.teamName,
+    votesCast: numVotes,
+    totalPublicVotes: targetTeam.totalPublicVotes,
+  });
+
+  await logAdminAction(request, 'ADMIN_CAST_VOTE', targetTeam._id, {
+    votesCast: numVotes,
+    targetTeamName: targetTeam.teamName,
+    adminEmail,
+  });
+
+  return reply.send({
+    success: true,
+    message: `🎉 Successfully cast ${numVotes} admin vote(s) for '${targetTeam.teamName}'!`,
+    team: {
+      id: targetTeam._id,
+      teamName: targetTeam.teamName,
+      totalPublicVotes: targetTeam.totalPublicVotes,
+    },
+  });
+}
+
 
 

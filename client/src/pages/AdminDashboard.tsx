@@ -1,6 +1,6 @@
 import React from 'react';
 import { useLocation, Link } from 'react-router-dom';
-import { Crown, Users, CheckSquare, Grid, Download, Image as ImageIcon, UserCheck, Zap, ShieldAlert } from 'lucide-react';
+import { Crown, Users, CheckSquare, Grid, Download, Image as ImageIcon, UserCheck, Zap, ShieldAlert, Vote } from 'lucide-react';
 import { Dashboard } from './admin/Dashboard';
 import { Teams } from './admin/Teams';
 import { Tasks } from './admin/Tasks';
@@ -11,6 +11,7 @@ import { Attendance } from './admin/Attendance';
 import { SuperAdminDashboard } from './admin/SuperAdminDashboard';
 import { BuzzerConsole } from './admin/BuzzerConsole';
 import { Threats } from './admin/Threats';
+import { VotingManagement } from './admin/VotingManagement';
 import { ChampionBanner } from '../components/common/ChampionBanner';
 import { useAuth } from '../context/AuthContext';
 
@@ -28,6 +29,7 @@ export const AdminDashboard: React.FC = () => {
     if (location.pathname.includes('/admin/teams')) return 'teams';
     if (location.pathname.includes('/admin/tasks')) return 'tasks';
     if (location.pathname.includes('/admin/scores') || location.pathname.includes('/admin/advantages')) return 'scores';
+    if (location.pathname.includes('/admin/voting') || location.pathname.includes('/admin/votes')) return 'voting';
     if (location.pathname.includes('/admin/export')) return 'export';
     return 'overview';
   };
@@ -154,6 +156,18 @@ export const AdminDashboard: React.FC = () => {
         </Link>
 
         <Link
+          to="/admin/voting"
+          className={`flex items-center gap-2 px-4 py-2.5 rounded-xl font-mono text-xs font-bold transition-all ${
+            activeTab === 'voting'
+              ? 'bg-gradient-to-r from-amber-500 via-amber-400 to-rose-600 text-slate-950 shadow-neon-gold font-black'
+              : 'glass-card text-amber-300 hover:text-white border-amber-500/30'
+          }`}
+        >
+          <Vote className="w-4 h-4 text-amber-400" />
+          <span>Fan Favorite Voting</span>
+        </Link>
+
+        <Link
           to="/admin/export"
           className={`flex items-center gap-2 px-4 py-2.5 rounded-xl font-mono text-xs font-bold transition-all ${
             activeTab === 'export'
@@ -176,6 +190,7 @@ export const AdminDashboard: React.FC = () => {
       {activeTab === 'teams' && <Teams />}
       {activeTab === 'tasks' && <Tasks />}
       {activeTab === 'scores' && <ScoreSheet />}
+      {activeTab === 'voting' && <VotingManagement />}
       {activeTab === 'export' && <Export />}
     </div>
   );

@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Outlet, Link, useLocation, Navigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Crown, Users, CheckSquare, Grid, Download, ArrowLeft, Menu, X, ShieldAlert, Sparkles, Flame, Trophy, LogOut } from 'lucide-react';
+import { Crown, Users, CheckSquare, Grid, Download, ArrowLeft, Menu, X, ShieldAlert, Sparkles, Flame, Trophy, LogOut, Vote } from 'lucide-react';
 import { useGrandFinale } from '../context/GrandFinaleContext';
 import { useAuth } from '../context/AuthContext';
 import { ThemeToggle } from '../components/layout/ThemeToggle';
@@ -22,6 +22,7 @@ export const AdminLayout: React.FC = () => {
     { label: 'Team Management', path: '/admin/teams', icon: Users },
     { label: 'Task Scheduler', path: '/admin/tasks', icon: CheckSquare },
     { label: 'Score Sheet Grid', path: '/admin/scores', icon: Grid },
+    { label: 'Fan Favorite Voting', path: '/admin/voting', icon: Vote },
     { label: 'Export & Reports', path: '/admin/export', icon: Download },
   ];
 

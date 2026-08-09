@@ -1,8 +1,10 @@
 import { Schema, model, Document, Model, Types } from 'mongoose';
 
 export interface IDailyVoteLog {
-  voterTeamId: Types.ObjectId;
+  voterTeamId?: Types.ObjectId;
   targetTeamId: Types.ObjectId;
+  voterType?: 'Team' | 'Admin';
+  voterEmail?: string;
   date: string; // Format: YYYY-MM-DD
   votesCast: number;
   createdAt?: Date;
@@ -18,7 +20,7 @@ const dailyVoteLogSchema = new Schema<IDailyVoteLogDocument>(
     voterTeamId: {
       type: Schema.Types.ObjectId,
       ref: 'Team',
-      required: true,
+      required: false,
       index: true,
     },
     targetTeamId: {
@@ -26,6 +28,16 @@ const dailyVoteLogSchema = new Schema<IDailyVoteLogDocument>(
       ref: 'Team',
       required: true,
       index: true,
+    },
+    voterType: {
+      type: String,
+      enum: ['Team', 'Admin'],
+      default: 'Team',
+    },
+    voterEmail: {
+      type: String,
+      trim: true,
+      default: '',
     },
     date: {
       type: String,
@@ -47,7 +59,7 @@ const dailyVoteLogSchema = new Schema<IDailyVoteLogDocument>(
 
 // Compound indexes for quick lookup & daily limit enforcement
 dailyVoteLogSchema.index({ voterTeamId: 1, date: 1 });
-dailyVoteLogSchema.index({ voterTeamId: 1, targetTeamId: 1, date: 1 }, { unique: true });
+dailyVoteLogSchema.index({ targetTeamId: 1, date: 1 });
 
 export const DailyVoteLog = model<IDailyVoteLogDocument, IDailyVoteLogModel>('DailyVoteLog', dailyVoteLogSchema);
 export const VoteLog = DailyVoteLog;

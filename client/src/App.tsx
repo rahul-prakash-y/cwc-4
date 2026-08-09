@@ -89,6 +89,8 @@ export default function App() {
                 <Route path="teams" element={<AdminDashboard />} />
                 <Route path="tasks" element={<AdminDashboard />} />
                 <Route path="scores" element={<AdminDashboard />} />
+                <Route path="voting" element={<AdminDashboard />} />
+                <Route path="votes" element={<AdminDashboard />} />
                 <Route path="export" element={<AdminDashboard />} />
                 <Route path="advantages" element={<AdminDashboard />} />
                 <Route path="broadcasts" element={<AdminDashboard />} />
