@@ -656,7 +656,7 @@ export const Media: React.FC = () => {
                     <td className="p-4">
                       <div className="w-16 h-12 rounded-lg bg-black overflow-hidden border border-white/10 flex items-center justify-center">
                         {item.type === 'Photo' ? (
-                          <img src={item.url} alt={item.title} className="w-full h-full object-cover" />
+                          <img src={item.url} crossOrigin="anonymous" alt={item.title} className="w-full h-full object-cover" />
                         ) : (
                           <div className="relative w-full h-full bg-purple-950 flex items-center justify-center">
                             <Play className="w-4 h-4 text-white fill-white" />
@@ -708,10 +708,10 @@ export const Media: React.FC = () => {
               >
                 <div className="relative aspect-video bg-slate-950 overflow-hidden">
                   {item.type === 'Photo' ? (
-                    <img src={item.url} alt={item.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform" />
+                    <img src={item.url} crossOrigin="anonymous" alt={item.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform" />
                   ) : (
                     <div className="relative w-full h-full flex items-center justify-center bg-purple-950">
-                      <img src={item.url} alt={item.title} className="w-full h-full object-cover opacity-60" />
+                      <img src={item.url} crossOrigin="anonymous" alt={item.title} className="w-full h-full object-cover opacity-60" />
                       <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
                         <div className="w-10 h-10 rounded-full bg-carnival-crimson flex items-center justify-center text-white">
                           <Play className="w-5 h-5 fill-white translate-x-0.5" />

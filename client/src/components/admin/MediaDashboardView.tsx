@@ -453,7 +453,7 @@ export const MediaDashboardView: React.FC = () => {
                 <div className="p-4 rounded-xl bg-white/5 border border-white/10 flex items-center gap-4">
                   <div className="w-20 h-20 rounded-lg overflow-hidden border border-white/20 bg-black flex items-center justify-center">
                     {type === 'Photo' ? (
-                      <img src={previewUrl} alt="Preview" className="w-full h-full object-cover" />
+                      <img src={previewUrl} alt="Preview" className="w-full h-full object-cover" crossOrigin="anonymous" />
                     ) : (
                       <video src={previewUrl} className="w-full h-full object-cover" />
                     )}
@@ -596,6 +596,7 @@ export const MediaDashboardView: React.FC = () => {
                     <img
                       src={item.url}
                       alt={item.title}
+                      crossOrigin="anonymous"
                       className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                     />
                   ) : item.url.includes('youtube.com') || item.url.includes('youtu.be') ? (
@@ -607,7 +608,7 @@ export const MediaDashboardView: React.FC = () => {
                     />
                   ) : (
                     <div className="relative w-full h-full flex items-center justify-center bg-gradient-to-tr from-slate-950 via-slate-900 to-purple-950">
-                      <img src={item.url} alt={item.title} className="w-full h-full object-cover opacity-60" />
+                      <img src={item.url} alt={item.title} crossOrigin="anonymous" className="w-full h-full object-cover opacity-60" />
                       <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
                         <div className="w-12 h-12 rounded-full bg-carnival-crimson/80 flex items-center justify-center text-white shadow-neon-crimson">
                           <Play className="w-6 h-6 fill-white translate-x-0.5" />

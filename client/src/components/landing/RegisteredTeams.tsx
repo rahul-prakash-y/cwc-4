@@ -291,6 +291,7 @@ export const RegisteredTeams: React.FC = () => {
                             <img
                               src={member.avatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80'}
                               alt={member.name}
+                              crossOrigin="anonymous"
                               className="w-7 h-7 rounded-full object-cover border border-amber-400 dark:border-carnival-gold/40"
                             />
                             <div>

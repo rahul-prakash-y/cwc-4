@@ -246,6 +246,7 @@ export const Gallery: React.FC = () => {
                     alt={item.title}
                     className="w-full h-auto object-cover group-hover:scale-105 transition-transform duration-700 ease-out"
                     loading="lazy"
+                    crossOrigin="anonymous"
                   />
                 ) : item.url.includes("youtube.com") ||
                   item.url.includes("youtu.be") ? (
@@ -266,6 +267,7 @@ export const Gallery: React.FC = () => {
                     <img
                       src={item.url}
                       alt={item.title}
+                      crossOrigin="anonymous"
                       className="w-full h-full object-cover opacity-60 group-hover:opacity-80 transition-opacity"
                     />
                     <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
@@ -400,6 +402,7 @@ export const Gallery: React.FC = () => {
                   <img
                     src={currentItem.url}
                     alt={currentItem.title}
+                    crossOrigin="anonymous"
                     className="max-h-[65vh] w-auto max-w-full object-contain rounded-xl shadow-2xl"
                   />
                 ) : currentItem.url.includes("youtube.com") ||

@@ -39,6 +39,7 @@ export const Navbar: React.FC = () => {
                 src="https://res.cloudinary.com/dsz2br3qg/image/upload/v1756912823/codecirclelogo_excanr.png"
                 alt="cwc logo"
                 className="w-10 h-10 object-contain rounded-full"
+                crossOrigin="anonymous"
               />
             </div>
           </div>

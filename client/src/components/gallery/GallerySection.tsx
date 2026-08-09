@@ -302,6 +302,7 @@ export const GallerySection: React.FC = () => {
                   <img
                     src={item.url}
                     alt={item.title}
+                    crossOrigin="anonymous"
                     className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 ease-out"
                     loading="lazy"
                   />
@@ -320,7 +321,7 @@ export const GallerySection: React.FC = () => {
                   </div>
                 ) : (
                   <div className="relative w-full h-full bg-gradient-to-tr from-slate-950 via-purple-950 to-slate-900 flex items-center justify-center">
-                    <img src={item.url} alt={item.title} className="w-full h-full object-cover opacity-60 group-hover:opacity-80 transition-opacity" />
+                    <img src={item.url} crossOrigin="anonymous" alt={item.title} className="w-full h-full object-cover opacity-60 group-hover:opacity-80 transition-opacity" />
                     <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
                       <div className="w-14 h-14 rounded-full bg-carnival-crimson text-white flex items-center justify-center shadow-neon-crimson group-hover:scale-110 transition-transform">
                         <Play className="w-7 h-7 fill-white translate-x-0.5" />
@@ -451,6 +452,7 @@ export const GallerySection: React.FC = () => {
                   <img
                     src={currentItem.url}
                     alt={currentItem.title}
+                    crossOrigin="anonymous"
                     className="max-h-[65vh] w-auto max-w-full object-contain rounded-xl shadow-2xl"
                   />
                 ) : currentItem.url.includes('youtube.com') || currentItem.url.includes('youtu.be') ? (

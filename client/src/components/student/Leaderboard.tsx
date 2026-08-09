@@ -307,6 +307,7 @@ export const Leaderboard: React.FC<StudentLeaderboardProps> = ({
                           <img
                             src={team.logoUrl}
                             alt={team.name}
+                            crossOrigin="anonymous"
                             className="w-10 h-10 rounded-xl object-cover border border-slate-200 dark:border-white/20 shrink-0"
                           />
                         ) : (

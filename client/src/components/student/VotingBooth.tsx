@@ -281,7 +281,7 @@ export const VotingBooth: React.FC<VotingBoothProps> = ({
                       style={{ borderColor: themeColor }}
                     >
                       {team.logoUrl ? (
-                        <img src={team.logoUrl} alt={team.teamName} className="w-full h-full object-cover" />
+                        <img src={team.logoUrl} crossOrigin="anonymous" alt={team.teamName} className="w-full h-full object-cover" />
                       ) : (
                         <span>🎪</span>
                       )}

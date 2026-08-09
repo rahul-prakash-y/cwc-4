@@ -198,7 +198,7 @@ export const FanFavoriteBoard: React.FC<{ limit?: number }> = ({ limit = 12 }) =
                         style={{ borderColor: themeColor }}
                       >
                         {team.logoUrl ? (
-                          <img src={team.logoUrl} alt={team.teamName} className="w-full h-full object-cover" />
+                          <img src={team.logoUrl} crossOrigin="anonymous" alt={team.teamName} className="w-full h-full object-cover" />
                         ) : (
                           <span>🎪</span>
                         )}
