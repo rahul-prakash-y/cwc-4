@@ -22,7 +22,13 @@ function getTransporter() {
             host: env.SMTP_HOST || 'smtp.gmail.com',
             port,
             secure: isSecure,
-            family: 4, // Strictly force IPv4 socket to prevent ENETUNREACH IPv6 errors on hosted server containers
+            family: 4, // Strictly force IPv4 socket
+            // Explicit custom DNS lookup function to guarantee only IPv4 addresses are returned
+            lookup: (hostname, _options, callback) => {
+                dns.lookup(hostname, { family: 4 }, (err, address, family) => {
+                    callback(err, address, family);
+                });
+            },
             auth: {
                 user: env.SMTP_USER,
                 pass: env.SMTP_PASS,
@@ -35,6 +41,7 @@ function getTransporter() {
             socketTimeout: 20000, // 20s socket timeout
             tls: {
                 rejectUnauthorized: false, // Prevent self-signed cert issues on cloud hosts
+                servername: env.SMTP_HOST || 'smtp.gmail.com',
             },
         });
     }
