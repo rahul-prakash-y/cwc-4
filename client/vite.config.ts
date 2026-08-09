@@ -12,6 +12,10 @@ export default defineConfig({
   },
   server: {
     port: 5173,
+    // Add the CSP headers here
+    headers: {
+      'Content-Security-Policy': "img-src 'self' data: https://res.cloudinary.com https://images.unsplash.com;"
+    },
     proxy: {
       '/api': {
         target: 'http://localhost:5000',
