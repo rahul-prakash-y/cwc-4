@@ -90,17 +90,22 @@ export function buildApp(): FastifyInstance {
         ? {
             useDefaults: true,
             directives: {
+              "default-src": ["'self'"],
+              "script-src": ["'self'", "'unsafe-inline'", "'unsafe-eval'", "blob:"],
+              "script-src-attr": ["'self'", "'unsafe-inline'"],
+              "style-src": ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
+              "font-src": ["'self'", "data:", "https://fonts.gstatic.com"],
               "img-src": [
                 "'self'",
                 "data:",
+                "blob:",
                 "https://res.cloudinary.com",
                 "https://images.unsplash.com",
               ],
-              // Add frame-src to allow Google iframes
+              "connect-src": ["'self'", "https:", "wss:", "ws:"],
               "frame-src": ["'self'", "https://www.google.com"],
-              // Allow Web Workers and blob: scripts for confetti / dynamic workers
               "worker-src": ["'self'", "blob:"],
-              "script-src": ["'self'", "'unsafe-inline'", "'unsafe-eval'", "blob:"],
+              "object-src": ["'none'"],
             },
           }
         : false,
