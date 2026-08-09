@@ -37,7 +37,7 @@ export const LandingPage: React.FC = () => {
       </div>
 
       {/* 8. Rule Book */}
-      <RuleBook />
+      {/* <RuleBook /> */}
 
       {/* 8. Task 3: Sponsors Component */}
       {/* <Sponsors /> */}

@@ -232,6 +232,7 @@ export async function getAllTeams(
       const totalPoints = scores.reduce((acc, curr) => acc + (curr.pointsEarned || 0), 0);
       return {
         ...team,
+        points: totalPoints,
         totalPoints,
       };
     })
@@ -418,6 +419,8 @@ export async function updateTeamDetails(
         rollNumber?: string;
         department?: string;
       };
+      points?: number;
+      totalPoints?: number;
       members?: Array<{
         name?: string;
         rollNo?: string;
@@ -492,6 +495,40 @@ export async function updateTeamDetails(
 
   await team.save();
 
+  const targetPoints = request.body.points !== undefined ? request.body.points : request.body.totalPoints;
+  if (targetPoints !== undefined && typeof targetPoints === 'number' && targetPoints >= 0) {
+    let scoreDoc = await Score.findOne({ team: team._id }).sort({ dayNumber: 1 });
+    if (!scoreDoc) {
+      scoreDoc = new Score({
+        team: team._id,
+        dayNumber: 1,
+        day: 1,
+        date: new Date(),
+        scores: { adv: 0, main: targetPoints, special: 0, total: targetPoints },
+        adv: 0,
+        main: targetPoints,
+        special: 0,
+        total: targetPoints,
+        pointsEarned: targetPoints,
+      });
+    } else {
+      const adv = scoreDoc.scores?.adv || scoreDoc.adv || 0;
+      const special = scoreDoc.scores?.special || scoreDoc.special || 0;
+      const computedTotal = adv + targetPoints + special;
+      scoreDoc.main = targetPoints;
+      scoreDoc.total = computedTotal;
+      scoreDoc.pointsEarned = computedTotal;
+      scoreDoc.scores = { adv, main: targetPoints, special, total: computedTotal };
+    }
+    await scoreDoc.save();
+
+    broadcastScoreUpdated({
+      teamId: team._id.toString(),
+      teamName: team.teamName,
+      points: targetPoints,
+    });
+  }
+
   await delCache('cwc:leaderboard');
 
   teamBroadcaster.emit('status-changed', {
@@ -513,9 +550,16 @@ export async function updateTeamDetails(
     membersCount: team.members.length,
   });
 
+  const teamScores = await Score.find({ team: team._id });
+  const updatedTotalPoints = teamScores.reduce((acc, curr) => acc + (curr.pointsEarned || 0), 0);
+
   return reply.send({
     message: `Team '${team.teamName}' and member details updated successfully! 🎪`,
-    team,
+    team: {
+      ...team.toObject(),
+      points: updatedTotalPoints,
+      totalPoints: updatedTotalPoints,
+    },
   });
 }
 

@@ -25,6 +25,7 @@ import { GrantAdvantageModal } from '../../components/admin/GrantAdvantageModal'
 import { BulkUploadTeamsModal } from '../../components/admin/BulkUploadTeamsModal';
 import { TableSkeleton } from '../../components/ui/Skeletons';
 import { EmptyState } from '../../components/ui/EmptyState';
+import { useAuth } from '../../context/AuthContext';
 
 export type TeamStatus = 'Approved' | 'Pending' | 'Safe' | 'Danger' | 'Eliminated' | 'Qualified' | 'Rejected';
 
@@ -52,6 +53,7 @@ export interface TeamRecord {
 }
 
 export const Teams: React.FC = () => {
+  const { apiFetch } = useAuth();
   const [isGrantModalOpen, setIsGrantModalOpen] = useState(false);
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
@@ -64,10 +66,7 @@ export const Teams: React.FC = () => {
 
   const fetchAdminTeams = async () => {
     try {
-      const token = localStorage.getItem('token');
-      const res = await fetch('/api/admin/teams', {
-        headers: token ? { Authorization: `Bearer ${token}` } : {},
-      });
+      const res = await apiFetch('/admin/teams');
       if (res.ok) {
         const data = await res.json();
         const rawTeams = data.teams || data;
@@ -78,7 +77,7 @@ export const Teams: React.FC = () => {
             tagline: t.tagline || t.description || 'Carnival contender',
             avatar: t.avatar || '🎪',
             rank: t.rank || idx + 1,
-            points: t.points ?? 0,
+            points: t.totalPoints ?? t.points ?? 0,
             status: t.status || 'Approved',
             themeColor: t.themeColor || '#FFD700',
             members: Array.isArray(t.members) && t.members.length > 0
@@ -138,18 +137,25 @@ export const Teams: React.FC = () => {
     return matchesSearch && team.status === statusFilter;
   });
 
+  // Direct Team Points Update Handler
+  const handleUpdatePoints = async (id: string, newPoints: number) => {
+    try {
+      await apiFetch(`/admin/teams/${id}`, {
+        method: 'PUT',
+        body: JSON.stringify({ points: newPoints }),
+      });
+    } catch (err) {
+      console.error('Failed to update team points:', err);
+    }
+  };
+
   // Quick Action Handler for status changes
   const handleUpdateStatus = async (id: string, newStatus: TeamStatus) => {
     setTeams((prev) => prev.map((t) => (t.id === id ? { ...t, status: newStatus } : t)));
 
     try {
-      const token = localStorage.getItem('token');
-      await fetch(`/api/admin/teams/${id}/status`, {
+      await apiFetch(`/admin/teams/${id}/status`, {
         method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-          ...(token ? { Authorization: `Bearer ${token}` } : {}),
-        },
         body: JSON.stringify({ status: newStatus }),
       });
     } catch (err) {
@@ -164,7 +170,6 @@ export const Teams: React.FC = () => {
 
     setIsSaving(true);
     try {
-      const token = localStorage.getItem('token');
       const leaderMember = editingTeam.members.find((m) => m.role === 'Leader') || editingTeam.members[0];
 
       const payload = {
@@ -172,6 +177,7 @@ export const Teams: React.FC = () => {
         tagline: editingTeam.tagline,
         status: editingTeam.status,
         themeColor: editingTeam.themeColor,
+        points: Number(editingTeam.points),
         leader: leaderMember
           ? {
               name: leaderMember.name,
@@ -193,12 +199,8 @@ export const Teams: React.FC = () => {
         })),
       };
 
-      const res = await fetch(`/api/admin/teams/${editingTeam.id}`, {
+      const res = await apiFetch(`/admin/teams/${editingTeam.id}`, {
         method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          ...(token ? { Authorization: `Bearer ${token}` } : {}),
-        },
         body: JSON.stringify(payload),
       });
 
@@ -206,6 +208,7 @@ export const Teams: React.FC = () => {
         const data = await res.json();
         const updatedDoc = data.team;
         if (updatedDoc) {
+          const finalPoints = updatedDoc.points ?? updatedDoc.totalPoints ?? editingTeam.points;
           setTeams((prev) =>
             prev.map((t) =>
               t.id === editingTeam.id
@@ -213,6 +216,7 @@ export const Teams: React.FC = () => {
                     ...t,
                     name: updatedDoc.teamName || editingTeam.name,
                     status: updatedDoc.status || editingTeam.status,
+                    points: finalPoints,
                     themeColor: updatedDoc.themeColor || editingTeam.themeColor,
                     members: Array.isArray(updatedDoc.members)
                       ? updatedDoc.members.map((m: any, mIdx: number) => ({
@@ -231,6 +235,7 @@ export const Teams: React.FC = () => {
             )
           );
         }
+        await fetchAdminTeams();
       } else {
         setTeams((prev) => prev.map((t) => (t.id === editingTeam.id ? editingTeam : t)));
       }
@@ -475,9 +480,28 @@ export const Teams: React.FC = () => {
                       </div>
                     </td>
 
-                    {/* Points */}
+                    {/* Points (Editable by SuperAdmin/Admin) */}
                     <td className="p-4 border-r border-slate-200 dark:border-white/5 text-center font-extrabold text-cyan-700 dark:text-carnival-cyan text-sm">
-                      {team.points} PTS
+                      <div className="flex items-center justify-center gap-1.5">
+                        <input
+                          type="number"
+                          min="0"
+                          value={team.points}
+                          onChange={(e) => {
+                            const val = Math.max(0, Number(e.target.value) || 0);
+                            setTeams((prev) => prev.map((t) => (t.id === team.id ? { ...t, points: val } : t)));
+                          }}
+                          onBlur={() => handleUpdatePoints(team.id, team.points)}
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter') {
+                              handleUpdatePoints(team.id, team.points);
+                            }
+                          }}
+                          className="w-20 px-2 py-1.5 rounded-xl bg-slate-50 dark:bg-[#1A1228] border border-amber-300 dark:border-carnival-gold/40 text-center font-mono font-black text-xs text-amber-600 dark:text-carnival-gold focus:outline-none focus:border-amber-500 shadow-sm"
+                          title="Click to edit team points directly and press Enter or Blur"
+                        />
+                        <span className="text-[10px] font-mono text-slate-500 dark:text-slate-400 font-bold">PTS</span>
+                      </div>
                     </td>
 
                     {/* Current Status Badge */}
@@ -498,28 +522,30 @@ export const Teams: React.FC = () => {
                         <option value="Safe">🛡️ Safe</option>
                         <option value="Danger">⚠️ Danger</option>
                         <option value="Eliminated">❌ Eliminated</option>
-                        <option value="Qualified">🏆 Qualified</option>
+                        <option value="Qualified">⭐ Qualified</option>
                         <option value="Pending">⏳ Pending</option>
                         <option value="Rejected">🚫 Reject</option>
                       </select>
                     </td>
 
-                    {/* Row Actions: Edit Members & Reject */}
-                    <td className="p-4 text-right space-x-2">
-                      <button
-                        onClick={() => setEditingTeam(JSON.parse(JSON.stringify(team)))}
-                        className="px-3 py-1.5 rounded-lg bg-amber-100 dark:bg-carnival-gold/20 text-amber-800 dark:text-carnival-gold hover:bg-amber-500 hover:text-white dark:hover:bg-carnival-gold dark:hover:text-slate-950 font-sans font-bold text-xs transition-all inline-flex items-center gap-1.5 cursor-pointer shadow-sm"
-                      >
-                        <Edit3 className="w-3.5 h-3.5" />
-                        <span>Edit Roster</span>
-                      </button>
-                      <button
-                        onClick={() => handleDeleteTeam(team.id)}
-                        className="px-3 py-1.5 rounded-lg bg-rose-100 dark:bg-rose-500/20 text-rose-700 dark:text-rose-400 hover:bg-rose-500 hover:text-white font-sans font-bold text-xs transition-all inline-flex items-center gap-1 cursor-pointer"
-                      >
-                        <Trash2 className="w-3.5 h-3.5" />
-                        <span>Reject</span>
-                      </button>
+                    {/* Roster Actions */}
+                    <td className="p-4 text-right">
+                      <div className="flex items-center justify-end gap-2">
+                        <button
+                          onClick={() => setEditingTeam(JSON.parse(JSON.stringify(team)))}
+                          className="p-2 rounded-xl bg-cyan-50 dark:bg-carnival-cyan/10 text-cyan-700 dark:text-carnival-cyan border border-cyan-200 dark:border-carnival-cyan/30 hover:bg-cyan-100 dark:hover:bg-carnival-cyan/20 transition-all cursor-pointer"
+                          title="Edit Roster & Members"
+                        >
+                          <Edit3 className="w-4 h-4" />
+                        </button>
+                        <button
+                          onClick={() => handleDeleteTeam(team.id)}
+                          className="p-2 rounded-xl bg-rose-50 dark:bg-rose-500/10 text-rose-700 dark:text-rose-400 border border-rose-200 dark:border-rose-500/30 hover:bg-rose-100 dark:hover:bg-rose-500/20 transition-all cursor-pointer"
+                          title="Delete Team Roster"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 ))}
@@ -529,26 +555,37 @@ export const Teams: React.FC = () => {
         </div>
       )}
 
-      {/* Edit Team & Member Details Modal */}
+      {/* Edit Team Modal */}
       <AnimatePresence>
         {editingTeam && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 dark:bg-black/75 backdrop-blur-md overflow-y-auto">
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-4 overflow-y-auto"
+          >
             <motion.div
-              initial={{ scale: 0.9, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.9, opacity: 0 }}
-              className="bg-white dark:bg-[#18122B] p-6 sm:p-8 rounded-3xl border border-slate-200 dark:border-carnival-cyan/40 max-w-3xl w-full shadow-2xl relative space-y-6 my-8 max-h-[90vh] overflow-y-auto"
+              initial={{ scale: 0.95, y: 20 }}
+              animate={{ scale: 1, y: 0 }}
+              exit={{ scale: 0.95, y: 20 }}
+              className="bg-white dark:bg-[#140D21] border border-slate-200 dark:border-white/10 rounded-3xl max-w-3xl w-full p-6 sm:p-8 shadow-2xl space-y-6 max-h-[90vh] overflow-y-auto font-sans"
             >
-              {/* Modal Header */}
-              <div className="flex items-center justify-between border-b border-slate-200 dark:border-white/10 pb-4 sticky top-0 bg-white dark:bg-[#18122B] z-10">
-                <div>
-                  <div className="inline-flex items-center gap-2 px-2.5 py-0.5 rounded-full bg-cyan-100 dark:bg-carnival-cyan/20 text-cyan-800 dark:text-carnival-cyan text-[11px] font-mono font-bold mb-1">
-                    <Sparkles className="w-3.5 h-3.5" />
-                    <span>SUPERADMIN ROSTER CONTROLLER</span>
+              <div className="flex items-center justify-between pb-4 border-b border-slate-200 dark:border-white/10">
+                <div className="flex items-center gap-3">
+                  <span className="text-2xl p-2 rounded-2xl bg-cyan-50 dark:bg-white/5 border border-slate-200 dark:border-white/10">
+                    {editingTeam.avatar}
+                  </span>
+                  <div>
+                    <h3 className="text-xl font-extrabold text-slate-900 dark:text-white font-mono flex items-center gap-2">
+                      <span>{editingTeam.name}</span>
+                      <span className="text-xs px-2 py-0.5 rounded-full bg-cyan-500/10 text-cyan-700 dark:text-carnival-cyan border border-cyan-500/30">
+                        #{editingTeam.rank}
+                      </span>
+                    </h3>
+                    <p className="text-xs text-slate-500 dark:text-slate-400 font-mono">
+                      Edit Team & Member Details
+                    </p>
                   </div>
-                  <h3 className="text-xl font-black text-slate-900 dark:text-white flex items-center gap-2">
-                    <span>Edit Team & Member Details</span>
-                  </h3>
                 </div>
                 <button
                   onClick={() => setEditingTeam(null)}
@@ -559,12 +596,7 @@ export const Teams: React.FC = () => {
               </div>
 
               <form onSubmit={handleSaveEdit} className="space-y-6">
-                {/* General Team Info Section */}
                 <div className="bg-slate-50 dark:bg-white/5 p-5 rounded-2xl border border-slate-200 dark:border-white/10 space-y-4">
-                  <h4 className="text-xs font-mono font-extrabold uppercase tracking-wider text-slate-500 dark:text-slate-400">
-                    General Team Information
-                  </h4>
-
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
                       <label className="block text-xs font-mono text-slate-700 dark:text-slate-300 mb-1 font-bold">Team Name</label>
@@ -576,7 +608,6 @@ export const Teams: React.FC = () => {
                         className="w-full px-4 py-2.5 rounded-xl bg-white dark:bg-[#120B1F] border border-slate-300 dark:border-white/15 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-cyan-500 font-mono"
                       />
                     </div>
-
                     <div>
                       <label className="block text-xs font-mono text-slate-700 dark:text-slate-300 mb-1 font-bold">Tagline / Description</label>
                       <input
@@ -588,7 +619,20 @@ export const Teams: React.FC = () => {
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div>
+                      <label className="block text-xs font-mono text-amber-600 dark:text-carnival-gold mb-1 font-extrabold flex items-center gap-1">
+                        <Sparkles className="w-3.5 h-3.5 text-amber-500 dark:text-carnival-gold" /> Total Team Points
+                      </label>
+                      <input
+                        type="number"
+                        min="0"
+                        value={editingTeam.points ?? 0}
+                        onChange={(e) => setEditingTeam({ ...editingTeam, points: Math.max(0, Number(e.target.value) || 0) })}
+                        className="w-full px-4 py-2.5 rounded-xl bg-white dark:bg-[#120B1F] border border-amber-400/50 dark:border-carnival-gold/40 text-xs font-mono font-extrabold text-amber-700 dark:text-carnival-gold focus:outline-none focus:border-amber-500"
+                      />
+                    </div>
+
                     <div>
                       <label className="block text-xs font-mono text-slate-700 dark:text-slate-300 mb-1 font-bold">Status Tag</label>
                       <select
@@ -809,7 +853,7 @@ export const Teams: React.FC = () => {
                 </div>
               </form>
             </motion.div>
-          </div>
+          </motion.div>
         )}
       </AnimatePresence>
 
