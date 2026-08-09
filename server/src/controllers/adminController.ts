@@ -708,7 +708,7 @@ export async function createAnnouncement(
   request: FastifyRequest<{ Body: CreateAnnouncementBody }>,
   reply: FastifyReply
 ) {
-  const { message, pinned = false, author, sendEmailAlert = false } = request.body;
+  const { message, pinned = false, author, sendEmailAlert = true } = request.body;
 
   if (!message) {
     return reply.status(400).send({
@@ -728,10 +728,12 @@ export async function createAnnouncement(
 
   await delCache('cwc:announcements');
 
+  const shouldSendEmail = sendEmailAlert !== false;
+
   await logAdminAction(request, 'ANNOUNCEMENT_CREATED', announcement._id, {
     message: announcement.message,
     author: announcement.author,
-    sendEmailAlert: Boolean(sendEmailAlert),
+    sendEmailAlert: shouldSendEmail,
   });
 
   // Broadcast WebSocket event for NEW_ANNOUNCEMENT
@@ -743,13 +745,37 @@ export async function createAnnouncement(
     timestamp: announcement.timestamp,
   });
 
-  // Task 3: Trigger background email broadcast if sendEmailAlert is checked
-  if (sendEmailAlert) {
+  // Trigger background email broadcast if sendEmailAlert is true or not explicitly set to false
+  if (shouldSendEmail) {
     setImmediate(async () => {
       try {
-        const teams = await Team.find({ 'leader.email': { $exists: true } });
+        const [users, teams] = await Promise.all([
+          User.find({ role: { $in: ['student', 'leader', 'member', 'user'] } }).select('email').lean(),
+          Team.find().lean(),
+        ]);
+
+        const emails: string[] = [];
+
+        users.forEach((u) => {
+          if (u.email) emails.push(u.email);
+        });
+
+        teams.forEach((t) => {
+          if (t.leader?.email) emails.push(t.leader.email);
+          if (Array.isArray(t.members)) {
+            t.members.forEach((m: any) => {
+              if (m.email) emails.push(m.email);
+              if (m.deptMailId) emails.push(m.deptMailId);
+            });
+          }
+        });
+
         const recipients = Array.from(
-          new Set(teams.map((t) => t.leader?.email).filter((e): e is string => Boolean(e)))
+          new Set(
+            emails
+              .map((e) => (typeof e === 'string' ? e.trim().toLowerCase() : ''))
+              .filter((e) => e && e.includes('@'))
+          )
         );
 
         if (recipients.length > 0) {
@@ -772,11 +798,11 @@ export async function createAnnouncement(
   }
 
   return reply.status(201).send({
-    message: sendEmailAlert
+    message: shouldSendEmail
       ? 'Global announcement posted & background email alerts dispatched! 📢📧'
       : 'Global announcement posted! 📢',
     announcement,
-    emailAlertTriggered: Boolean(sendEmailAlert),
+    emailAlertTriggered: shouldSendEmail,
   });
 }
 

@@ -59,10 +59,15 @@ import {
 import { deleteGallerySchema } from '../schemas/gallerySchemas.js';
 
 
+import { lookupUserByEmail } from '../controllers/superadminController.js';
+
+
 export async function adminRoutes(fastify: FastifyInstance) {
   // All admin routes require authentication and admin role
   fastify.addHook('preHandler', verifyJWT);
   fastify.addHook('preHandler', isAdmin);
+
+  fastify.get('/lookup-user', lookupUserByEmail);
 
   // Overview Telemetry & Stat Cards Route (DB Driven)
   fastify.get('/overview-stats', getOverviewStats);

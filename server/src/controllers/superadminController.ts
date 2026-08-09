@@ -815,4 +815,71 @@ export async function deleteCoordinator(
   });
 }
 
+/**
+ * Lookup User/Member details by email for auto-completing coordinator forms
+ */
+export async function lookupUserByEmail(
+  request: FastifyRequest<{ Querystring: { email?: string } }>,
+  reply: FastifyReply
+) {
+  const emailQuery = request.query.email?.trim().toLowerCase();
+  if (!emailQuery) {
+    return reply.status(400).send({ error: 'Bad Request', message: 'Email query parameter is required' });
+  }
+
+  const escapeRegex = (str: string) => str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const searchRegex = new RegExp(`^${escapeRegex(emailQuery)}$`, 'i');
+
+  // 1. Search in User collection
+  const user = await User.findOne({ email: searchRegex }).lean();
+  if (user) {
+    return reply.send({
+      found: true,
+      name: user.name,
+      email: user.email,
+      phone: (user as any).phone || '',
+      department: (user as any).department || (user as any).dept || '',
+    });
+  }
+
+  // 2. Search in Team collection (leader)
+  const teamAsLeader = await Team.findOne({ 'leader.email': searchRegex }).lean();
+  if (teamAsLeader && teamAsLeader.leader) {
+    return reply.send({
+      found: true,
+      name: teamAsLeader.leader.name,
+      email: teamAsLeader.leader.email,
+      phone: teamAsLeader.leader.phone || '',
+      department: teamAsLeader.leader.department || '',
+    });
+  }
+
+  // 3. Search in Team collection (member)
+  const teamWithMember = await Team.findOne({
+    $or: [
+      { 'members.email': searchRegex },
+      { 'members.deptMailId': searchRegex },
+    ],
+  }).lean();
+
+  if (teamWithMember && Array.isArray(teamWithMember.members)) {
+    const member = teamWithMember.members.find(
+      (m: any) =>
+        (m.email && m.email.toLowerCase() === emailQuery) ||
+        (m.deptMailId && m.deptMailId.toLowerCase() === emailQuery)
+    );
+    if (member) {
+      return reply.send({
+        found: true,
+        name: member.name,
+        email: member.email || member.deptMailId,
+        phone: member.phone || '',
+        department: '',
+      });
+    }
+  }
+
+  return reply.send({ found: false, name: null });
+}
+
 

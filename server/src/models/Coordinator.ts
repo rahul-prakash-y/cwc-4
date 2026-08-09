@@ -6,7 +6,7 @@ export interface ICoordinator extends Document {
   department: string;
   phone: string;
   email: string;
-  type: 'faculty' | 'student';
+  type: string;
   order?: number;
   createdAt: Date;
   updatedAt: Date;
@@ -19,7 +19,7 @@ const coordinatorSchema = new Schema<ICoordinator>(
     department: { type: String, required: true, trim: true },
     phone: { type: String, required: true, trim: true },
     email: { type: String, required: true, trim: true },
-    type: { type: String, enum: ['faculty', 'student'], default: 'faculty' },
+    type: { type: String, default: 'Student Coordinator' },
     order: { type: Number, default: 0 },
   },
   { timestamps: true }

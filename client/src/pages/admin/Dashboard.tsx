@@ -8,7 +8,7 @@ import { useAuth } from '../../context/AuthContext';
 export const Dashboard: React.FC = () => {
   const { apiFetch } = useAuth();
   const [announcementText, setAnnouncementText] = useState('');
-  const [sendEmailAlert, setSendEmailAlert] = useState(false);
+  const [sendEmailAlert, setSendEmailAlert] = useState(true);
   const [isBroadcasting, setIsBroadcasting] = useState(false);
   const [broadcastLog, setBroadcastLog] = useState<string[]>([
     '🎪 Ringmaster Notice: Day 5 Arena Boss Fight is officially LIVE!',
@@ -63,34 +63,25 @@ export const Dashboard: React.FC = () => {
     const shouldEmail = sendEmailAlert;
 
     try {
-      const token = localStorage.getItem('cwc_token');
-      await fetch('/api/admin/announcements', {
+      const res = await apiFetch('/admin/announcements', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          ...(token ? { Authorization: `Bearer ${token}` } : {}),
-        },
         body: JSON.stringify({
           message: textToBroadcast,
           sendEmailAlert: shouldEmail,
         }),
       });
 
-      setBroadcastLog([
-        `📢 ${textToBroadcast}${shouldEmail ? ' 📧 (Email Alert Dispatched)' : ''}`,
-        ...broadcastLog,
-      ]);
-      setAnnouncementText('');
-      setSendEmailAlert(false);
-      triggerCarnivalConfetti();
+      if (res.ok) {
+        setBroadcastLog([
+          `📢 ${textToBroadcast}${shouldEmail ? ' 📧 (Email Alert Dispatched)' : ''}`,
+          ...broadcastLog,
+        ]);
+        setAnnouncementText('');
+        setSendEmailAlert(true);
+        triggerCarnivalConfetti();
+      }
     } catch (err) {
-      setBroadcastLog([
-        `📢 ${textToBroadcast}${shouldEmail ? ' 📧 (Email Alert Dispatched)' : ''}`,
-        ...broadcastLog,
-      ]);
-      setAnnouncementText('');
-      setSendEmailAlert(false);
-      triggerCarnivalConfetti();
+      console.error('Failed to broadcast announcement:', err);
     } finally {
       setIsBroadcasting(false);
     }
@@ -277,7 +268,7 @@ export const Dashboard: React.FC = () => {
             />
             <span className="text-xs font-mono font-bold text-slate-700 dark:text-slate-300 group-hover:text-amber-600 dark:group-hover:text-carnival-gold transition-colors flex items-center gap-1.5">
               <Mail className="w-3.5 h-3.5 text-amber-600 dark:text-carnival-gold" />
-              Send Email Alert to All Registered Team Leaders
+              Send Email Broadcast to All Students & Team Members 📧
             </span>
           </label>
         </form>

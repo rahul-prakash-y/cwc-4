@@ -10,7 +10,7 @@ export interface CoordinatorItem {
   department: string;
   phone: string;
   email: string;
-  type: 'faculty' | 'student';
+  type: string;
   order?: number;
 }
 
@@ -20,14 +20,15 @@ export const CoordinatorsCMS: React.FC = () => {
   const [loading, setLoading] = useState<boolean>(true);
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
   const [editingId, setEditingId] = useState<string | null>(null);
+  const [isSearchingEmail, setIsSearchingEmail] = useState<boolean>(false);
 
   const [formData, setFormData] = useState({
     name: '',
-    role: '',
+    role: 'Student Incharge',
     department: '',
     phone: '',
     email: '',
-    type: 'faculty' as 'faculty' | 'student',
+    type: 'Student Lead',
     order: 0,
   });
 
@@ -59,15 +60,44 @@ export const CoordinatorsCMS: React.FC = () => {
     fetchCoordinators();
   }, []);
 
+  const handleEmailChange = async (emailVal: string) => {
+    setFormData((prev) => ({ ...prev, email: emailVal }));
+    const trimmed = emailVal.trim().toLowerCase();
+    if (!trimmed || !trimmed.includes('@') || trimmed.length < 5) return;
+
+    try {
+      setIsSearchingEmail(true);
+      let res = await apiFetch(`/superadmin/lookup-user?email=${encodeURIComponent(trimmed)}`);
+      if (!res.ok) {
+        res = await apiFetch(`/admin/lookup-user?email=${encodeURIComponent(trimmed)}`);
+      }
+      if (res.ok) {
+        const data = await res.json();
+        if (data.found && data.name) {
+          setFormData((prev) => ({
+            ...prev,
+            name: data.name,
+            phone: data.phone || prev.phone,
+            department: data.department || prev.department,
+          }));
+        }
+      }
+    } catch (err) {
+      console.log('Email lookup error:', err);
+    } finally {
+      setIsSearchingEmail(false);
+    }
+  };
+
   const handleOpenCreateModal = () => {
     setEditingId(null);
     setFormData({
       name: '',
-      role: '',
+      role: 'Student Incharge',
       department: '',
       phone: '',
       email: '',
-      type: 'faculty',
+      type: 'Student Lead',
       order: coordinators.length + 1,
     });
     setIsModalOpen(true);
@@ -287,27 +317,49 @@ export const CoordinatorsCMS: React.FC = () => {
 
               <form onSubmit={handleSubmit} className="space-y-4 font-mono text-xs">
                 <div>
+                  <div className="flex items-center justify-between mb-1">
+                    <label className="text-slate-700 dark:text-slate-300">Email Address *</label>
+                    {isSearchingEmail && (
+                      <span className="text-[10px] text-purple-500 font-mono animate-pulse">Checking database...</span>
+                    )}
+                  </div>
+                  <input
+                    type="email"
+                    required
+                    value={formData.email}
+                    onChange={(e) => handleEmailChange(e.target.value)}
+                    placeholder="student.cs23@bitsathy.ac.in"
+                    className="w-full bg-slate-50 dark:bg-[#120B1F] border border-slate-300 dark:border-white/15 rounded-xl px-3.5 py-2 text-slate-900 dark:text-white focus:outline-none focus:border-purple-500"
+                  />
+                </div>
+
+                <div>
                   <label className="block text-slate-700 dark:text-slate-300 mb-1">Full Name *</label>
                   <input
                     type="text"
                     required
                     value={formData.name}
                     onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                    placeholder="e.g. Dr. Rajesh Sharma"
+                    placeholder="Auto-filled from email or enter full name"
                     className="w-full bg-slate-50 dark:bg-[#120B1F] border border-slate-300 dark:border-white/15 rounded-xl px-3.5 py-2 text-slate-900 dark:text-white focus:outline-none focus:border-purple-500"
                   />
                 </div>
 
                 <div>
                   <label className="block text-slate-700 dark:text-slate-300 mb-1">Designation / Role *</label>
-                  <input
-                    type="text"
+                  <select
                     required
                     value={formData.role}
                     onChange={(e) => setFormData({ ...formData, role: e.target.value })}
-                    placeholder="e.g. Faculty Convener & Head of CS"
-                    className="w-full bg-slate-50 dark:bg-[#120B1F] border border-slate-300 dark:border-white/15 rounded-xl px-3.5 py-2 text-slate-900 dark:text-white focus:outline-none focus:border-purple-500"
-                  />
+                    className="w-full bg-slate-50 dark:bg-[#120B1F] border border-slate-300 dark:border-white/15 rounded-xl px-3.5 py-2 text-slate-900 dark:text-white focus:outline-none focus:border-purple-500 font-bold"
+                  >
+                    <option value="Student Incharge">Student Incharge</option>
+                    <option value="Student Coordinator">Student Coordinator</option>
+                    <option value="Student Lead">Student Lead</option>
+                    <option value="Faculty Head">Faculty Head</option>
+                    <option value="Faculty Convener">Faculty Convener</option>
+                    <option value="Faculty Coordinator">Faculty Coordinator</option>
+                  </select>
                 </div>
 
                 <div>
@@ -339,25 +391,16 @@ export const CoordinatorsCMS: React.FC = () => {
                     <label className="block text-slate-700 dark:text-slate-300 mb-1">Type *</label>
                     <select
                       value={formData.type}
-                      onChange={(e) => setFormData({ ...formData, type: e.target.value as 'faculty' | 'student' })}
-                      className="w-full bg-slate-50 dark:bg-[#120B1F] border border-slate-300 dark:border-white/15 rounded-xl px-3.5 py-2 text-slate-900 dark:text-white focus:outline-none focus:border-purple-500"
+                      onChange={(e) => setFormData({ ...formData, type: e.target.value })}
+                      className="w-full bg-slate-50 dark:bg-[#120B1F] border border-slate-300 dark:border-white/15 rounded-xl px-3.5 py-2 text-slate-900 dark:text-white focus:outline-none focus:border-purple-500 font-bold"
                     >
-                      <option value="faculty">Faculty Head</option>
-                      <option value="student">Student Lead</option>
+                      <option value="Student Lead">Student Lead</option>
+                      <option value="Student Coordinator">Student Coordinator</option>
+                      <option value="Student Incharge">Student Incharge</option>
+                      <option value="Faculty Head">Faculty Head</option>
+                      <option value="Faculty Convener">Faculty Convener</option>
                     </select>
                   </div>
-                </div>
-
-                <div>
-                  <label className="block text-slate-700 dark:text-slate-300 mb-1">Email Address *</label>
-                  <input
-                    type="email"
-                    required
-                    value={formData.email}
-                    onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                    placeholder="r.sharma@cwc.edu"
-                    className="w-full bg-slate-50 dark:bg-[#120B1F] border border-slate-300 dark:border-white/15 rounded-xl px-3.5 py-2 text-slate-900 dark:text-white focus:outline-none focus:border-purple-500"
-                  />
                 </div>
 
                 <div className="flex items-center gap-3 pt-2">
