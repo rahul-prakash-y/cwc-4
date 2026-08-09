@@ -26,11 +26,11 @@ interface BlockUserBody {
 }
 
 interface ManageAdminBody {
-  actionType?: 'create' | 'update' | 'revoke';
+  actionType?: 'create' | 'update' | 'revoke' | 'update_role';
   name?: string;
   email?: string;
   password?: string;
-  role?: 'admin' | 'superadmin';
+  role?: 'admin' | 'superadmin' | 'student';
   adminId?: string;
 }
 
@@ -474,6 +474,42 @@ export async function manageAdmins(
 
     return reply.send({
       message: `Admin access revoked for ${adminUser.email}. Demoted to student role.`,
+    });
+  }
+
+  const targetId = adminId || request.params.id || (request.body as any)?.id;
+
+  // Direct Role Change Handler by Admin ID
+  if (targetId && (actionType === 'update_role' || request.method === 'PUT' || request.method === 'PATCH')) {
+    const adminUser = await User.findById(targetId);
+    if (!adminUser) {
+      return reply.status(404).send({ error: 'Not Found', message: 'Admin account not found.' });
+    }
+
+    const oldRole = adminUser.role;
+    const newRole = role === 'superadmin' ? 'superadmin' : role === 'student' ? 'student' : 'admin';
+    adminUser.role = newRole as any;
+    adminUser.sessionVersion = (adminUser.sessionVersion || 0) + 1; // Invalidate session to refresh role
+    await adminUser.save();
+
+    await logAudit({
+      adminId: request.user.userId,
+      adminEmail: request.user.email,
+      action: 'UPDATE_ADMIN_ROLE',
+      targetId: adminUser._id.toString(),
+      targetType: 'User',
+      details: { name: adminUser.name, email: adminUser.email, oldRole, newRole },
+      ipAddress: request.ip,
+    });
+
+    return reply.send({
+      message: `Role for ${adminUser.name || adminUser.email} updated from ${oldRole.toUpperCase()} to ${newRole.toUpperCase()}!`,
+      admin: {
+        id: adminUser._id,
+        name: adminUser.name,
+        email: adminUser.email,
+        role: adminUser.role,
+      },
     });
   }
 

@@ -44,9 +44,12 @@ export async function superadminRoutes(fastify: FastifyInstance) {
   fastify.delete('/users/:id', deleteUser);
   fastify.delete('/teams/:id', deleteUser);
 
-  // Task 3: Manage standard 'admin' accounts (Create, list, update, revoke, auto-email)
+  // Task 3: Manage standard 'admin' accounts (Create, list, update role, revoke, auto-email)
   fastify.get('/manage-admins', manageAdmins);
   fastify.post('/manage-admins', manageAdmins);
+  fastify.put('/manage-admins', manageAdmins);
+  fastify.put('/manage-admins/:id', manageAdmins);
+  fastify.patch('/manage-admins/:id', manageAdmins);
   fastify.delete('/manage-admins/:id', manageAdmins);
   fastify.get('/generate-admin-email', generateUniqueAdminEmail);
   fastify.post('/generate-admin-email', generateUniqueAdminEmail);

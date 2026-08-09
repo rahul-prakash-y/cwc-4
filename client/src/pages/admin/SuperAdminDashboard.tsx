@@ -294,6 +294,28 @@ export const SuperAdminDashboard: React.FC = () => {
     }
   };
 
+  // Change Admin Role Handler
+  const handleRoleChange = async (adminId: string, newRole: 'admin' | 'superadmin' | 'student') => {
+    try {
+      const res = await apiFetch(`/superadmin/manage-admins/${adminId}`, {
+        method: 'PUT',
+        body: JSON.stringify({
+          role: newRole,
+          actionType: 'update_role',
+        }),
+      });
+      const data = await res.json();
+      if (res.ok) {
+        showNotice('success', data.message || 'Admin role updated successfully!');
+        fetchAdmins();
+      } else {
+        showNotice('error', data.message || 'Failed to update role.');
+      }
+    } catch (err: any) {
+      showNotice('error', err.message || 'Server error.');
+    }
+  };
+
   // Create Admin Submission
   const handleCreateAdmin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -893,12 +915,22 @@ export const SuperAdminDashboard: React.FC = () => {
                     </span>
                   </div>
 
-                  <div className="pt-3 border-t border-slate-200 dark:border-white/10 flex items-center justify-between">
-                    <span className="text-[10px] text-slate-500 font-mono">
-                      Added: {new Date(admin.createdAt || Date.now()).toLocaleDateString()}
-                    </span>
+                  <div className="pt-3 border-t border-slate-200 dark:border-white/10 flex items-center justify-between gap-2">
+                    <div className="flex items-center gap-1.5">
+                      <span className="text-[10px] font-mono font-bold text-slate-500">Role:</span>
+                      <select
+                        value={admin.role}
+                        onChange={(e) => handleRoleChange(admin._id, e.target.value as any)}
+                        disabled={admin._id === currentUser?.id}
+                        className="bg-slate-100 dark:bg-[#120B1F] border border-slate-300 dark:border-white/15 rounded-lg px-2 py-1 text-[11px] font-mono font-extrabold text-slate-900 dark:text-white focus:outline-none focus:border-amber-500 cursor-pointer disabled:opacity-50"
+                      >
+                        <option value="admin">Standard Admin</option>
+                        <option value="superadmin">SuperAdmin</option>
+                        <option value="student">Demote to Student</option>
+                      </select>
+                    </div>
 
-                    {admin._id !== currentUser?.id && admin.role !== 'superadmin' && (
+                    {admin._id !== currentUser?.id && (
                       <button
                         onClick={() =>
                           setConfirmModalState({
@@ -910,7 +942,7 @@ export const SuperAdminDashboard: React.FC = () => {
                             targetName: admin.name,
                           })
                         }
-                        className="p-2 rounded-xl bg-slate-100 dark:bg-white/5 text-rose-600 dark:text-rose-400 hover:bg-rose-100 dark:hover:bg-rose-500/20 transition-all cursor-pointer"
+                        className="p-1.5 rounded-lg bg-slate-100 dark:bg-white/5 text-rose-600 dark:text-rose-400 hover:bg-rose-100 dark:hover:bg-rose-500/20 transition-all cursor-pointer shrink-0"
                         title="Revoke Admin Access"
                       >
                         <Trash2 className="w-4 h-4" />
