@@ -381,14 +381,57 @@ export async function deleteUser(
 }
 
 /**
+ * Auto-generate a conflict-free email address for an admin based on full name
+ */
+export async function generateUniqueAdminEmail(
+  request: FastifyRequest<{ Querystring: { name?: string }; Body: { name?: string } }>,
+  reply: FastifyReply
+) {
+  const rawName = request.query.name || request.body?.name || '';
+  if (!rawName.trim()) {
+    return reply.status(400).send({ error: 'Bad Request', message: 'Name is required to generate email.' });
+  }
+
+  const cleanName = rawName.trim().toLowerCase().replace(/[^a-z0-9\s]/g, '');
+  const parts = cleanName.split(/\s+/).filter(Boolean);
+
+  let baseSlug = parts.join('.');
+  if (!baseSlug) baseSlug = 'admin';
+
+  let candidateEmail = `${baseSlug}@cwc.com`;
+  let counter = 1;
+
+  while (true) {
+    const existingUser = await User.findOne({ email: candidateEmail });
+    const existingLeader = await Team.findOne({ 'leader.email': candidateEmail });
+    const existingMember = await Team.findOne({
+      $or: [{ 'members.email': candidateEmail }, { 'members.deptMailId': candidateEmail }],
+    });
+
+    if (!existingUser && !existingLeader && !existingMember) {
+      break;
+    }
+
+    candidateEmail = `${baseSlug}${counter}@cwc.com`;
+    counter++;
+  }
+
+  return reply.send({
+    success: true,
+    email: candidateEmail,
+    name: rawName.trim(),
+  });
+}
+
+/**
  * Task 3: Manage Admins (Create, list, update role, or revoke access)
  */
 export async function manageAdmins(
   request: FastifyRequest<{ Body: ManageAdminBody; Params: { id?: string } }>,
   reply: FastifyReply
 ) {
-  const { actionType = 'create', name, email, password, role = 'admin', adminId } =
-    request.body || {};
+  const { actionType = 'create', name, password, role = 'admin', adminId } = request.body || {};
+  let email = request.body?.email;
 
   if (request.method === 'GET') {
     const adminList = await User.find({
@@ -435,11 +478,38 @@ export async function manageAdmins(
   }
 
   // Create or Update Admin
-  if (!email || !name) {
+  if (!name) {
     return reply.status(400).send({
       error: 'Bad Request',
-      message: 'Name and email are required for admin management.',
+      message: 'Name is required for admin management.',
     });
+  }
+
+  // If email is not provided, auto-generate a conflict-free email from name
+  if (!email || !email.trim()) {
+    const cleanName = name.trim().toLowerCase().replace(/[^a-z0-9\s]/g, '');
+    const parts = cleanName.split(/\s+/).filter(Boolean);
+    let baseSlug = parts.join('.');
+    if (!baseSlug) baseSlug = 'admin';
+
+    let candidateEmail = `${baseSlug}@cwc.com`;
+    let counter = 1;
+
+    while (true) {
+      const existingUser = await User.findOne({ email: candidateEmail });
+      const existingLeader = await Team.findOne({ 'leader.email': candidateEmail });
+      const existingMember = await Team.findOne({
+        $or: [{ 'members.email': candidateEmail }, { 'members.deptMailId': candidateEmail }],
+      });
+
+      if (!existingUser && !existingLeader && !existingMember) {
+        break;
+      }
+
+      candidateEmail = `${baseSlug}${counter}@cwc.com`;
+      counter++;
+    }
+    email = candidateEmail;
   }
 
   const normalizedEmail = email.toLowerCase().trim();

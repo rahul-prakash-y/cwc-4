@@ -6,6 +6,7 @@ import {
   forceLogout,
   deleteUser,
   manageAdmins,
+  generateUniqueAdminEmail,
   getSecurityTargets,
   updateGlobalSettings,
   getCoordinators,
@@ -43,10 +44,12 @@ export async function superadminRoutes(fastify: FastifyInstance) {
   fastify.delete('/users/:id', deleteUser);
   fastify.delete('/teams/:id', deleteUser);
 
-  // Task 3: Manage standard 'admin' accounts (Create, list, update, revoke)
+  // Task 3: Manage standard 'admin' accounts (Create, list, update, revoke, auto-email)
   fastify.get('/manage-admins', manageAdmins);
   fastify.post('/manage-admins', manageAdmins);
   fastify.delete('/manage-admins/:id', manageAdmins);
+  fastify.get('/generate-admin-email', generateUniqueAdminEmail);
+  fastify.post('/generate-admin-email', generateUniqueAdminEmail);
 
   // Security Center targets search helper
   fastify.get('/targets', getSecurityTargets);

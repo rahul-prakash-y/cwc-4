@@ -99,6 +99,32 @@ export const SuperAdminDashboard: React.FC = () => {
   const [newAdminPassword, setNewAdminPassword] = useState<string>('');
   const [newAdminRole, setNewAdminRole] = useState<'admin' | 'superadmin'>('admin');
   const [createAdminSubmitting, setCreateAdminSubmitting] = useState<boolean>(false);
+  const [isGeneratingEmail, setIsGeneratingEmail] = useState<boolean>(false);
+
+  // Auto generate conflict-free email from name
+  const handleNameInputChange = async (val: string) => {
+    setNewAdminName(val);
+    if (!val.trim()) {
+      setNewAdminEmail('');
+      return;
+    }
+
+    setIsGeneratingEmail(true);
+    try {
+      const res = await apiFetch(`/superadmin/generate-admin-email?name=${encodeURIComponent(val)}`);
+      if (res.ok) {
+        const data = await res.json();
+        if (data.email) {
+          setNewAdminEmail(data.email);
+        }
+      }
+    } catch (e) {
+      const fallbackClean = val.trim().toLowerCase().replace(/[^a-z0-9\s]/g, '').split(/\s+/).join('.');
+      setNewAdminEmail(`${fallbackClean || 'admin'}@cwc.com`);
+    } finally {
+      setIsGeneratingEmail(false);
+    }
+  };
 
   // Destructive Action Modal State
   const [confirmModalState, setConfirmModalState] = useState<{
@@ -993,20 +1019,35 @@ export const SuperAdminDashboard: React.FC = () => {
                     type="text"
                     required
                     value={newAdminName}
-                    onChange={(e) => setNewAdminName(e.target.value)}
-                    placeholder="e.g. John Ringmaster"
+                    onChange={(e) => handleNameInputChange(e.target.value)}
+                    placeholder="e.g. Rahul Prakash"
                     className="w-full bg-slate-50 dark:bg-[#120B1F] border border-slate-300 dark:border-white/15 rounded-xl px-3.5 py-2.5 text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:border-amber-500"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-slate-700 dark:text-slate-300 mb-1">Email Address</label>
+                  <div className="flex items-center justify-between mb-1">
+                    <label className="block text-slate-700 dark:text-slate-300">Email Address</label>
+                    <span className="text-[10px] font-bold text-amber-500 dark:text-carnival-gold flex items-center gap-1">
+                      {isGeneratingEmail ? (
+                        <>
+                          <RefreshCw className="w-3 h-3 animate-spin" />
+                          <span>Checking collisions...</span>
+                        </>
+                      ) : (
+                        <>
+                          <Sparkles className="w-3 h-3" />
+                          <span>Auto-Generated (No Conflicts)</span>
+                        </>
+                      )}
+                    </span>
+                  </div>
                   <input
                     type="email"
                     required
                     value={newAdminEmail}
                     onChange={(e) => setNewAdminEmail(e.target.value)}
-                    placeholder="admin@cwcseason4.com"
+                    placeholder="Auto-generated unique email"
                     className="w-full bg-slate-50 dark:bg-[#120B1F] border border-slate-300 dark:border-white/15 rounded-xl px-3.5 py-2.5 text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:border-amber-500"
                   />
                 </div>
