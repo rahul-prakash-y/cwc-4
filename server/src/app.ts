@@ -98,6 +98,9 @@ export function buildApp(): FastifyInstance {
               ],
               // Add frame-src to allow Google iframes
               "frame-src": ["'self'", "https://www.google.com"],
+              // Allow Web Workers and blob: scripts for confetti / dynamic workers
+              "worker-src": ["'self'", "blob:"],
+              "script-src": ["'self'", "'unsafe-inline'", "'unsafe-eval'", "blob:"],
             },
           }
         : false,

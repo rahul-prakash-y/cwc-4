@@ -20,6 +20,7 @@ export const triggerCarnivalConfetti = () => {
   const defaults = {
     origin: { y: 0.7 },
     zIndex: 99999,
+    useWorker: false, // Run directly on main thread to avoid CSP blob worker blocked on hosted sites (Render)
     disableForReducedMotion: true,
     colors: ['#FF0055', '#FFD700', '#00F0FF', '#8A2BE2', '#39FF14', '#FF7700'],
   };
