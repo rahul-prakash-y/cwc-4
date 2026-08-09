@@ -1,5 +1,15 @@
+import dns from 'dns';
 import nodemailer from 'nodemailer';
 import { env } from '../config/env.js';
+
+// Force Node.js DNS resolution to prioritize IPv4 over IPv6 on cloud host containers
+try {
+  if (dns.setDefaultResultOrder) {
+    dns.setDefaultResultOrder('ipv4first');
+  }
+} catch {
+  // Fallback for older Node versions
+}
 
 interface SendEmailOptions {
   to: string | string[];
@@ -22,6 +32,7 @@ function getTransporter(): nodemailer.Transporter {
       host: env.SMTP_HOST || 'smtp.gmail.com',
       port,
       secure: isSecure,
+      family: 4, // Strictly force IPv4 socket to prevent ENETUNREACH IPv6 errors on hosted server containers
       auth: {
         user: env.SMTP_USER,
         pass: env.SMTP_PASS,
@@ -29,9 +40,9 @@ function getTransporter(): nodemailer.Transporter {
       pool: true, // Use TCP connection pooling for fast batch broadcasting
       maxConnections: 5,
       maxMessages: 100,
-      connectionTimeout: 10000, // 10s connection timeout
+      connectionTimeout: 15000, // 15s connection timeout
       greetingTimeout: 10000,   // 10s greeting timeout
-      socketTimeout: 15000,     // 15s socket timeout
+      socketTimeout: 20000,     // 20s socket timeout
       tls: {
         rejectUnauthorized: false, // Prevent self-signed cert issues on cloud hosts
       },
@@ -146,6 +157,11 @@ export function sendBackgroundEmailBatch(options: {
           failCount++;
         }
       });
+
+      // Small 250ms pause between chunks to prevent SMTP connection throttling
+      if (i + chunkSize < validRecipients.length) {
+        await new Promise((resolve) => setTimeout(resolve, 250));
+      }
     }
 
     console.log(
