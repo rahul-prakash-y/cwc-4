@@ -2,10 +2,12 @@ import { AuditLog } from '../models/AuditLog.js';
 // In-memory state for Rapid Fire Buzzer
 let buzzerQueue = [];
 let buzzerUnlockTime = null;
+let currentQuestion = null;
 export function getBuzzerState() {
     return {
         buzzerQueue,
         buzzerUnlockTime,
+        currentQuestion,
     };
 }
 export function registerBuzzerHandlers(io, socket, logger) {
@@ -14,20 +16,29 @@ export function registerBuzzerHandlers(io, socket, logger) {
         socket.emit('BUZZER_STATE', {
             buzzerQueue,
             buzzerUnlockTime,
+            currentQuestion,
         });
     });
     // 2. Admin event: ADMIN_START_QUESTION
     socket.on('ADMIN_START_QUESTION', (payload) => {
-        const questionId = payload?.questionId || null;
+        const questionId = payload?.questionId || payload?.id || null;
+        currentQuestion = {
+            id: questionId,
+            title: payload?.title || 'Rapid Fire Question',
+            questionText: payload?.questionText || payload?.title || '',
+            expectedAnswer: payload?.expectedAnswer || '',
+        };
         buzzerUnlockTime = Date.now() + 5000; // 5 seconds in the future
         buzzerQueue = [];
         if (logger) {
-            logger.info({ buzzerUnlockTime, questionId }, '🎪 ADMIN_START_QUESTION triggered');
+            logger.info({ buzzerUnlockTime, questionId, currentQuestion }, '🎪 ADMIN_START_QUESTION triggered');
         }
         // Broadcast QUESTION_DISPLAYED to all students and rooms
         io.emit('QUESTION_DISPLAYED', {
             buzzerUnlockTime,
-            questionId,
+            questionId: currentQuestion.id,
+            title: currentQuestion.title,
+            questionText: currentQuestion.questionText,
             timestamp: Date.now(),
         });
         // Broadcast empty queue
@@ -82,6 +93,7 @@ export function registerBuzzerHandlers(io, socket, logger) {
     socket.on('ADMIN_RESET_BUZZER', () => {
         buzzerQueue = [];
         buzzerUnlockTime = null;
+        currentQuestion = null;
         if (logger) {
             logger.info('🔄 ADMIN_RESET_BUZZER triggered');
         }

@@ -12,6 +12,11 @@ const settingsSchema = new Schema({
         default: 'Welcome to Code With Curious Season 4! The Ultimate Coding Carnival.',
     },
     isGrandFinale: { type: Boolean, default: false },
+    eventMode: {
+        type: String,
+        enum: ['standard', 'carnival', 'finale'],
+        default: 'standard',
+    },
 }, { timestamps: true });
 export const Settings = mongoose.model('Settings', settingsSchema);
 /**
@@ -27,8 +32,14 @@ export async function getGlobalSettings() {
             isLeaderboardVisible: true,
             heroBannerText: 'Welcome to Code With Curious Season 4! The Ultimate Coding Carnival.',
             isGrandFinale: false,
+            eventMode: 'standard',
         });
         doc = created.toObject();
+    }
+    else if (!doc.eventMode) {
+        const eventMode = doc.isGrandFinale ? 'finale' : 'standard';
+        await Settings.updateOne({ _id: doc._id }, { $set: { eventMode } });
+        doc.eventMode = eventMode;
     }
     return doc;
 }

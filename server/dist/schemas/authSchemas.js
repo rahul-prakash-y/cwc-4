@@ -71,3 +71,13 @@ export const changePasswordSchema = {
         },
     },
 };
+export const updateThemeSchema = {
+    body: {
+        type: 'object',
+        required: ['theme'],
+        additionalProperties: false,
+        properties: {
+            theme: { type: 'string', enum: ['light', 'dark'] },
+        },
+    },
+};

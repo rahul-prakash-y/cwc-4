@@ -94,6 +94,37 @@ export const Media: React.FC = () => {
     fetchItems();
   }, []);
 
+  // Drag and Drop handlers
+  const handleDragOver = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(true);
+  }, []);
+
+  const handleDragLeave = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(false);
+  }, []);
+
+  const handleDrop = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(false);
+
+    if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+      const file = e.dataTransfer.files[0];
+      setSelectedFile(file);
+      setPreviewUrl(URL.createObjectURL(file));
+
+      if (file.type.startsWith('video/')) {
+        setType('Video');
+      } else {
+        setType('Photo');
+      }
+    }
+  }, []);
+
   // Task 3: Enforce strict SuperAdmin guard on Media Management page
   if (!isSuperAdmin && user?.role !== 'superadmin') {
     return (
@@ -129,37 +160,6 @@ export const Media: React.FC = () => {
       </div>
     );
   }
-
-  // Drag and Drop handlers
-  const handleDragOver = useCallback((e: React.DragEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setIsDragging(true);
-  }, []);
-
-  const handleDragLeave = useCallback((e: React.DragEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setIsDragging(false);
-  }, []);
-
-  const handleDrop = useCallback((e: React.DragEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setIsDragging(false);
-
-    if (e.dataTransfer.files && e.dataTransfer.files[0]) {
-      const file = e.dataTransfer.files[0];
-      setSelectedFile(file);
-      setPreviewUrl(URL.createObjectURL(file));
-
-      if (file.type.startsWith('video/')) {
-        setType('Video');
-      } else {
-        setType('Photo');
-      }
-    }
-  }, []);
 
   const handleFileInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {

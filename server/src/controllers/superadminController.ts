@@ -48,10 +48,14 @@ export async function getAuditLogs(
   const filter: any = {};
 
   if (request.query.search) {
-    const searchRegex = new RegExp(request.query.search.trim(), 'i');
+    const searchRegex = new RegExp(request.query.search.trim().replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'i');
     filter.$or = [
-      { adminEmail: searchRegex },
+      { ipAddress: searchRegex },
       { action: searchRegex },
+      { actorRole: searchRegex },
+      { resource: searchRegex },
+      { userAgent: searchRegex },
+      { adminEmail: searchRegex },
       { targetId: searchRegex },
       { targetType: searchRegex },
     ];

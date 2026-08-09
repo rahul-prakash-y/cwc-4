@@ -1,4 +1,4 @@
-import { getAllTeams, updateTeamStatus, eliminateTeam, streamTeamStatusEvents, createTask, getAllTasksAdmin, updateTask, deleteTask, createAnnouncement, getAllAnnouncementsAdmin, deleteAnnouncement, grantAdvantage, setTeamImmunity, updateScoresBatch, getGrandFinale, toggleGrandFinale, } from '../controllers/adminController.js';
+import { getAllTeams, updateTeamStatus, eliminateTeam, streamTeamStatusEvents, createTask, getAllTasksAdmin, updateTask, deleteTask, createAnnouncement, getAllAnnouncementsAdmin, deleteAnnouncement, grantAdvantage, setTeamImmunity, updateScoresBatch, getGrandFinale, toggleGrandFinale, getBuzzerQuestions, createBuzzerQuestion, updateBuzzerQuestion, deleteBuzzerQuestion, } from '../controllers/adminController.js';
 import { getGalleryItems, createGalleryItem, deleteGalleryItem, } from '../controllers/galleryController.js';
 import { getAttendance, saveAttendance, runAttendanceAutoChecker, } from '../controllers/attendanceController.js';
 import { verifyJWT, isAdmin } from '../middleware/auth.js';
@@ -42,4 +42,9 @@ export async function adminRoutes(fastify) {
     fastify.get('/gallery', getGalleryItems);
     fastify.post('/gallery', createGalleryItem);
     fastify.delete('/gallery/:id', { schema: deleteGallerySchema }, deleteGalleryItem);
+    // Task 4: Buzzer Questions Management
+    fastify.get('/buzzer-questions', getBuzzerQuestions);
+    fastify.post('/buzzer-questions', createBuzzerQuestion);
+    fastify.put('/buzzer-questions/:id', updateBuzzerQuestion);
+    fastify.delete('/buzzer-questions/:id', deleteBuzzerQuestion);
 }

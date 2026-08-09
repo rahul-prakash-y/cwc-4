@@ -23,6 +23,11 @@ const userSchema = new Schema({
         default: 'student',
         required: true,
     },
+    themePreference: {
+        type: String,
+        enum: ['light', 'dark'],
+        default: 'dark',
+    },
     isFirstLogin: {
         type: Boolean,
         default: true,
@@ -30,6 +35,10 @@ const userSchema = new Schema({
     isBlocked: {
         type: Boolean,
         default: false,
+    },
+    sessionVersion: {
+        type: Number,
+        default: 0,
     },
     avatarUrl: {
         type: String,

@@ -1,14 +1,21 @@
 import { Schema, model, Document, Model, Types } from 'mongoose';
 
 export interface IAuditLog {
-  adminId: Types.ObjectId | string;
-  adminEmail?: string;
+  actorId?: Types.ObjectId | string | null;
+  actorRole: string;
   action: string;
+  resource?: string;
+  ipAddress?: string;
+  userAgent?: string;
+  details?: Record<string, any>;
+  timestamp?: Date;
+
+  // Legacy compatibility fields
+  adminId?: Types.ObjectId | string | null;
+  adminEmail?: string;
   targetId?: string;
   targetType?: string;
-  details?: Record<string, any>;
-  ipAddress?: string;
-  timestamp?: Date;
+
   createdAt?: Date;
   updatedAt?: Date;
 }
@@ -19,21 +26,58 @@ export type IAuditLogModel = Model<IAuditLogDocument>;
 
 const auditLogSchema = new Schema<IAuditLogDocument>(
   {
-    adminId: {
+    actorId: {
       type: Schema.Types.Mixed,
-      required: [true, 'Admin ID is required'],
+      default: null,
       ref: 'User',
+      index: true,
     },
-    adminEmail: {
+    actorRole: {
       type: String,
+      default: 'anonymous',
       trim: true,
-      lowercase: true,
+      index: true,
     },
     action: {
       type: String,
       required: [true, 'Action name is required'],
       trim: true,
       index: true,
+    },
+    resource: {
+      type: String,
+      trim: true,
+      default: 'N/A',
+    },
+    ipAddress: {
+      type: String,
+      trim: true,
+      index: true,
+      default: '127.0.0.1',
+    },
+    userAgent: {
+      type: String,
+      trim: true,
+      default: 'Unknown',
+    },
+    details: {
+      type: Schema.Types.Mixed,
+      default: {},
+    },
+    timestamp: {
+      type: Date,
+      default: Date.now,
+      index: true,
+    },
+
+    // Legacy fields for backward compatibility
+    adminId: {
+      type: Schema.Types.Mixed,
+      default: null,
+    },
+    adminEmail: {
+      type: String,
+      trim: true,
     },
     targetId: {
       type: String,
@@ -43,19 +87,6 @@ const auditLogSchema = new Schema<IAuditLogDocument>(
       type: String,
       trim: true,
     },
-    details: {
-      type: Schema.Types.Mixed,
-      default: {},
-    },
-    ipAddress: {
-      type: String,
-      trim: true,
-    },
-    timestamp: {
-      type: Date,
-      default: Date.now,
-      index: true,
-    },
   },
   {
     timestamps: true,
@@ -63,7 +94,9 @@ const auditLogSchema = new Schema<IAuditLogDocument>(
 );
 
 auditLogSchema.index({ timestamp: -1 });
-auditLogSchema.index({ adminEmail: 1, action: 1 });
+auditLogSchema.index({ action: 1, timestamp: -1 });
+auditLogSchema.index({ ipAddress: 1, action: 1 });
+auditLogSchema.index({ actorRole: 1 });
 
 export const AuditLog = model<IAuditLogDocument, IAuditLogModel>('AuditLog', auditLogSchema);
 export default AuditLog;

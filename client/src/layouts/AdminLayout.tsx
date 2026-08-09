@@ -102,6 +102,19 @@ export const AdminLayout: React.FC = () => {
               </div>
               <nav className="space-y-1">
                 <Link
+                  to="/admin/threats"
+                  onClick={() => setSidebarOpen(false)}
+                  className={`flex items-center gap-3 px-4 py-2.5 rounded-xl text-xs font-bold transition-all ${
+                    location.pathname.includes('/admin/threats')
+                      ? 'bg-gradient-to-r from-red-600 via-rose-600 to-amber-600 text-white shadow-md dark:shadow-[0_0_15px_rgba(239,68,68,0.5)] font-black'
+                      : 'text-slate-600 dark:text-purple-300 hover:text-slate-900 dark:hover:text-white hover:bg-purple-50 dark:hover:bg-purple-500/10'
+                  }`}
+                >
+                  <span className="text-sm">🚨</span>
+                  <span>Anti-DDoS & Threats</span>
+                </Link>
+
+                <Link
                   to="/admin/superadmin?tab=logs"
                   onClick={() => setSidebarOpen(false)}
                   className={`flex items-center gap-3 px-4 py-2.5 rounded-xl text-xs font-bold transition-all ${

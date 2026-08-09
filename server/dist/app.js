@@ -11,6 +11,7 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import fs from 'fs';
 import fastifyJwt from '@fastify/jwt';
+import fastifyCookie from '@fastify/cookie';
 import { env } from './config/env.js';
 import { setupErrorHandler } from './plugins/errorHandler.js';
 import { sanitizeNoSQLInject } from './middleware/nosqlSanitize.js';
@@ -24,8 +25,9 @@ import { getActiveSocketsCount } from './socket.js';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 export function buildApp() {
-    // Task 1 & 4: Configure Pino logger and Correlation ID generator
+    // Task 1 & 4: Configure Pino logger, trustProxy for Anti-DDoS real IP capture, and Correlation ID generator
     const fastify = Fastify({
+        trustProxy: true,
         logger: env.NODE_ENV === 'development'
             ? {
                 level: process.env.LOG_LEVEL || 'info',
@@ -78,23 +80,38 @@ export function buildApp() {
     fastify.register(fastifyJwt, {
         secret: env.JWT_SECRET,
     });
-    // Global Rate Limit (100 requests / minute)
+    // Register Fastify Cookie plugin
+    fastify.register(fastifyCookie, {
+        secret: env.JWT_SECRET,
+        hook: 'onRequest',
+    });
+    // Global Rate Limit (500 requests / 5 minutes per IP)
     fastify.register(rateLimit, {
-        max: 100,
-        timeWindow: '1 minute',
+        max: 500,
+        timeWindow: '5 minutes',
         errorResponseBuilder: (request, context) => ({
             status: 429,
             error: 'Too Many Requests',
-            message: `Rate limit exceeded. Maximum ${context.max} requests per ${context.after} allowed.`,
+            message: `Global Anti-DDoS Rate Limit Exceeded. Maximum ${context.max} requests per ${context.after} allowed.`,
             correlationId: request.id,
             date: new Date().toISOString(),
         }),
     });
     // Global NoSQL Injection Sanitization preHandler hook
     fastify.addHook('preHandler', sanitizeNoSQLInject);
-    // Register CORS
+    // Register CORS (supporting cookies with credentials)
     fastify.register(cors, {
-        origin: env.CLIENT_ORIGIN || '*',
+        origin: (origin, cb) => {
+            if (!origin || env.CLIENT_ORIGIN === '*' || origin.startsWith('http://localhost') || origin.startsWith('http://127.0.0.1')) {
+                cb(null, true);
+                return;
+            }
+            if (env.CLIENT_ORIGIN && origin === env.CLIENT_ORIGIN) {
+                cb(null, true);
+                return;
+            }
+            cb(null, true);
+        },
         methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
         credentials: true,
     });

@@ -19,11 +19,11 @@ export const Navbar: React.FC = () => {
 
   const navLinks = [
     { label: "Home", path: "/" },
-    { label: "About", path: "/about" },
+    // { label: "About", path: "/about" },
     { label: "Gallery", path: "/gallery" },
-    { label: "Prizes", path: "/prizes" },
+    // { label: "Prizes", path: "/prizes" },
     { label: "Teams", path: "/teams" },
-    { label: "Sponsors", path: "/sponsors" },
+    // { label: "Sponsors", path: "/sponsors" },
     { label: "Contact", path: "/contact" },
     { label: "Rule Book", path: "/rules" },
   ];
@@ -33,17 +33,19 @@ export const Navbar: React.FC = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
         {/* Logo & Brand */}
         <Link to="/" className="flex items-center gap-3 group">
-          <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-cwc-red via-cwc-gold to-cwc-purple p-0.5 group-hover:scale-105 transition-transform duration-300">
-            <div className="w-full h-full rounded-[10px] bg-white dark:bg-cwc-bg flex items-center justify-center">
-              <span className="font-extrabold font-display bg-clip-text text-transparent bg-gradient-to-r from-cwc-gold to-yellow-500 dark:to-yellow-200 text-lg">
-                CWC
-              </span>
+          <div className="w-12 h-12 rounded-xl bg-gradient-to-tr from-cwc-red via-cwc-gold to-cwc-purple p-0.5 group-hover:scale-105 transition-transform duration-300">
+            <div className="w-full h-full rounded-full bg-white dark:bg-cwc-bg flex items-center justify-center">
+              <img
+                src="https://res.cloudinary.com/dsz2br3qg/image/upload/v1756912823/codecirclelogo_excanr.png"
+                alt="cwc logo"
+                className="w-10 h-10 object-contain rounded-full"
+              />
             </div>
           </div>
           <div>
             <div className="font-black font-display text-gray-900 dark:text-white text-lg tracking-tight flex items-center gap-1.5">
               <span>Code With Curious</span>
-              <span className="text-[10px] font-display px-2 py-0.5 rounded-full bg-cwc-red/20 text-cwc-red font-bold border border-cwc-red/30">
+              <span className="text-[10px] text-center size-9  font-display px-2 py-0.5 rounded-full bg-cwc-red/20 text-cwc-red font-bold border border-cwc-red/30">
                 S4
               </span>
             </div>

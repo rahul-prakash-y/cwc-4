@@ -1,3 +1,4 @@
+import { createAuditLog } from '../utils/audit.js';
 export function setupErrorHandler(fastify) {
     fastify.setErrorHandler((error, request, reply) => {
         const correlationId = request.id || 'N/A';
@@ -41,12 +42,24 @@ export function setupErrorHandler(fastify) {
         }
         else if (statusCode === 403) {
             errorType = 'Forbidden';
+            createAuditLog(request, 'SECURITY_THREAT', {
+                error: error.message,
+                errorType: 'Forbidden',
+                url: request.raw.url,
+                method: request.raw.method,
+            }, request.user?.userId, request.user?.role || 'anonymous', request.raw.url);
         }
         else if (statusCode === 404) {
             errorType = 'Not Found';
         }
         else if (statusCode === 429) {
             errorType = 'Too Many Requests';
+            createAuditLog(request, 'RATE_LIMIT_EXCEEDED', {
+                error: error.message,
+                errorType: 'Too Many Requests',
+                url: request.raw.url,
+                method: request.raw.method,
+            }, request.user?.userId, request.user?.role || 'anonymous', request.raw.url);
         }
         // In production, sanitize 500 internal server error messages sent to the client
         if (statusCode === 500 && process.env.NODE_ENV === 'production') {

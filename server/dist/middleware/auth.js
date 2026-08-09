@@ -1,6 +1,7 @@
 import jwt from 'jsonwebtoken';
 import { env } from '../config/env.js';
 import { AuditLog } from '../models/AuditLog.js';
+import { User } from '../models/User.js';
 /**
  * Helper to generate JWT token for authenticated users
  */
@@ -8,29 +9,46 @@ export function generateToken(payload, expiresIn = '7d') {
     return jwt.sign(payload, env.JWT_SECRET, { expiresIn });
 }
 /**
- * PreHandler Middleware to verify JWT token
+ * PreHandler Middleware to verify JWT token and enforce Single Device Login
  */
 export async function verifyJWT(request, reply) {
     try {
-        const authHeader = request.headers.authorization;
-        if (!authHeader || !authHeader.startsWith('Bearer ')) {
+        let token = request.cookies?.token;
+        if (!token) {
+            const authHeader = request.headers.authorization;
+            if (authHeader && authHeader.startsWith('Bearer ')) {
+                token = authHeader.split(' ')[1];
+            }
+        }
+        if (!token) {
             return reply.status(401).send({
                 error: 'Unauthorized',
                 message: 'Authentication token missing or malformed',
             });
         }
-        if (typeof request.jwtVerify === 'function') {
-            try {
-                const decoded = await request.jwtVerify();
-                request.user = decoded;
-                return;
-            }
-            catch {
-                // Fallback to jsonwebtoken verification
-            }
-        }
-        const token = authHeader.split(' ')[1];
         const decoded = jwt.verify(token, env.JWT_SECRET);
+        // Single Device Login enforcement: fetch user from DB and compare sessionVersion
+        const dbUser = await User.findById(decoded.userId).lean();
+        if (!dbUser) {
+            return reply.status(401).send({
+                error: 'Unauthorized',
+                message: 'User account not found',
+            });
+        }
+        if (dbUser.isBlocked) {
+            return reply.status(403).send({
+                error: 'Forbidden',
+                message: 'Account has been blocked by SuperAdmin',
+            });
+        }
+        const expectedVersion = dbUser.sessionVersion ?? 0;
+        const tokenVersion = decoded.sessionVersion ?? 0;
+        if (tokenVersion !== expectedVersion) {
+            return reply.status(401).send({
+                error: 'Unauthorized',
+                message: 'Session expired or logged in from another device',
+            });
+        }
         request.user = decoded;
     }
     catch (err) {

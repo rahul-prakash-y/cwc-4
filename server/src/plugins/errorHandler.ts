@@ -1,4 +1,5 @@
 import { FastifyError, FastifyInstance, FastifyReply, FastifyRequest } from 'fastify';
+import { createAuditLog } from '../utils/audit.js';
 
 export interface AppErrorResponse {
   status: number;
@@ -55,10 +56,36 @@ export function setupErrorHandler(fastify: FastifyInstance): void {
       errorType = 'Unauthorized';
     } else if (statusCode === 403) {
       errorType = 'Forbidden';
+      createAuditLog(
+        request,
+        'SECURITY_THREAT',
+        {
+          error: error.message,
+          errorType: 'Forbidden',
+          url: request.raw.url,
+          method: request.raw.method,
+        },
+        (request as any).user?.userId,
+        (request as any).user?.role || 'anonymous',
+        request.raw.url
+      );
     } else if (statusCode === 404) {
       errorType = 'Not Found';
     } else if (statusCode === 429) {
       errorType = 'Too Many Requests';
+      createAuditLog(
+        request,
+        'RATE_LIMIT_EXCEEDED',
+        {
+          error: error.message,
+          errorType: 'Too Many Requests',
+          url: request.raw.url,
+          method: request.raw.method,
+        },
+        (request as any).user?.userId,
+        (request as any).user?.role || 'anonymous',
+        request.raw.url
+      );
     }
 
     // In production, sanitize 500 internal server error messages sent to the client

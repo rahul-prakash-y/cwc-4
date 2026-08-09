@@ -1,29 +1,13 @@
-import { AuditLog } from '../models/AuditLog.js';
+import { createAuditLog } from './audit.js';
 /**
- * Log an administrative/superadmin action to the AuditLog database collection.
- * @param req FastifyRequest object containing user auth context and IP info
- * @param action Action code identifier (e.g. 'SCORE_UPDATED', 'TASK_CREATED')
- * @param targetId Optional ID of the resource or user being modified
- * @param details Optional object containing parameters, diffs, or metadata
+ * Legacy audit logger wrapper for backwards compatibility across existing controllers.
+ * Delegates to the unified `createAuditLog` helper.
  */
 export async function logAdminAction(req, action, targetId, details) {
-    try {
-        const user = req?.user;
-        const adminId = user?.id || user?._id || user?.userId || 'SYSTEM';
-        const adminEmail = user?.email || 'system@cwc.com';
-        const ipAddress = req?.ip || req?.raw?.socket?.remoteAddress || req?.headers?.['x-forwarded-for'] || '';
-        await AuditLog.create({
-            adminId,
-            adminEmail,
-            action,
-            targetId: targetId ? String(targetId) : undefined,
-            details: details || {},
-            ipAddress: String(ipAddress),
-            timestamp: new Date(),
-        });
-    }
-    catch (error) {
-        console.error(`❌ Audit Logger error [Action: ${action}]:`, error);
-    }
+    const mergedDetails = {
+        ...(details || {}),
+        ...(targetId ? { targetId: String(targetId) } : {}),
+    };
+    createAuditLog(req, action, mergedDetails, req?.user?.userId || req?.user?.id || req?.user?._id, req?.user?.role || 'admin', req?.raw?.url || req?.url || 'N/A');
 }
 export default logAdminAction;

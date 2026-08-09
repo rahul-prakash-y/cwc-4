@@ -18,23 +18,63 @@ export const RegisteredTeams: React.FC = () => {
         const res = await apiFetch('/teams');
         if (res.ok) {
           const data = await res.json();
-          if (Array.isArray(data)) {
-            // Map backend schema to Team frontend model
-            const mappedTeams: Team[] = data.map((t: any, idx: number) => ({
-              id: t._id || t.id || `team-${idx + 1}`,
-              name: t.name,
-              tagline: t.tagline || t.description || 'Carnival contender',
-              rank: t.rank || idx + 1,
-              points: t.points ?? 0,
-              status: t.status || 'Approved',
-              avatar: t.avatar || '🎪',
-              themeColor: t.themeColor || '#FFD700',
-              streak: t.streak || 0,
-              badges: t.badges || ['🎟️ Approved Ticket'],
-              members: t.members || [
-                { name: t.leaderName || 'Team Leader', role: 'Leader', avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80' },
-              ],
-            }));
+          // Backend returns { count: N, teams: [...] } or direct array [...]
+          const rawTeams = Array.isArray(data)
+            ? data
+            : Array.isArray(data?.teams)
+            ? data.teams
+            : Array.isArray(data?.data)
+            ? data.data
+            : [];
+
+          if (rawTeams.length > 0) {
+            const mappedTeams: Team[] = rawTeams.map((t: any, idx: number) => {
+              const membersList: any[] = [];
+              if (t.leader && (t.leader.name || t.leader.email)) {
+                membersList.push({
+                  name: t.leader.name || 'Team Leader',
+                  role: 'Leader',
+                  avatar: t.leader.avatar || t.leader.avatarUrl || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80',
+                  github: t.leader.github || t.leader.githubUsername,
+                });
+              }
+              if (Array.isArray(t.members) && t.members.length > 0) {
+                t.members.forEach((m: any) => {
+                  if (typeof m === 'object' && m !== null) {
+                    const memberName = m.name || m.userName || 'Team Member';
+                    if (!membersList.some((existing) => existing.name === memberName)) {
+                      membersList.push({
+                        name: memberName,
+                        role: m.role || 'Member',
+                        avatar: m.avatar || m.avatarUrl || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80',
+                        github: m.github || m.githubUsername,
+                      });
+                    }
+                  }
+                });
+              }
+              if (membersList.length === 0) {
+                membersList.push({
+                  name: t.leaderName || 'Team Leader',
+                  role: 'Leader',
+                  avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80',
+                });
+              }
+
+              return {
+                id: t.id || t._id || `team-${idx + 1}`,
+                name: t.teamName || t.name || 'Unnamed Team',
+                tagline: t.tagline || t.description || 'Carnival contender',
+                rank: t.rank || idx + 1,
+                points: t.points ?? t.totalPoints ?? 0,
+                status: t.status || 'Approved',
+                avatar: t.avatar || t.logoUrl || '🎪',
+                themeColor: t.themeColor || '#FFD700',
+                streak: t.streak || 0,
+                badges: t.badges || ['🎟️ Approved Ticket'],
+                members: membersList,
+              };
+            });
             setTeams(mappedTeams);
           } else {
             setTeams([]);

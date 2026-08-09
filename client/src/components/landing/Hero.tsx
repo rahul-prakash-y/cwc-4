@@ -91,7 +91,7 @@ export const Hero: React.FC = () => {
           className="relative mb-6 flex flex-col items-center"
         >
           {/* Central Logo Ring */}
-          <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-full bg-gradient-to-tr from-rose-600 via-amber-500 to-violet-600 dark:from-cwc-red dark:via-cwc-gold dark:to-cwc-purple p-1 shadow-md dark:shadow-2xl mb-6 animate-float">
+          <div className="w-24 h-24 sm:w-24 sm:h-24 rounded-full bg-gradient-to-tr from-rose-600 via-amber-500 to-violet-600 dark:from-cwc-red dark:via-cwc-gold dark:to-cwc-purple p-1 shadow-md dark:shadow-2xl mb-6 animate-float">
             <div className="w-full h-full rounded-full bg-slate-50 dark:bg-cwc-bg flex items-center justify-center border border-slate-200 dark:border-white/20">
               <span className="text-3xl sm:text-4xl font-extrabold font-display bg-clip-text text-transparent bg-gradient-to-r from-amber-600 via-rose-600 to-violet-600 dark:from-cwc-gold dark:to-yellow-200">
                 CWC

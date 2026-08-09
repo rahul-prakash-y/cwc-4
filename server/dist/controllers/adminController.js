@@ -5,6 +5,7 @@ import { Announcement } from '../models/Announcement.js';
 import { Score } from '../models/Score.js';
 import { Setting } from '../models/Setting.js';
 import { Settings } from '../models/Settings.js';
+import { BuzzerQuestion } from '../models/BuzzerQuestion.js';
 import { delCache } from '../utils/redis.js';
 import { logAdminAction } from '../utils/auditLogger.js';
 import { broadcastScoreUpdated, broadcastNewAnnouncement, broadcastStatusChanged, broadcastAdvantageGranted, broadcastFinaleTriggered, } from '../socket.js';
@@ -584,5 +585,61 @@ export async function updateScoresBatch(request, reply) {
         message: 'Batch score sheet updated successfully! 📊',
         updatedCount: results.length,
         results,
+    });
+}
+/* ==========================================================================
+   BUZZER QUESTION MANAGEMENT CONTROLLERS
+   ========================================================================== */
+export async function getBuzzerQuestions(_request, reply) {
+    const questions = await BuzzerQuestion.find().sort({ createdAt: -1 });
+    return reply.send({ questions });
+}
+export async function createBuzzerQuestion(request, reply) {
+    const { title, questionText, expectedAnswer } = request.body || {};
+    if (!title || !questionText) {
+        return reply.status(400).send({
+            error: 'Bad Request',
+            message: 'Question title and questionText are required',
+        });
+    }
+    const question = await BuzzerQuestion.create({
+        title,
+        questionText,
+        expectedAnswer: expectedAnswer || '',
+    });
+    await logAdminAction(request, 'BUZZER_QUESTION_CREATED', question._id, {
+        title: question.title,
+    });
+    return reply.status(201).send({
+        message: 'Buzzer question created successfully 🎯',
+        question,
+    });
+}
+export async function updateBuzzerQuestion(request, reply) {
+    const { id } = request.params;
+    const updateData = request.body || {};
+    const question = await BuzzerQuestion.findByIdAndUpdate(id, updateData, {
+        new: true,
+        runValidators: true,
+    });
+    if (!question) {
+        return reply.status(404).send({ error: 'Not Found', message: 'Buzzer question not found' });
+    }
+    await logAdminAction(request, 'BUZZER_QUESTION_UPDATED', id, updateData);
+    return reply.send({
+        message: 'Buzzer question updated successfully 🎯',
+        question,
+    });
+}
+export async function deleteBuzzerQuestion(request, reply) {
+    const { id } = request.params;
+    const question = await BuzzerQuestion.findByIdAndDelete(id);
+    if (!question) {
+        return reply.status(404).send({ error: 'Not Found', message: 'Buzzer question not found' });
+    }
+    await logAdminAction(request, 'BUZZER_QUESTION_DELETED', id, { title: question.title });
+    return reply.send({
+        message: 'Buzzer question deleted successfully.',
+        id,
     });
 }

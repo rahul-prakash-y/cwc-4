@@ -1,6 +1,6 @@
 import React from 'react';
 import { useLocation, Link } from 'react-router-dom';
-import { Crown, Users, CheckSquare, Grid, Download, Image as ImageIcon, UserCheck, Zap } from 'lucide-react';
+import { Crown, Users, CheckSquare, Grid, Download, Image as ImageIcon, UserCheck, Zap, ShieldAlert } from 'lucide-react';
 import { Dashboard } from './admin/Dashboard';
 import { Teams } from './admin/Teams';
 import { Tasks } from './admin/Tasks';
@@ -10,6 +10,7 @@ import { Media } from './admin/Media';
 import { Attendance } from './admin/Attendance';
 import { SuperAdminDashboard } from './admin/SuperAdminDashboard';
 import { BuzzerConsole } from './admin/BuzzerConsole';
+import { Threats } from './admin/Threats';
 import { ChampionBanner } from '../components/common/ChampionBanner';
 import { useAuth } from '../context/AuthContext';
 
@@ -19,6 +20,7 @@ export const AdminDashboard: React.FC = () => {
 
   // Determine active view tab based on current path
   const getTabFromPath = () => {
+    if (location.pathname.includes('/admin/threats')) return 'threats';
     if (location.pathname.includes('/admin/superadmin')) return 'superadmin';
     if (location.pathname.includes('/admin/buzzer')) return 'buzzer';
     if (location.pathname.includes('/admin/attendance')) return 'attendance';
@@ -52,17 +54,31 @@ export const AdminDashboard: React.FC = () => {
         </Link>
 
         {user?.role === 'superadmin' && (
-          <Link
-            to="/admin/superadmin"
-            className={`flex items-center gap-2 px-4 py-2.5 rounded-xl font-mono text-xs font-bold transition-all ${
-              activeTab === 'superadmin'
-                ? 'bg-gradient-to-r from-purple-600 via-pink-600 to-rose-600 text-white shadow-neon-purple font-black'
-                : 'glass-card text-purple-300 hover:text-white border-purple-500/30'
-            }`}
-          >
-            <span>⚡</span>
-            <span>SuperAdmin Hub</span>
-          </Link>
+          <>
+            <Link
+              to="/admin/threats"
+              className={`flex items-center gap-2 px-4 py-2.5 rounded-xl font-mono text-xs font-bold transition-all ${
+                activeTab === 'threats'
+                  ? 'bg-gradient-to-r from-red-600 via-rose-600 to-amber-600 text-white shadow-[0_0_15px_rgba(239,68,68,0.5)] font-black'
+                  : 'glass-card text-rose-400 hover:text-white border-rose-500/30'
+              }`}
+            >
+              <ShieldAlert className="w-4 h-4 text-rose-400" />
+              <span>Anti-DDoS & Threats</span>
+            </Link>
+
+            <Link
+              to="/admin/superadmin"
+              className={`flex items-center gap-2 px-4 py-2.5 rounded-xl font-mono text-xs font-bold transition-all ${
+                activeTab === 'superadmin'
+                  ? 'bg-gradient-to-r from-purple-600 via-pink-600 to-rose-600 text-white shadow-neon-purple font-black'
+                  : 'glass-card text-purple-300 hover:text-white border-purple-500/30'
+              }`}
+            >
+              <span>⚡</span>
+              <span>SuperAdmin Hub</span>
+            </Link>
+          </>
         )}
 
         <Link
@@ -151,6 +167,7 @@ export const AdminDashboard: React.FC = () => {
       </div>
 
       {/* Render Active Page / View */}
+      {activeTab === 'threats' && <Threats />}
       {activeTab === 'superadmin' && <SuperAdminDashboard />}
       {activeTab === 'buzzer' && <BuzzerConsole />}
       {activeTab === 'overview' && <Dashboard />}

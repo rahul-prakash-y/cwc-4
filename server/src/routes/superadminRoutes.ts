@@ -16,8 +16,9 @@ export async function superadminRoutes(fastify: FastifyInstance) {
   fastify.addHook('preHandler', verifyJWT);
   fastify.addHook('preHandler', isSuperAdmin);
 
-  // Task 3: Fetch paginated audit logs
+  // Task 3: Fetch paginated audit logs & threat telemetry
   fastify.get('/audit-logs', getAuditLogs);
+  fastify.get('/threats', getAuditLogs);
 
   // Task 3: Toggle isBlocked status of student or team
   fastify.patch('/users/:id/block', toggleBlockStatus);

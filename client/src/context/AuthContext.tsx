@@ -59,6 +59,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setUser(newUser);
     localStorage.setItem('cwc_jwt_token', newToken);
     localStorage.setItem('cwc_user', JSON.stringify(newUser));
+    document.cookie = `token=${newToken}; path=/; max-age=${7 * 24 * 60 * 60}; SameSite=Lax`;
   };
 
   const updateUser = (updatedFields: Partial<User>, newToken?: string) => {
@@ -71,6 +72,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     if (newToken) {
       setToken(newToken);
       localStorage.setItem('cwc_jwt_token', newToken);
+      document.cookie = `token=${newToken}; path=/; max-age=${7 * 24 * 60 * 60}; SameSite=Lax`;
     }
   };
 
@@ -80,6 +82,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     localStorage.removeItem('cwc_jwt_token');
     localStorage.removeItem('cwc_user');
     localStorage.removeItem('token');
+    document.cookie = 'token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT';
   };
 
   const register = async (data: any) => {

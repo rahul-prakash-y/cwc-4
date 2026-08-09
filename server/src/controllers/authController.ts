@@ -8,6 +8,8 @@ import { getRegistrationEmailHtml } from '../utils/emailTemplates.js';
 import { logAdminAction } from '../utils/auditLogger.js';
 import { env } from '../config/env.js';
 
+import { createAuditLog } from '../utils/audit.js';
+
 interface MemberProfileInput {
   name: string;
   rollNo: string;
@@ -199,6 +201,15 @@ export async function registerTeam(request: FastifyRequest<{ Body: RegisterTeamB
     teamId: newTeam._id.toString(),
   });
 
+  createAuditLog(
+    request,
+    'TEAM_REGISTERED',
+    { teamName: newTeam.teamName, leaderEmail: newTeam.leader.email },
+    newUser._id,
+    'student',
+    '/api/auth/register-team'
+  );
+
   setImmediate(() => {
     const html = getRegistrationEmailHtml({
       teamName: newTeam.teamName,
@@ -212,6 +223,14 @@ export async function registerTeam(request: FastifyRequest<{ Body: RegisterTeamB
       `🎪 Registration Confirmation & Passcode - Team ${newTeam.teamName}`,
       html
     );
+  });
+
+  reply.setCookie('token', token, {
+    path: '/',
+    httpOnly: true,
+    secure: env.NODE_ENV === 'production',
+    sameSite: env.NODE_ENV === 'production' ? 'strict' : 'lax',
+    maxAge: 7 * 24 * 60 * 60,
   });
 
   return reply.status(201).send({
@@ -300,6 +319,14 @@ export async function login(request: FastifyRequest<{ Body: LoginBody }>, reply:
   }
 
   if (!user) {
+    createAuditLog(
+      request,
+      'LOGIN_FAILED',
+      { attemptedEmail: normalizedEmail, reason: 'User not found' },
+      null,
+      'anonymous',
+      '/api/auth/login'
+    );
     return reply.status(401).send({
       error: 'Unauthorized',
       message: 'Invalid email or password',
@@ -308,6 +335,14 @@ export async function login(request: FastifyRequest<{ Body: LoginBody }>, reply:
 
   const isPasswordValid = await bcrypt.compare(password, user.passwordHash);
   if (!isPasswordValid) {
+    createAuditLog(
+      request,
+      'LOGIN_FAILED',
+      { attemptedEmail: normalizedEmail, reason: 'Invalid password' },
+      user._id,
+      user.role,
+      '/api/auth/login'
+    );
     return reply.status(401).send({
       error: 'Unauthorized',
       message: 'Invalid email or password',
@@ -315,6 +350,14 @@ export async function login(request: FastifyRequest<{ Body: LoginBody }>, reply:
   }
 
   if (user.isBlocked) {
+    createAuditLog(
+      request,
+      'SECURITY_THREAT',
+      { attemptedEmail: normalizedEmail, reason: 'Attempted login to blocked user account' },
+      user._id,
+      user.role,
+      '/api/auth/login'
+    );
     return reply.status(403).send({
       error: 'Forbidden',
       message: 'Account has been blocked by SuperAdmin. Access revoked.',
@@ -333,6 +376,14 @@ export async function login(request: FastifyRequest<{ Body: LoginBody }>, reply:
     });
 
     if (team?.isBlocked) {
+      createAuditLog(
+        request,
+        'SECURITY_THREAT',
+        { attemptedEmail: normalizedEmail, teamName: team.teamName, reason: 'Attempted login to blocked team account' },
+        user._id,
+        user.role,
+        '/api/auth/login'
+      );
       return reply.status(403).send({
         error: 'Forbidden',
         message: 'Your team account has been blocked by SuperAdmin. Access revoked.',
@@ -355,12 +406,22 @@ export async function login(request: FastifyRequest<{ Body: LoginBody }>, reply:
     teamId: team ? team._id.toString() : undefined,
   });
 
-  // Set JWT as httpOnly, secure, sameSite=strict cookie
+  // Log successful login event
+  createAuditLog(
+    request,
+    'LOGIN_SUCCESS',
+    { email: user.email, role: user.role, name: user.name },
+    user._id,
+    user.role,
+    '/api/auth/login'
+  );
+
+  // Set JWT as httpOnly, secure cookie
   reply.setCookie('token', token, {
     path: '/',
     httpOnly: true,
     secure: env.NODE_ENV === 'production',
-    sameSite: 'strict',
+    sameSite: env.NODE_ENV === 'production' ? 'strict' : 'lax',
     maxAge: 7 * 24 * 60 * 60, // 7 days
   });
 
@@ -396,19 +457,20 @@ export async function login(request: FastifyRequest<{ Body: LoginBody }>, reply:
  */
 export async function logout(request: FastifyRequest, reply: FastifyReply) {
   const user = request.user;
-  if (user) {
-    if (user.role === 'admin' || user.role === 'superadmin') {
-      await logAdminAction(request, 'ADMIN_LOGGED_OUT', user.userId, { email: user.email, role: user.role });
-    } else {
-      await logAdminAction(request, 'STUDENT_LOGGED_OUT', user.userId, { email: user.email, role: user.role });
-    }
-  }
+  createAuditLog(
+    request,
+    'LOGOUT',
+    { email: user?.email, role: user?.role },
+    user?.userId,
+    user?.role || 'anonymous',
+    '/api/auth/logout'
+  );
 
   reply.clearCookie('token', {
     path: '/',
     httpOnly: true,
     secure: env.NODE_ENV === 'production',
-    sameSite: 'strict',
+    sameSite: env.NODE_ENV === 'production' ? 'strict' : 'lax',
   });
 
   return reply.send({ message: 'Successfully logged out 🚪' });
@@ -536,6 +598,14 @@ export async function registerAdmin(request: FastifyRequest<{ Body: RegisterAdmi
     email: adminUser.email,
     role: adminUser.role,
     isFirstLogin: false,
+  });
+
+  reply.setCookie('token', token, {
+    path: '/',
+    httpOnly: true,
+    secure: env.NODE_ENV === 'production',
+    sameSite: env.NODE_ENV === 'production' ? 'strict' : 'lax',
+    maxAge: 7 * 24 * 60 * 60,
   });
 
   return reply.status(201).send({

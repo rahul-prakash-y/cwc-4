@@ -1,5 +1,5 @@
-import React, { useState, useEffect, useCallback } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import React, { useState, useEffect, useCallback } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import {
   Image as ImageIcon,
   Video as VideoIcon,
@@ -11,16 +11,16 @@ import {
   Maximize2,
   Layers,
   ExternalLink,
-} from 'lucide-react';
+} from "lucide-react";
 
-import apiClient from '../../api/axios';
+import apiClient from "../../api/axios";
 
 export interface GalleryItem {
   _id: string;
   id?: string;
   title: string;
   url: string;
-  type: 'Photo' | 'Video';
+  type: "Photo" | "Video";
   seasonNumber: 1 | 2 | 3 | 4 | number;
   description?: string;
   createdAt?: string;
@@ -28,8 +28,10 @@ export interface GalleryItem {
 
 export const Gallery: React.FC = () => {
   // Season tabs (Season 1, Season 2, Season 3, Season 4)
-  const [activeSeason, setActiveSeason] = useState<number | 'all'>(4);
-  const [activeType, setActiveType] = useState<'all' | 'Photo' | 'Video'>('all');
+  const [activeSeason, setActiveSeason] = useState<number | "all">(4);
+  const [activeType, setActiveType] = useState<"all" | "Photo" | "Video">(
+    "all",
+  );
   const [items, setItems] = useState<GalleryItem[]>([]);
   const [loading, setLoading] = useState(false);
 
@@ -37,11 +39,11 @@ export const Gallery: React.FC = () => {
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
 
   // Fetch gallery media from GET /api/admin/gallery or public endpoint
-  const fetchGalleryMedia = async (seasonParam?: number | 'all') => {
+  const fetchGalleryMedia = async (seasonParam?: number | "all") => {
     setLoading(true);
     try {
-      let queryUrl = '/v1/public/gallery';
-      if (seasonParam && seasonParam !== 'all') {
+      let queryUrl = "/v1/public/gallery";
+      if (seasonParam && seasonParam !== "all") {
         queryUrl += `?season=${seasonParam}`;
       }
       const res = await apiClient.get(queryUrl).catch(() => null);
@@ -49,8 +51,8 @@ export const Gallery: React.FC = () => {
         setItems(res.data.items);
       } else {
         // Fallback to GET /api/admin/gallery
-        const token = localStorage.getItem('token');
-        const fetchRes = await fetch('/api/admin/gallery', {
+        const token = localStorage.getItem("token");
+        const fetchRes = await fetch("/api/admin/gallery", {
           headers: token ? { Authorization: `Bearer ${token}` } : {},
         }).catch(() => null);
         if (fetchRes && fetchRes.ok) {
@@ -65,7 +67,7 @@ export const Gallery: React.FC = () => {
         }
       }
     } catch (err) {
-      console.warn('Failed to fetch gallery items:', err);
+      console.warn("Failed to fetch gallery items:", err);
       setItems([]);
     } finally {
       setLoading(false);
@@ -78,40 +80,49 @@ export const Gallery: React.FC = () => {
 
   // Filter items based on active season tab and media type
   const filteredItems = items.filter((item) => {
-    const matchesSeason = activeSeason === 'all' || item.seasonNumber === activeSeason;
-    const matchesType = activeType === 'all' || item.type === activeType;
+    const matchesSeason =
+      activeSeason === "all" || item.seasonNumber === activeSeason;
+    const matchesType = activeType === "all" || item.type === activeType;
     return matchesSeason && matchesType;
   });
 
   // Lightbox navigation handlers
   const handlePrevLightbox = useCallback(() => {
     if (lightboxIndex !== null && filteredItems.length > 0) {
-      setLightboxIndex((prev) => (prev === null || prev === 0 ? filteredItems.length - 1 : prev - 1));
+      setLightboxIndex((prev) =>
+        prev === null || prev === 0 ? filteredItems.length - 1 : prev - 1,
+      );
     }
   }, [lightboxIndex, filteredItems.length]);
 
   const handleNextLightbox = useCallback(() => {
     if (lightboxIndex !== null && filteredItems.length > 0) {
-      setLightboxIndex((prev) => (prev === null || prev === filteredItems.length - 1 ? 0 : prev + 1));
+      setLightboxIndex((prev) =>
+        prev === null || prev === filteredItems.length - 1 ? 0 : prev + 1,
+      );
     }
   }, [lightboxIndex, filteredItems.length]);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (lightboxIndex === null) return;
-      if (e.key === 'Escape') setLightboxIndex(null);
-      if (e.key === 'ArrowLeft') handlePrevLightbox();
-      if (e.key === 'ArrowRight') handleNextLightbox();
+      if (e.key === "Escape") setLightboxIndex(null);
+      if (e.key === "ArrowLeft") handlePrevLightbox();
+      if (e.key === "ArrowRight") handleNextLightbox();
     };
 
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
   }, [lightboxIndex, handlePrevLightbox, handleNextLightbox]);
 
-  const currentItem = lightboxIndex !== null ? filteredItems[lightboxIndex] : null;
+  const currentItem =
+    lightboxIndex !== null ? filteredItems[lightboxIndex] : null;
 
   return (
-    <section id="gallery" className="relative py-20 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto space-y-12">
+    <section
+      id="gallery"
+      className="relative py-20 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto space-y-12"
+    >
       {/* Glow Effects */}
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-carnival-gold/10 rounded-full blur-[140px] pointer-events-none" />
 
@@ -127,7 +138,8 @@ export const Gallery: React.FC = () => {
         </h2>
 
         <p className="text-slate-600 dark:text-slate-300 text-sm sm:text-base font-sans">
-          Relive unforgettable highlights, code arena battles, keynotes, and victory moments across all four seasons of Code With Curious.
+          Relive unforgettable highlights, code arena battles, keynotes, and
+          victory moments across all four seasons of Code With Curious.
         </p>
       </div>
 
@@ -136,11 +148,11 @@ export const Gallery: React.FC = () => {
         {/* Season Tabs */}
         <div className="flex items-center gap-1.5 sm:gap-2 overflow-x-auto w-full md:w-auto pb-2 md:pb-0">
           {[
-            { id: 1, label: 'Season 1 🚀' },
-            { id: 2, label: 'Season 2 🏆' },
-            { id: 3, label: 'Season 3 ✨' },
-            { id: 4, label: 'Season 4 🎪', badge: 'Current' },
-            { id: 'all', label: 'All Seasons 🌟' },
+            { id: 1, label: "Season 1 🚀" },
+            { id: 2, label: "Season 2 🏆" },
+            { id: 3, label: "Season 3 ✨" },
+            { id: 4, label: "Season 4 🎪", badge: "Current" },
+            { id: "all", label: "All Seasons 🌟" },
           ].map((tab) => {
             const isActive = activeSeason === tab.id;
             return (
@@ -152,8 +164,8 @@ export const Gallery: React.FC = () => {
                 }}
                 className={`px-4 py-2.5 rounded-xl font-mono text-xs font-bold transition-all flex items-center gap-2 whitespace-nowrap cursor-pointer ${
                   isActive
-                    ? 'bg-gradient-to-r from-carnival-gold via-carnival-amber to-carnival-crimson text-slate-950 shadow-neon-gold scale-105 font-black'
-                    : 'bg-slate-100 dark:bg-white/5 text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-white/10'
+                    ? "bg-gradient-to-r from-carnival-gold via-carnival-amber to-carnival-crimson text-slate-950 shadow-neon-gold scale-105 font-black"
+                    : "bg-slate-100 dark:bg-white/5 text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-white/10"
                 }`}
               >
                 <span>{tab.label}</span>
@@ -170,30 +182,32 @@ export const Gallery: React.FC = () => {
         {/* Media Type Filter Pills */}
         <div className="flex items-center gap-2 p-1 rounded-xl bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 font-mono text-xs w-full md:w-auto justify-center sm:justify-end">
           <button
-            onClick={() => setActiveType('all')}
+            onClick={() => setActiveType("all")}
             className={`px-3.5 py-1.5 rounded-lg transition-all ${
-              activeType === 'all' ? 'bg-white dark:bg-white/15 text-slate-900 dark:text-white font-bold shadow-sm' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+              activeType === "all"
+                ? "bg-white dark:bg-white/15 text-slate-900 dark:text-white font-bold shadow-sm"
+                : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
             }`}
           >
             All Media
           </button>
           <button
-            onClick={() => setActiveType('Photo')}
+            onClick={() => setActiveType("Photo")}
             className={`px-3.5 py-1.5 rounded-lg transition-all flex items-center gap-1.5 ${
-              activeType === 'Photo'
-                ? 'bg-cyan-500/20 text-cyan-700 dark:text-carnival-cyan font-bold border border-cyan-500/30'
-                : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+              activeType === "Photo"
+                ? "bg-cyan-500/20 text-cyan-700 dark:text-carnival-cyan font-bold border border-cyan-500/30"
+                : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
             }`}
           >
             <ImageIcon className="w-3.5 h-3.5" />
             <span>Photos</span>
           </button>
           <button
-            onClick={() => setActiveType('Video')}
+            onClick={() => setActiveType("Video")}
             className={`px-3.5 py-1.5 rounded-lg transition-all flex items-center gap-1.5 ${
-              activeType === 'Video'
-                ? 'bg-rose-500/20 text-rose-700 dark:text-carnival-crimson font-bold border border-rose-500/30'
-                : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+              activeType === "Video"
+                ? "bg-rose-500/20 text-rose-700 dark:text-carnival-crimson font-bold border border-rose-500/30"
+                : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
             }`}
           >
             <VideoIcon className="w-3.5 h-3.5" />
@@ -206,8 +220,12 @@ export const Gallery: React.FC = () => {
       {filteredItems.length === 0 ? (
         <div className="p-16 text-center rounded-3xl glass-card bg-white/90 dark:bg-white/5 border border-slate-200 dark:border-white/10 space-y-3">
           <Layers className="w-12 h-12 text-slate-500 mx-auto" />
-          <h3 className="text-slate-900 dark:text-white font-bold text-lg">No media items in this season tab</h3>
-          <p className="text-xs text-slate-600 dark:text-slate-400">Switch tabs above to view photos and videos from other seasons.</p>
+          <h3 className="text-slate-900 dark:text-white font-bold text-lg">
+            No media items in this season tab
+          </h3>
+          <p className="text-xs text-slate-600 dark:text-slate-400">
+            Switch tabs above to view photos and videos from other seasons.
+          </p>
         </div>
       ) : (
         <div className="columns-1 sm:columns-2 lg:columns-3 gap-6 space-y-6">
@@ -222,14 +240,15 @@ export const Gallery: React.FC = () => {
             >
               {/* Media Preview Container */}
               <div className="relative bg-slate-950 overflow-hidden">
-                {item.type === 'Photo' ? (
+                {item.type === "Photo" ? (
                   <img
                     src={item.url}
                     alt={item.title}
                     className="w-full h-auto object-cover group-hover:scale-105 transition-transform duration-700 ease-out"
                     loading="lazy"
                   />
-                ) : item.url.includes('youtube.com') || item.url.includes('youtu.be') ? (
+                ) : item.url.includes("youtube.com") ||
+                  item.url.includes("youtu.be") ? (
                   <div className="relative w-full aspect-video bg-slate-950 flex items-center justify-center">
                     <iframe
                       src={item.url}
@@ -244,7 +263,11 @@ export const Gallery: React.FC = () => {
                   </div>
                 ) : (
                   <div className="relative w-full aspect-video bg-gradient-to-tr from-slate-950 via-purple-950 to-slate-900 flex items-center justify-center">
-                    <img src={item.url} alt={item.title} className="w-full h-full object-cover opacity-60 group-hover:opacity-80 transition-opacity" />
+                    <img
+                      src={item.url}
+                      alt={item.title}
+                      className="w-full h-full object-cover opacity-60 group-hover:opacity-80 transition-opacity"
+                    />
                     <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
                       <div className="w-14 h-14 rounded-full bg-carnival-crimson text-white flex items-center justify-center shadow-neon-crimson group-hover:scale-110 transition-transform">
                         <Play className="w-7 h-7 fill-white translate-x-0.5" />
@@ -260,7 +283,9 @@ export const Gallery: React.FC = () => {
                   </span>
                   <span
                     className={`px-2.5 py-1 rounded-lg backdrop-blur-md font-mono text-[10px] font-bold shadow-lg ${
-                      item.type === 'Photo' ? 'bg-carnival-cyan/80 text-slate-950' : 'bg-carnival-crimson/80 text-white'
+                      item.type === "Photo"
+                        ? "bg-carnival-cyan/80 text-slate-950"
+                        : "bg-carnival-crimson/80 text-white"
                     }`}
                   >
                     {item.type}
@@ -290,7 +315,9 @@ export const Gallery: React.FC = () => {
                     <Sparkles className="w-3 h-3 text-amber-500 dark:text-carnival-gold" />
                     Click for Lightbox View
                   </span>
-                  <span className="text-slate-500 dark:text-slate-400">Season {item.seasonNumber}</span>
+                  <span className="text-slate-500 dark:text-slate-400">
+                    Season {item.seasonNumber}
+                  </span>
                 </div>
               </div>
             </motion.div>
@@ -313,7 +340,7 @@ export const Gallery: React.FC = () => {
               initial={{ scale: 0.9, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.9, opacity: 0 }}
-              transition={{ type: 'spring', damping: 25, stiffness: 300 }}
+              transition={{ type: "spring", damping: 25, stiffness: 300 }}
               className="relative max-w-5xl w-full max-h-[90vh] glass-card rounded-3xl border border-carnival-gold/50 shadow-2xl overflow-hidden flex flex-col justify-between bg-slate-950"
               onClick={(e) => e.stopPropagation()}
             >
@@ -325,9 +352,9 @@ export const Gallery: React.FC = () => {
                   </span>
                   <span
                     className={`px-3 py-1 rounded-xl font-mono text-xs font-bold ${
-                      currentItem.type === 'Photo'
-                        ? 'bg-carnival-cyan/20 text-carnival-cyan border border-carnival-cyan/40'
-                        : 'bg-carnival-crimson/20 text-carnival-crimson border border-carnival-crimson/40'
+                      currentItem.type === "Photo"
+                        ? "bg-carnival-cyan/20 text-carnival-cyan border border-carnival-cyan/40"
+                        : "bg-carnival-crimson/20 text-carnival-crimson border border-carnival-crimson/40"
                     }`}
                   >
                     {currentItem.type}
@@ -369,15 +396,20 @@ export const Gallery: React.FC = () => {
                 </button>
 
                 {/* Expanded Photo or Video */}
-                {currentItem.type === 'Photo' ? (
+                {currentItem.type === "Photo" ? (
                   <img
                     src={currentItem.url}
                     alt={currentItem.title}
                     className="max-h-[65vh] w-auto max-w-full object-contain rounded-xl shadow-2xl"
                   />
-                ) : currentItem.url.includes('youtube.com') || currentItem.url.includes('youtu.be') ? (
+                ) : currentItem.url.includes("youtube.com") ||
+                  currentItem.url.includes("youtu.be") ? (
                   <iframe
-                    src={currentItem.url.includes('autoplay') ? currentItem.url : `${currentItem.url}?autoplay=1`}
+                    src={
+                      currentItem.url.includes("autoplay")
+                        ? currentItem.url
+                        : `${currentItem.url}?autoplay=1`
+                    }
                     title={currentItem.title}
                     className="w-full h-[55vh] rounded-xl shadow-2xl"
                     allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
@@ -397,7 +429,9 @@ export const Gallery: React.FC = () => {
               <div className="p-4 sm:p-6 border-t border-white/10 bg-slate-900/90 space-y-2">
                 <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
                   <div>
-                    <h4 className="font-extrabold text-white text-base sm:text-lg">{currentItem.title}</h4>
+                    <h4 className="font-extrabold text-white text-base sm:text-lg">
+                      {currentItem.title}
+                    </h4>
                     {currentItem.description && (
                       <p className="text-xs sm:text-sm text-slate-300 mt-1 max-w-3xl leading-relaxed">
                         {currentItem.description}

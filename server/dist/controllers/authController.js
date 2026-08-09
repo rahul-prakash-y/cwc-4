@@ -4,6 +4,8 @@ import { Team } from '../models/Team.js';
 import { generateToken } from '../middleware/auth.js';
 import { sendCarnivalEmail } from '../utils/mailer.js';
 import { getRegistrationEmailHtml } from '../utils/emailTemplates.js';
+import { env } from '../config/env.js';
+import { createAuditLog } from '../utils/audit.js';
 /**
  * Task 1: Check Team Name Availability (real-time duplicate check)
  */
@@ -131,6 +133,7 @@ export async function registerTeam(request, reply) {
         isFirstLogin: newUser.isFirstLogin,
         teamId: newTeam._id.toString(),
     });
+    createAuditLog(request, 'TEAM_REGISTERED', { teamName: newTeam.teamName, leaderEmail: newTeam.leader.email }, newUser._id, 'student', '/api/auth/register-team');
     setImmediate(() => {
         const html = getRegistrationEmailHtml({
             teamName: newTeam.teamName,
@@ -139,6 +142,13 @@ export async function registerTeam(request, reply) {
             passcode: `CWC4-${newTeam._id.toString().substring(18).toUpperCase()}`,
         });
         sendCarnivalEmail(leaderEmail, `🎪 Registration Confirmation & Passcode - Team ${newTeam.teamName}`, html);
+    });
+    reply.setCookie('token', token, {
+        path: '/',
+        httpOnly: true,
+        secure: env.NODE_ENV === 'production',
+        sameSite: env.NODE_ENV === 'production' ? 'strict' : 'lax',
+        maxAge: 7 * 24 * 60 * 60,
     });
     return reply.status(201).send({
         message: '🎪 Carnival Ticket application submitted successfully! Team status: Pending Approval.',
@@ -215,6 +225,7 @@ export async function login(request, reply) {
         }
     }
     if (!user) {
+        createAuditLog(request, 'LOGIN_FAILED', { attemptedEmail: normalizedEmail, reason: 'User not found' }, null, 'anonymous', '/api/auth/login');
         return reply.status(401).send({
             error: 'Unauthorized',
             message: 'Invalid email or password',
@@ -222,12 +233,14 @@ export async function login(request, reply) {
     }
     const isPasswordValid = await bcrypt.compare(password, user.passwordHash);
     if (!isPasswordValid) {
+        createAuditLog(request, 'LOGIN_FAILED', { attemptedEmail: normalizedEmail, reason: 'Invalid password' }, user._id, user.role, '/api/auth/login');
         return reply.status(401).send({
             error: 'Unauthorized',
             message: 'Invalid email or password',
         });
     }
     if (user.isBlocked) {
+        createAuditLog(request, 'SECURITY_THREAT', { attemptedEmail: normalizedEmail, reason: 'Attempted login to blocked user account' }, user._id, user.role, '/api/auth/login');
         return reply.status(403).send({
             error: 'Forbidden',
             message: 'Account has been blocked by SuperAdmin. Access revoked.',
@@ -244,19 +257,34 @@ export async function login(request, reply) {
             ],
         });
         if (team?.isBlocked) {
+            createAuditLog(request, 'SECURITY_THREAT', { attemptedEmail: normalizedEmail, teamName: team.teamName, reason: 'Attempted login to blocked team account' }, user._id, user.role, '/api/auth/login');
             return reply.status(403).send({
                 error: 'Forbidden',
                 message: 'Your team account has been blocked by SuperAdmin. Access revoked.',
             });
         }
     }
+    // Task 1: Single Device Login - Increment user's sessionVersion on successful login
+    user.sessionVersion = (user.sessionVersion || 0) + 1;
+    await user.save();
     const isFirstLoginFlag = user.isFirstLogin ?? true;
     const token = generateToken({
         userId: user._id.toString(),
         email: user.email,
         role: user.role,
+        sessionVersion: user.sessionVersion,
         isFirstLogin: isFirstLoginFlag,
         teamId: team ? team._id.toString() : undefined,
+    });
+    // Log successful login event
+    createAuditLog(request, 'LOGIN_SUCCESS', { email: user.email, role: user.role, name: user.name }, user._id, user.role, '/api/auth/login');
+    // Set JWT as httpOnly, secure cookie
+    reply.setCookie('token', token, {
+        path: '/',
+        httpOnly: true,
+        secure: env.NODE_ENV === 'production',
+        sameSite: env.NODE_ENV === 'production' ? 'strict' : 'lax',
+        maxAge: 7 * 24 * 60 * 60, // 7 days
     });
     return reply.send({
         message: 'Login successful! Welcome to CWC Season 4 Carnival 🎪',
@@ -266,6 +294,7 @@ export async function login(request, reply) {
             name: user.name,
             email: user.email,
             role: user.role,
+            themePreference: user.themePreference || 'dark',
             avatarUrl: user.avatarUrl,
             isFirstLogin: isFirstLoginFlag,
         },
@@ -281,6 +310,21 @@ export async function login(request, reply) {
             }
             : null,
     });
+}
+/**
+ * Task 2: Logout Function & Audit Trail
+ * Clears the JWT cookie and logs audit action in AuditLogs
+ */
+export async function logout(request, reply) {
+    const user = request.user;
+    createAuditLog(request, 'LOGOUT', { email: user?.email, role: user?.role }, user?.userId, user?.role || 'anonymous', '/api/auth/logout');
+    reply.clearCookie('token', {
+        path: '/',
+        httpOnly: true,
+        secure: env.NODE_ENV === 'production',
+        sameSite: env.NODE_ENV === 'production' ? 'strict' : 'lax',
+    });
+    return reply.send({ message: 'Successfully logged out 🚪' });
 }
 /**
  * Task 2: Backend Change Password Route handler
@@ -391,6 +435,13 @@ export async function registerAdmin(request, reply) {
         role: adminUser.role,
         isFirstLogin: false,
     });
+    reply.setCookie('token', token, {
+        path: '/',
+        httpOnly: true,
+        secure: env.NODE_ENV === 'production',
+        sameSite: env.NODE_ENV === 'production' ? 'strict' : 'lax',
+        maxAge: 7 * 24 * 60 * 60,
+    });
     return reply.status(201).send({
         message: 'Admin account created successfully 🎩',
         token,
@@ -430,9 +481,45 @@ export async function getMe(request, reply) {
             name: user.name,
             email: user.email,
             role: user.role,
+            themePreference: user.themePreference || 'dark',
             avatarUrl: user.avatarUrl,
             isFirstLogin: user.isFirstLogin ?? true,
         },
         team,
+    });
+}
+/**
+ * Task 1: Update Theme Preference (Protected Route)
+ * PATCH /api/auth/theme
+ * Updates the authenticated user's themePreference ('light' | 'dark') in DB and returns updated user.
+ */
+export async function updateTheme(request, reply) {
+    if (!request.user) {
+        return reply.status(401).send({ error: 'Unauthorized', message: 'Authentication required' });
+    }
+    const { theme } = request.body || {};
+    if (!theme || !['light', 'dark'].includes(theme)) {
+        return reply.status(400).send({
+            error: 'Bad Request',
+            message: 'Theme must be either "light" or "dark"',
+        });
+    }
+    const user = await User.findById(request.user.userId);
+    if (!user) {
+        return reply.status(404).send({ error: 'Not Found', message: 'User not found' });
+    }
+    user.themePreference = theme;
+    await user.save();
+    return reply.send({
+        message: `Theme preference updated to ${theme} successfully`,
+        user: {
+            id: user._id,
+            name: user.name,
+            email: user.email,
+            role: user.role,
+            themePreference: user.themePreference,
+            avatarUrl: user.avatarUrl,
+            isFirstLogin: user.isFirstLogin ?? true,
+        },
     });
 }

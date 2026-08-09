@@ -29,8 +29,9 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 export function buildApp(): FastifyInstance {
-  // Task 1 & 4: Configure Pino logger and Correlation ID generator
+  // Task 1 & 4: Configure Pino logger, trustProxy for Anti-DDoS real IP capture, and Correlation ID generator
   const fastify = Fastify({
+    trustProxy: true,
     logger:
       env.NODE_ENV === 'development'
         ? {
@@ -96,14 +97,14 @@ export function buildApp(): FastifyInstance {
     hook: 'onRequest',
   });
 
-  // Global Rate Limit (100 requests / minute)
+  // Global Rate Limit (500 requests / 5 minutes per IP)
   fastify.register(rateLimit, {
-    max: 100,
-    timeWindow: '1 minute',
+    max: 500,
+    timeWindow: '5 minutes',
     errorResponseBuilder: (request, context) => ({
       status: 429,
       error: 'Too Many Requests',
-      message: `Rate limit exceeded. Maximum ${context.max} requests per ${context.after} allowed.`,
+      message: `Global Anti-DDoS Rate Limit Exceeded. Maximum ${context.max} requests per ${context.after} allowed.`,
       correlationId: request.id as string,
       date: new Date().toISOString(),
     }),

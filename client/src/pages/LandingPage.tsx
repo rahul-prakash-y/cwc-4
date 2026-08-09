@@ -17,13 +17,13 @@ export const LandingPage: React.FC = () => {
       <HeroSection />
 
       {/* 2. Task 1: About CWC Section */}
-      <About />
+      {/* <About /> */}
 
       {/* 3. Season Timeline */}
       <SeasonTimeline />
 
       {/* 4. Task 2: Prize Section */}
-      <Prizes />
+      {/* <Prizes /> */}
 
       {/* 5. Media Gallery Section */}
       <Gallery />
@@ -40,7 +40,7 @@ export const LandingPage: React.FC = () => {
       <RuleBook />
 
       {/* 8. Task 3: Sponsors Component */}
-      <Sponsors />
+      {/* <Sponsors /> */}
 
       {/* 9. Task 4: Contact & Venue Section */}
       <Contact />

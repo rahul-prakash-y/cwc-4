@@ -2,8 +2,12 @@ import bcrypt from 'bcryptjs';
 import { User } from '../models/User.js';
 import { Team } from '../models/Team.js';
 import { AuditLog } from '../models/AuditLog.js';
+import { Score } from '../models/Score.js';
+import { Attendance } from '../models/Attendance.js';
+import { Submission } from '../models/Submission.js';
 import { Settings, getGlobalSettings } from '../models/Settings.js';
 import { logAudit } from '../middleware/auth.js';
+import { logAdminAction } from '../utils/auditLogger.js';
 import { disconnectUserSockets, broadcastSettingsUpdated } from '../socket.js';
 /**
  * Task 3: Fetch Paginated Audit Logs with Search & Date Filters
@@ -14,10 +18,14 @@ export async function getAuditLogs(request, reply) {
     const skip = (page - 1) * limit;
     const filter = {};
     if (request.query.search) {
-        const searchRegex = new RegExp(request.query.search.trim(), 'i');
+        const searchRegex = new RegExp(request.query.search.trim().replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'i');
         filter.$or = [
-            { adminEmail: searchRegex },
+            { ipAddress: searchRegex },
             { action: searchRegex },
+            { actorRole: searchRegex },
+            { resource: searchRegex },
+            { userAgent: searchRegex },
+            { adminEmail: searchRegex },
             { targetId: searchRegex },
             { targetType: searchRegex },
         ];
@@ -69,6 +77,7 @@ export async function toggleBlockStatus(request, reply) {
                     ? explicitBlockedState
                     : !userDoc.isBlocked;
             userDoc.isBlocked = newBlockedState;
+            userDoc.sessionVersion = (userDoc.sessionVersion || 0) + 1;
             await userDoc.save();
             updatedTarget = userDoc.toJSON();
             // If user is student, also sync team leader/member block status if desired
@@ -98,10 +107,11 @@ export async function toggleBlockStatus(request, reply) {
             teamDoc.isBlocked = newBlockedState;
             await teamDoc.save();
             updatedTarget = teamDoc.toJSON();
-            // Also block team leader's User account
+            // Also block team leader's User account and bump sessionVersion
             if (teamDoc.leader?.userId) {
                 await User.findByIdAndUpdate(teamDoc.leader.userId, {
                     isBlocked: newBlockedState,
+                    $inc: { sessionVersion: 1 },
                 });
             }
         }
@@ -120,18 +130,11 @@ export async function toggleBlockStatus(request, reply) {
         }
     }
     // Log action in AuditLog
-    await logAudit({
-        adminId: request.user.userId,
-        adminEmail: request.user.email,
-        action: newBlockedState ? 'BLOCK_ACCOUNT' : 'UNBLOCK_ACCOUNT',
-        targetId,
+    await logAdminAction(request, newBlockedState ? 'BLOCK_ACCOUNT' : 'UNBLOCK_ACCOUNT', targetId, {
         targetType: resolvedType,
-        details: {
-            isBlocked: newBlockedState,
-            targetName: updatedTarget.name || updatedTarget.teamName,
-            email: updatedTarget.email || updatedTarget.leader?.email,
-        },
-        ipAddress: request.ip,
+        isBlocked: newBlockedState,
+        targetName: updatedTarget.name || updatedTarget.teamName,
+        email: updatedTarget.email || updatedTarget.leader?.email,
     });
     return reply.send({
         message: `${resolvedType === 'team' ? 'Team' : 'User'} account has been ${newBlockedState ? 'blocked 🚫' : 'unblocked ✅'} successfully.`,
@@ -140,7 +143,7 @@ export async function toggleBlockStatus(request, reply) {
     });
 }
 /**
- * Task 3: Force Reset Student Password to Default & Set isFirstLogin: true
+ * Task 3: Force Reset Student Password to Default, set isFirstLogin: true, and increment sessionVersion
  */
 export async function forceResetPassword(request, reply) {
     const userId = request.params.id;
@@ -155,21 +158,14 @@ export async function forceResetPassword(request, reply) {
     const passwordHash = await bcrypt.hash(defaultPassword, 10);
     user.passwordHash = passwordHash;
     user.isFirstLogin = true;
+    user.sessionVersion = (user.sessionVersion || 0) + 1;
     await user.save();
     // Audit log entry
-    await logAudit({
-        adminId: request.user.userId,
-        adminEmail: request.user.email,
-        action: 'FORCE_RESET_PASSWORD',
-        targetId: user._id.toString(),
-        targetType: 'User',
-        details: {
-            userEmail: user.email,
-            userName: user.name,
-            defaultPassword,
-            isFirstLogin: true,
-        },
-        ipAddress: request.ip,
+    await logAdminAction(request, 'FORCE_RESET_PASSWORD', user._id.toString(), {
+        userEmail: user.email,
+        userName: user.name,
+        defaultPassword,
+        isFirstLogin: true,
     });
     return reply.send({
         message: `🔑 Password for ${user.email} force-reset to default standard passcode successfully.`,
@@ -181,6 +177,123 @@ export async function forceResetPassword(request, reply) {
             role: user.role,
             isFirstLogin: true,
         },
+    });
+}
+/**
+ * Task 3: SuperAdmin Force Logout - Increments user's sessionVersion to instantly invalidate active JWT cookie
+ */
+export async function forceLogout(request, reply) {
+    const targetId = request.params.id;
+    let user = await User.findById(targetId);
+    let resolvedType = 'user';
+    if (user) {
+        user.sessionVersion = (user.sessionVersion || 0) + 1;
+        await user.save();
+        disconnectUserSockets(user._id.toString());
+    }
+    else {
+        const team = await Team.findById(targetId);
+        if (team) {
+            resolvedType = 'team';
+            if (team.leader?.userId) {
+                user = await User.findById(team.leader.userId);
+                if (user) {
+                    user.sessionVersion = (user.sessionVersion || 0) + 1;
+                    await user.save();
+                    disconnectUserSockets(user._id.toString());
+                }
+            }
+            const memberUserIds = team.members.map((m) => m.userId).filter(Boolean);
+            if (memberUserIds.length > 0) {
+                await User.updateMany({ _id: { $in: memberUserIds } }, { $inc: { sessionVersion: 1 } });
+                memberUserIds.forEach((mId) => disconnectUserSockets(mId.toString()));
+            }
+        }
+    }
+    if (!user) {
+        return reply.status(404).send({
+            error: 'Not Found',
+            message: 'User or team account not found.',
+        });
+    }
+    await logAdminAction(request, 'USER_FORCE_LOGGED_OUT', targetId, {
+        targetType: resolvedType,
+        name: user.name,
+        email: user.email,
+    });
+    return reply.send({
+        message: `⚡ Force logout successful! Active session for ${user.email} has been invalidated.`,
+        userId: targetId,
+    });
+}
+/**
+ * Task 3: SuperAdmin Delete User or Team - Permanently deletes user/team and cleans up associated scores/attendance
+ */
+export async function deleteUser(request, reply) {
+    const targetId = request.params.id;
+    let user = await User.findById(targetId);
+    let team = await Team.findById(targetId);
+    if (!user && !team) {
+        user = await User.findById(targetId);
+        if (!user) {
+            return reply.status(404).send({
+                error: 'Not Found',
+                message: 'Account not found with provided ID.',
+            });
+        }
+    }
+    let deletedDetails = {};
+    if (user) {
+        deletedDetails = {
+            type: 'User',
+            name: user.name,
+            email: user.email,
+            role: user.role,
+        };
+        disconnectUserSockets(user._id.toString());
+        const userTeam = await Team.findOne({
+            $or: [{ 'leader.userId': user._id }, { 'members.userId': user._id }],
+        });
+        if (userTeam) {
+            if (userTeam.leader?.userId?.toString() === user._id.toString()) {
+                await Team.findByIdAndDelete(userTeam._id);
+                await Score.deleteMany({ teamId: userTeam._id });
+                await Attendance.deleteMany({ teamId: userTeam._id });
+                await Submission.deleteMany({ teamId: userTeam._id });
+            }
+            else {
+                userTeam.members = userTeam.members.filter((m) => m.userId?.toString() !== user._id.toString());
+                await userTeam.save();
+            }
+        }
+        await Score.deleteMany({ userId: user._id });
+        await Attendance.deleteMany({ userId: user._id });
+        await Submission.deleteMany({ userId: user._id });
+        await User.findByIdAndDelete(user._id);
+    }
+    else if (team) {
+        deletedDetails = {
+            type: 'Team',
+            name: team.teamName,
+            leaderEmail: team.leader?.email,
+        };
+        if (team.leader?.userId) {
+            disconnectUserSockets(team.leader.userId.toString());
+            await User.findByIdAndDelete(team.leader.userId);
+        }
+        const memberUserIds = team.members.map((m) => m.userId).filter(Boolean);
+        memberUserIds.forEach((mId) => disconnectUserSockets(mId.toString()));
+        if (memberUserIds.length > 0) {
+            await User.deleteMany({ _id: { $in: memberUserIds } });
+        }
+        await Score.deleteMany({ teamId: team._id });
+        await Attendance.deleteMany({ teamId: team._id });
+        await Submission.deleteMany({ teamId: team._id });
+        await Team.findByIdAndDelete(team._id);
+    }
+    await logAdminAction(request, 'USER_DELETED', targetId, deletedDetails);
+    return reply.send({
+        message: `🗑️ Account (${deletedDetails.name || targetId}) permanently deleted along with all associated scores, attendance, and team records.`,
     });
 }
 /**

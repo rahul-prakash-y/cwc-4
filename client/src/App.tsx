@@ -12,9 +12,9 @@ import { LandingPage } from "./pages/LandingPage";
 import { RuleBookPage } from "./pages/RuleBookPage";
 import { AboutPage } from "./pages/public/AboutPage";
 import { GalleryPage } from "./pages/public/GalleryPage";
-import { PrizesPage } from "./pages/public/PrizesPage";
+// import { PrizesPage } from "./pages/public/PrizesPage";
 import { TeamsPage } from "./pages/public/TeamsPage";
-import { SponsorsPage } from "./pages/public/SponsorsPage";
+// import { SponsorsPage } from "./pages/public/SponsorsPage";
 import { ContactPage } from "./pages/public/ContactPage";
 import { LoginPage } from "./pages/LoginPage";
 import { LoginSelection } from "./pages/public/LoginSelection";
@@ -36,11 +36,11 @@ export default function App() {
               {/* Public Carnival Layout */}
               <Route path="/" element={<PublicLayout />}>
                 <Route index element={<LandingPage />} />
-                <Route path="about" element={<AboutPage />} />
+                {/* <Route path="about" element={<AboutPage />} /> */}
                 <Route path="gallery" element={<GalleryPage />} />
-                <Route path="prizes" element={<PrizesPage />} />
+                {/* <Route path="prizes" element={<PrizesPage />} /> */}
                 <Route path="teams" element={<TeamsPage />} />
-                <Route path="sponsors" element={<SponsorsPage />} />
+                {/* <Route path="sponsors" element={<SponsorsPage />} /> */}
                 <Route path="contact" element={<ContactPage />} />
                 <Route path="rules" element={<RuleBookPage />} />
                 <Route path="register" element={<Register />} />
@@ -81,6 +81,7 @@ export default function App() {
               {/* Admin Command Layout (Protected) */}
               <Route path="/admin" element={<AdminLayout />}>
                 <Route index element={<AdminDashboard />} />
+                <Route path="threats" element={<AdminDashboard />} />
                 <Route path="superadmin" element={<AdminDashboard />} />
                 <Route path="buzzer" element={<AdminDashboard />} />
                 <Route path="attendance" element={<AdminDashboard />} />
