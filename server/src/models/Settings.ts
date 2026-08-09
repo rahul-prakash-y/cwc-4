@@ -8,6 +8,7 @@ export interface ISettings extends Document {
   heroBannerText: string;
   isGrandFinale: boolean;
   eventMode: 'standard' | 'carnival' | 'finale';
+  isTaskPortalApproved: boolean;
 }
 
 const settingsSchema = new Schema<ISettings>(
@@ -29,6 +30,7 @@ const settingsSchema = new Schema<ISettings>(
       enum: ['standard', 'carnival', 'finale'],
       default: 'standard',
     },
+    isTaskPortalApproved: { type: Boolean, default: true },
   },
   { timestamps: true }
 );
@@ -49,11 +51,12 @@ export async function getGlobalSettings(): Promise<any> {
       heroBannerText: 'Welcome to Code With Curious Season 4! The Ultimate Coding Carnival.',
       isGrandFinale: false,
       eventMode: 'standard',
+      isTaskPortalApproved: true,
     });
     doc = created.toObject();
   } else if (!doc.eventMode) {
     const eventMode = doc.isGrandFinale ? 'finale' : 'standard';
-    await Settings.updateOne({ _id: doc._id }, { $set: { eventMode } });
+    await Settings.updateOne({ _id: doc._id }, { $set: { eventMode, isTaskPortalApproved: doc.isTaskPortalApproved ?? true } });
     doc.eventMode = eventMode;
   }
   return doc;

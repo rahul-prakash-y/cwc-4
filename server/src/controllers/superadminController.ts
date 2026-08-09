@@ -553,6 +553,7 @@ export async function updateGlobalSettings(
       isLeaderboardVisible?: boolean;
       heroBannerText?: string;
       isGrandFinale?: boolean;
+      isTaskPortalApproved?: boolean;
     };
   }>,
   reply: FastifyReply
@@ -577,6 +578,9 @@ export async function updateGlobalSettings(
   }
   if (body.isGrandFinale !== undefined) {
     updates.isGrandFinale = Boolean(body.isGrandFinale);
+  }
+  if (body.isTaskPortalApproved !== undefined) {
+    updates.isTaskPortalApproved = Boolean(body.isTaskPortalApproved);
   }
 
   let settings = await Settings.findOneAndUpdate({}, { $set: updates }, { upsert: true, new: true }).lean();

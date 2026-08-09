@@ -204,14 +204,11 @@ export const TeamProgress: React.FC<TeamProgressProps> = ({ timeline: propsTimel
                 )}
               </div>
 
-              {/* Day Title & Points */}
-              <div className="space-y-0.5 w-full">
-                <div className="text-[11px] font-bold text-slate-900 dark:text-white truncate max-w-full">
-                  {day.title}
-                </div>
+              {/* Day Points / Total Marks */}
+              <div className="space-y-0.5 w-full text-center">
                 <div
-                  className={`text-[10px] font-mono font-semibold ${
-                    isBonus ? 'text-amber-600 dark:text-carnival-gold' : 'text-slate-500 dark:text-slate-400'
+                  className={`text-[11px] font-mono font-bold ${
+                    isBonus ? 'text-amber-600 dark:text-carnival-gold' : 'text-slate-700 dark:text-slate-300'
                   }`}
                 >
                   +{day.points} PTS

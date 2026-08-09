@@ -75,14 +75,24 @@ export const DailyTaskView: React.FC<DailyTaskViewProps> = ({ task: propTask, on
   const task = propTask && propTask.id !== 'task-1' ? propTask : (fetchedTask || propTask || DEFAULT_TASK);
 
   const [isStarted, setIsStarted] = useState(false);
+  const [isSuperAdminApproved, setIsSuperAdminApproved] = useState(true);
 
   useEffect(() => {
-    const fetchActiveTask = async () => {
+    const fetchActiveTaskAndSettings = async () => {
       try {
         const token = localStorage.getItem('cwc_token') || localStorage.getItem('token');
-        const res = await fetch('/api/student/tasks/active', {
-          headers: token ? { Authorization: `Bearer ${token}` } : {},
-        });
+        const headers: Record<string, string> = token ? { Authorization: `Bearer ${token}` } : {};
+
+        // Fetch Global Settings for SuperAdmin approval gate
+        const settingsRes = await fetch('/api/settings/global');
+        if (settingsRes.ok) {
+          const settingsData = await settingsRes.json();
+          if (typeof settingsData.isTaskPortalApproved === 'boolean') {
+            setIsSuperAdminApproved(settingsData.isTaskPortalApproved);
+          }
+        }
+
+        const res = await fetch('/api/student/tasks/active', { headers });
         if (res.ok) {
           const data = await res.json();
           if (Array.isArray(data.activeTasks) && data.activeTasks.length > 0) {
@@ -108,13 +118,13 @@ export const DailyTaskView: React.FC<DailyTaskViewProps> = ({ task: propTask, on
           }
         }
       } catch (err) {
-        console.warn('Failed to load active student task:', err);
+        console.warn('Failed to load active student task or settings:', err);
       } finally {
         setIsLoading(false);
       }
     };
 
-    fetchActiveTask();
+    fetchActiveTaskAndSettings();
   }, []);
 
   // Hook 1: Draft Saving (auto 30s + localStorage)
@@ -313,6 +323,19 @@ export const DailyTaskView: React.FC<DailyTaskViewProps> = ({ task: propTask, on
             {status === 'Eliminated' ? (
               <div className="p-4 rounded-2xl bg-rose-100 dark:bg-rose-500/20 border border-rose-300 dark:border-rose-500/40 text-rose-800 dark:text-rose-300 text-xs font-mono font-bold text-center">
                 🔒 ELIMINATED STATUS • SUBMISSIONS LOCKED
+              </div>
+            ) : !isSuperAdminApproved ? (
+              <div className="space-y-2">
+                <button
+                  disabled
+                  className="w-full py-4 px-6 rounded-2xl bg-slate-300 dark:bg-white/10 text-slate-500 dark:text-slate-400 font-black text-xs uppercase tracking-wider flex items-center justify-center gap-2 cursor-not-allowed border border-slate-300 dark:border-white/10 opacity-70"
+                >
+                  <AlertCircle className="w-4 h-4 text-amber-500" />
+                  <span>Awaiting SuperAdmin Approval 🔒</span>
+                </button>
+                <p className="text-[11px] font-mono text-center text-amber-600 dark:text-amber-400 font-bold">
+                  Task Portal initialization must be enabled by SuperAdmin for everyone.
+                </p>
               </div>
             ) : !isStarted ? (
               <button

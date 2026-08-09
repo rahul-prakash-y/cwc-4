@@ -16,9 +16,37 @@ export const Settings: React.FC<SettingsProps> = ({ isOpen, onClose }) => {
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
 
+  const [teamName, setTeamName] = useState<string>(user?.teamName || '');
+  const [loadingTeam, setLoadingTeam] = useState<boolean>(false);
+
   const [error, setError] = useState<string | null>(null);
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  React.useEffect(() => {
+    if (isOpen) {
+      const fetchTeamInfo = async () => {
+        try {
+          setLoadingTeam(true);
+          const res = await apiFetch('/student/dashboard');
+          if (res.ok) {
+            const data = await res.json();
+            if (data?.team?.teamName) {
+              setTeamName(data.team.teamName);
+              if (user && user.teamName !== data.team.teamName) {
+                updateUser({ teamName: data.team.teamName });
+              }
+            }
+          }
+        } catch (err) {
+          console.warn('Failed to fetch team details for profile:', err);
+        } finally {
+          setLoadingTeam(false);
+        }
+      };
+      fetchTeamInfo();
+    }
+  }, [isOpen]);
 
   if (!isOpen) return null;
 
@@ -264,7 +292,9 @@ export const Settings: React.FC<SettingsProps> = ({ isOpen, onClose }) => {
                     </div>
                     <div className="p-3 rounded-xl bg-slate-100 dark:bg-black/30 border border-slate-200 dark:border-white/10">
                       <span className="text-[10px] text-slate-500 dark:text-slate-400 font-mono block mb-0.5">TEAM</span>
-                      <span className="font-bold text-amber-600 dark:text-carnival-gold">{user?.teamName || 'Cyber Circus Kings'}</span>
+                      <span className="font-bold text-amber-600 dark:text-carnival-gold">
+                        {loadingTeam ? 'Loading...' : teamName || user?.teamName || 'Unassigned Team'}
+                      </span>
                     </div>
                   </div>
 

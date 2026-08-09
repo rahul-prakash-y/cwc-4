@@ -26,6 +26,7 @@ export interface GlobalSettings {
   isLeaderboardVisible: boolean;
   heroBannerText: string;
   isGrandFinale: boolean;
+  isTaskPortalApproved: boolean;
 }
 
 export const SiteConfig: React.FC = () => {
@@ -39,6 +40,7 @@ export const SiteConfig: React.FC = () => {
     isLeaderboardVisible: true,
     heroBannerText: 'Welcome to Code With Curious Season 4! The Ultimate Coding Carnival.',
     isGrandFinale: false,
+    isTaskPortalApproved: true,
   });
 
   const fetchSettings = async () => {
@@ -61,6 +63,7 @@ export const SiteConfig: React.FC = () => {
             data.heroBannerText ||
             'Welcome to Code With Curious Season 4! The Ultimate Coding Carnival.',
           isGrandFinale: data.isGrandFinale ?? false,
+          isTaskPortalApproved: data.isTaskPortalApproved ?? true,
         });
       }
     } catch (err: any) {
@@ -311,6 +314,37 @@ export const SiteConfig: React.FC = () => {
                   <div
                     className={`w-6 h-6 rounded-full transition duration-300 transform ${
                       settings.isGrandFinale ? 'translate-x-6 bg-amber-500 dark:bg-amber-400' : 'translate-x-0 bg-slate-400 dark:bg-slate-500'
+                    }`}
+                  />
+                </button>
+              </div>
+
+              {/* Task Portal SuperAdmin Approval Toggle */}
+              <div className="flex items-center justify-between p-4 rounded-2xl bg-slate-50 dark:bg-black/50 border border-slate-200 dark:border-white/10">
+                <div className="space-y-1 pr-4">
+                  <div className="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                    <Sparkles className={`w-4 h-4 ${settings.isTaskPortalApproved ? 'text-emerald-500 dark:text-emerald-400' : 'text-slate-400 dark:text-slate-500'}`} />
+                    <span>Task Portal SuperAdmin Approval Gate</span>
+                  </div>
+                  <p className="text-xs text-slate-500 dark:text-slate-400">
+                    {settings.isTaskPortalApproved
+                      ? 'GLOBAL APPROVAL ACTIVE - Task Portal button is ENABLED for all students.'
+                      : 'PORTAL LOCKED - Task Portal button is DISABLED for all students until approved.'}
+                  </p>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() => setSettings({ ...settings, isTaskPortalApproved: !settings.isTaskPortalApproved })}
+                  className={`w-14 h-8 rounded-full p-1 transition duration-300 border cursor-pointer ${
+                    settings.isTaskPortalApproved
+                      ? 'bg-emerald-500/30 border-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.5)]'
+                      : 'bg-slate-200 dark:bg-black/60 border-slate-300 dark:border-white/20'
+                  }`}
+                >
+                  <div
+                    className={`w-6 h-6 rounded-full transition duration-300 transform ${
+                      settings.isTaskPortalApproved ? 'translate-x-6 bg-emerald-500 dark:bg-emerald-400' : 'translate-x-0 bg-slate-400 dark:bg-slate-500'
                     }`}
                   />
                 </button>
