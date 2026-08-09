@@ -93,9 +93,7 @@ export const Hero: React.FC = () => {
           {/* Central Logo Ring */}
           <div className="w-24 h-24 sm:w-24 sm:h-24 rounded-full bg-gradient-to-tr from-rose-600 via-amber-500 to-violet-600 dark:from-cwc-red dark:via-cwc-gold dark:to-cwc-purple p-1 shadow-md dark:shadow-2xl mb-6 animate-float">
             <div className="w-full h-full rounded-full bg-slate-50 dark:bg-cwc-bg flex items-center justify-center border border-slate-200 dark:border-white/20">
-              <span className="text-3xl sm:text-4xl font-extrabold font-display bg-clip-text text-transparent bg-gradient-to-r from-amber-600 via-rose-600 to-violet-600 dark:from-cwc-gold dark:to-yellow-200">
-                CWC
-              </span>
+              <img src="https://res.cloudinary.com/dyqjzi2mr/image/upload/v1786286021/WhatsApp_Image_2026-08-09_at_7.57.50_PM.jpg" alt="CWC Logo" className="w-20 h-20 rounded-full"  />
             </div>
           </div>
 
@@ -134,13 +132,13 @@ export const Hero: React.FC = () => {
           className="flex flex-wrap items-center justify-center gap-5 my-8"
         >
           {/* CTA 1: Register Team */}
-          <button
+          {/* <button
             onClick={() => setIsRegisterOpen(true)}
             className="inline-flex items-center gap-3 px-8 py-4 rounded-xl bg-gradient-to-r from-rose-600 to-rose-700 dark:from-cwc-red dark:to-[#9F1239] text-white font-bold font-display text-base tracking-wide border border-rose-500/20 dark:border-white/15 shadow-md dark:shadow-[inset_0_1px_0_rgba(255,255,255,0.2),0_4px_20px_rgba(225,29,72,0.4)] hover:-translate-y-1 hover:shadow-lg dark:hover:shadow-glow-red transition-all duration-300 ease-out active:translate-y-0"
           >
             <Ticket className="w-5 h-5 fill-current" />
             <span>Register Team</span>
-          </button>
+          </button> */}
 
           {/* CTA 2: Login */}
           <Link

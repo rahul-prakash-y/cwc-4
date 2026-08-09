@@ -25,7 +25,7 @@ export const Navbar: React.FC = () => {
     { label: "Teams", path: "/teams" },
     // { label: "Sponsors", path: "/sponsors" },
     { label: "Contact", path: "/contact" },
-    { label: "Rule Book", path: "/rules" },
+    // { label: "Rule Book", path: "/rules" },
   ];
 
   return (
@@ -88,13 +88,13 @@ export const Navbar: React.FC = () => {
             <PartyPopper className="w-4 h-4 text-amber-500 dark:text-cwc-gold" />
           </button>
 
-          <Link
+          {/* <Link
             to="/register"
             className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-gradient-to-r from-cwc-red to-[#9F1239] text-white font-bold font-display text-xs tracking-wide border border-white/15 shadow-sm dark:shadow-[inset_0_1px_0_rgba(255,255,255,0.2),0_4px_15px_rgba(225,29,72,0.3)] hover:-translate-y-1 hover:border-white/30 hover:shadow-glow-red transition-all duration-300 ease-out"
           >
             <Ticket className="w-3.5 h-3.5 fill-current" />
             <span>Register Team</span>
-          </Link>
+          </Link> */}
 
           <Link
             to="/login"

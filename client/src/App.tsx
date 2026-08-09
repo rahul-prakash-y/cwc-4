@@ -42,7 +42,7 @@ export default function App() {
                 <Route path="teams" element={<TeamsPage />} />
                 {/* <Route path="sponsors" element={<SponsorsPage />} /> */}
                 <Route path="contact" element={<ContactPage />} />
-                <Route path="rules" element={<RuleBookPage />} />
+                {/* <Route path="rules" element={<RuleBookPage />} /> */}
                 <Route path="register" element={<Register />} />
                 <Route path="register-team" element={<Register />} />
                 <Route path="login" element={<LoginSelection />} />
