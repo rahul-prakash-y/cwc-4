@@ -214,65 +214,6 @@ export async function getPublicCoordinators(_request: FastifyRequest, reply: Fas
 
   let coordinators = await Coordinator.find().sort({ order: 1, createdAt: 1 }).lean();
 
-  if (!coordinators || coordinators.length === 0) {
-    const defaultCoordinators: Array<{
-      name: string;
-      role: string;
-      department: string;
-      phone: string;
-      email: string;
-      type: 'faculty' | 'student';
-      order: number;
-    }> = [
-      {
-        name: 'Dr. Rajesh Sharma',
-        role: 'Faculty Convener & Head of CS',
-        department: 'Dept of Computer Science & Engineering',
-        phone: '+91 98765 43210',
-        email: 'r.sharma@cwc.edu',
-        type: 'faculty',
-        order: 1,
-      },
-      {
-        name: 'Prof. Ananya Patel',
-        role: 'Co-Convener & Technical Advisor',
-        department: 'Dept of Information Technology',
-        phone: '+91 98765 43211',
-        email: 'a.patel@cwc.edu',
-        type: 'faculty',
-        order: 2,
-      },
-      {
-        name: 'Alex Rivers',
-        role: 'Lead Student Convener',
-        department: 'Final Year CSE',
-        phone: '+91 91234 56789',
-        email: 'alex@cwc.dev',
-        type: 'student',
-        order: 3,
-      },
-      {
-        name: 'Maya Lin',
-        role: 'Event Operations & Logistics Head',
-        department: 'Final Year IT',
-        phone: '+91 91234 56790',
-        email: 'maya@cwc.dev',
-        type: 'student',
-        order: 4,
-      },
-      {
-        name: 'Rohan Gupta',
-        role: 'Technical Platform Lead',
-        department: 'Pre-Final CSE',
-        phone: '+91 91234 56791',
-        email: 'rohan@cwc.dev',
-        type: 'student',
-        order: 5,
-      },
-    ];
-
-    coordinators = (await Coordinator.insertMany(defaultCoordinators)) as any;
-  }
 
   return reply.send({
     success: true,
