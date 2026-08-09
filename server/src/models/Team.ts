@@ -1,6 +1,6 @@
 import { Schema, model, Document, Model, Types } from 'mongoose';
 
-export type TeamStatus = 'Pending' | 'Approved' | 'Eliminated' | 'Safe' | 'Danger' | 'Qualified';
+export type TeamStatus = 'Pending' | 'Approved' | 'Eliminated' | 'Safe' | 'Danger' | 'Qualified' | 'Rejected';
 
 export interface ITeamLeader {
   name: string;
@@ -113,8 +113,8 @@ const teamSchema = new Schema<ITeamDocument>(
       type: [memberSchema],
       validate: [
         {
-          validator: (val: any[]) => Array.isArray(val) && val.length === 4,
-          message: 'Every team MUST contain exactly 4 complete member profile objects.',
+          validator: (val: any[]) => Array.isArray(val) && val.length >= 1 && val.length <= 6,
+          message: 'Every team MUST contain between 1 and 6 member profile objects.',
         },
       ],
       required: [true, 'Team members are required'],

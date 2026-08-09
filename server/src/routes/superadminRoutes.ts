@@ -13,12 +13,16 @@ import {
   updateCoordinator,
   deleteCoordinator,
 } from '../controllers/superadminController.js';
+import { updateTeamDetails } from '../controllers/adminController.js';
 import { verifyJWT, isSuperAdmin } from '../middleware/auth.js';
 
 export async function superadminRoutes(fastify: FastifyInstance) {
   // All SuperAdmin routes require JWT verification & SuperAdmin role enforcement
   fastify.addHook('preHandler', verifyJWT);
   fastify.addHook('preHandler', isSuperAdmin);
+
+  // Team Details & Roster Edit
+  fastify.put('/teams/:id', updateTeamDetails);
 
   // Task 3: Fetch paginated audit logs & threat telemetry
   fastify.get('/audit-logs', getAuditLogs);

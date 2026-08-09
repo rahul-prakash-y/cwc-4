@@ -3,6 +3,7 @@ import {
   getAllTeams,
   updateTeamStatus,
   eliminateTeam,
+  updateTeamDetails,
   streamTeamStatusEvents,
   createTask,
   getAllTasksAdmin,
@@ -74,6 +75,7 @@ export async function adminRoutes(fastify: FastifyInstance) {
   fastify.get('/teams/events', streamTeamStatusEvents);
   fastify.get('/teams/template', downloadTeamsTemplate);
   fastify.post('/teams/bulk-upload', importTeamsBulk);
+  fastify.put('/teams/:id', updateTeamDetails);
   fastify.patch('/teams/:id/status', { schema: updateTeamStatusSchema }, updateTeamStatus);
   fastify.patch('/teams/:id/eliminate', { schema: eliminateTeamSchema }, eliminateTeam);
 

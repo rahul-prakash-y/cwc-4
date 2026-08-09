@@ -293,6 +293,123 @@ export async function eliminateTeam(
   });
 }
 
+export async function updateTeamDetails(
+  request: FastifyRequest<{
+    Params: { id?: string; teamId?: string };
+    Body: {
+      teamName?: string;
+      tagline?: string;
+      status?: 'Pending' | 'Approved' | 'Rejected' | 'Eliminated' | 'Safe' | 'Danger' | 'Qualified';
+      themeColor?: string;
+      residenceType?: 'Hosteller' | 'DayScholar' | 'Day Scholar';
+      leader?: {
+        name?: string;
+        email?: string;
+        phone?: string;
+        rollNumber?: string;
+        department?: string;
+      };
+      members?: Array<{
+        name?: string;
+        rollNo?: string;
+        rollNumber?: string;
+        deptMailId?: string;
+        email?: string;
+        phone?: string;
+        gender?: 'Male' | 'Female' | 'Other';
+        residenceType?: 'Hosteller' | 'DayScholar' | 'Day Scholar';
+        role?: string;
+        userId?: string;
+      }>;
+    };
+  }>,
+  reply: FastifyReply
+) {
+  const teamId = request.params.id || request.params.teamId;
+  const { teamName, status, themeColor, residenceType, leader, members } = request.body || {};
+
+  if (!teamId) {
+    return reply.status(400).send({ error: 'Bad Request', message: 'Team ID is required' });
+  }
+
+  let team = null;
+  if (mongoose.Types.ObjectId.isValid(teamId)) {
+    team = await Team.findById(teamId);
+  }
+  if (!team) {
+    team = await Team.findOne({ teamName: teamId });
+  }
+
+  if (!team) {
+    return reply.status(404).send({ error: 'Not Found', message: 'Team not found' });
+  }
+
+  if (teamName !== undefined && teamName.trim()) team.teamName = teamName.trim();
+  if (status !== undefined) team.status = status;
+  if (themeColor !== undefined && themeColor.trim()) team.themeColor = themeColor.trim();
+  if (residenceType !== undefined) team.residenceType = residenceType;
+
+  if (leader) {
+    team.leader = {
+      name: leader.name ?? team.leader?.name ?? '',
+      email: (leader.email ?? team.leader?.email ?? '').toLowerCase().trim(),
+      phone: leader.phone ?? team.leader?.phone ?? '',
+      rollNumber: leader.rollNumber ?? team.leader?.rollNumber ?? '',
+      department: leader.department ?? team.leader?.department ?? '',
+      userId: team.leader?.userId,
+    };
+  }
+
+  if (Array.isArray(members)) {
+    team.members = members.map((m, idx) => {
+      const memberName = m.name?.trim() || `Member ${idx + 1}`;
+      const roll = m.rollNo?.trim() || m.rollNumber?.trim() || `ROLL-${idx + 1}`;
+      const mail = (m.deptMailId?.trim() || m.email?.trim() || `member${idx + 1}@cwc.io`).toLowerCase();
+      const resType = m.residenceType === 'Day Scholar' ? 'DayScholar' : (m.residenceType || 'Hosteller');
+      return {
+        name: memberName,
+        rollNo: roll,
+        rollNumber: roll,
+        deptMailId: mail,
+        email: mail,
+        phone: m.phone?.trim() || '0000000000',
+        gender: m.gender || 'Male',
+        residenceType: resType as 'Hosteller' | 'DayScholar',
+        role: m.role || (idx === 0 ? 'Leader' : 'Member'),
+        userId: m.userId as any,
+      };
+    });
+  }
+
+  await team.save();
+
+  await delCache('cwc:leaderboard');
+
+  teamBroadcaster.emit('status-changed', {
+    teamId: team._id.toString(),
+    teamName: team.teamName,
+    status: team.status,
+    timestamp: new Date().toISOString(),
+  });
+  broadcastStatusChanged({
+    teamId: team._id.toString(),
+    teamName: team.teamName,
+    status: team.status,
+    timestamp: new Date().toISOString(),
+  });
+
+  await logAdminAction(request, 'TEAM_UPDATED', team._id, {
+    teamName: team.teamName,
+    status: team.status,
+    membersCount: team.members.length,
+  });
+
+  return reply.send({
+    message: `Team '${team.teamName}' and member details updated successfully! 🎪`,
+    team,
+  });
+}
+
 /* ==========================================================================
    TASK MANAGEMENT CONTROLLERS
    ========================================================================== */

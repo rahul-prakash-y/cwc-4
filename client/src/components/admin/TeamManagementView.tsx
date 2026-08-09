@@ -98,9 +98,33 @@ export const TeamManagementView: React.FC = () => {
     }
   };
 
-  const handleSaveEdit = (e: React.FormEvent) => {
+  const handleSaveEdit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!editingTeam) return;
+
+    try {
+      const token = localStorage.getItem('token');
+      await fetch(`/api/admin/teams/${editingTeam.id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+        body: JSON.stringify({
+          teamName: editingTeam.name,
+          tagline: editingTeam.tagline,
+          status: editingTeam.status,
+          themeColor: editingTeam.themeColor,
+          leader: {
+            name: editingTeam.leaderName,
+            email: editingTeam.leaderEmail,
+          },
+        }),
+      });
+    } catch (err) {
+      console.warn('Backend sync error:', err);
+    }
+
     handleUpdateStatus(editingTeam.id, editingTeam.status);
     setTeams(teams.map((t) => (t.id === editingTeam.id ? editingTeam : t)));
     setEditingTeam(null);

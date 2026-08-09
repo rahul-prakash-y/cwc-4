@@ -107,7 +107,7 @@ export const AdminDashboard: React.FC = () => {
           <span>Daily Attendance</span>
         </Link>
 
-        <Link
+        {/* <Link
           to="/admin/media"
           className={`flex items-center gap-2 px-4 py-2.5 rounded-xl font-mono text-xs font-bold transition-all ${
             activeTab === 'media'
@@ -117,7 +117,7 @@ export const AdminDashboard: React.FC = () => {
         >
           <ImageIcon className="w-4 h-4" />
           <span>Media Dashboard</span>
-        </Link>
+        </Link> */}
 
         <Link
           to="/admin/teams"
