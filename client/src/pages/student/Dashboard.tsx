@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { Trophy, CheckSquare, Zap, Heart, LayoutDashboard, Flame, Radio } from 'lucide-react';
+import { Trophy, CheckSquare, Zap, Heart, LayoutDashboard, Flame, Radio, Calendar } from 'lucide-react';
 import { Leaderboard } from '../../components/student/Leaderboard';
 import { DailyTaskView } from '../../components/student/DailyTaskView';
+import { DaySchedule } from '../../components/student/DaySchedule';
 import { AdvantagesLocker } from '../../components/student/AdvantagesLocker';
 import { VotingBooth } from '../../components/student/VotingBooth';
 import { TeamProgress } from '../../components/student/TeamProgress';
@@ -19,6 +20,8 @@ export const StudentDashboard: React.FC = () => {
   const path = location.pathname.toLowerCase();
   const currentTab = path.includes('/tasks')
     ? 'tasks'
+    : path.includes('/schedule')
+    ? 'schedule'
     : path.includes('/advantages')
     ? 'advantages'
     : path.includes('/leaderboard')
@@ -27,13 +30,16 @@ export const StudentDashboard: React.FC = () => {
     ? 'buzzer'
     : 'overview';
 
-  const handleTabClick = (tab: 'overview' | 'tasks' | 'advantages' | 'leaderboard' | 'buzzer') => {
+  const handleTabClick = (tab: 'overview' | 'tasks' | 'schedule' | 'advantages' | 'leaderboard' | 'buzzer') => {
     switch (tab) {
       case 'overview':
         navigate('/student');
         break;
       case 'tasks':
         navigate('/student/tasks');
+        break;
+      case 'schedule':
+        navigate('/student/schedule');
         break;
       case 'advantages':
         navigate('/student/advantages');
@@ -102,7 +108,6 @@ export const StudentDashboard: React.FC = () => {
             <Radio className="w-4 h-4 text-rose-600 dark:text-red-400" />
             <span>Rapid Fire Buzzer</span>
           </button>
-
           <button
             onClick={() => handleTabClick('tasks')}
             className={`flex items-center gap-2 px-4 py-2.5 rounded-xl font-mono text-xs font-bold transition-all whitespace-nowrap shrink-0 ${
@@ -113,6 +118,18 @@ export const StudentDashboard: React.FC = () => {
           >
             <CheckSquare className="w-4 h-4" />
             <span>Daily Tasks</span>
+          </button>
+
+          <button
+            onClick={() => handleTabClick('schedule')}
+            className={`flex items-center gap-2 px-4 py-2.5 rounded-xl font-mono text-xs font-bold transition-all whitespace-nowrap shrink-0 ${
+              currentTab === 'schedule'
+                ? 'bg-gradient-to-r from-amber-500 to-rose-500 text-white font-black shadow-md'
+                : 'glass-card text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white'
+            }`}
+          >
+            <Calendar className="w-4 h-4" />
+            <span>7-Day Schedule</span>
           </button>
 
           <button
@@ -156,7 +173,6 @@ export const StudentDashboard: React.FC = () => {
       {/* Main Tab Content */}
       {currentTab === 'overview' && (
         <div className="space-y-8">
-          {/* <BuzzerButton /> */}
           <TeamProgress />
           <MarksSection />
           <DailyTaskView />
@@ -170,7 +186,14 @@ export const StudentDashboard: React.FC = () => {
         </div>
       )}
 
-      {currentTab === 'tasks' && <DailyTaskView />}
+      {currentTab === 'tasks' && (
+        <div className="space-y-8">
+          <DailyTaskView />
+          <DaySchedule />
+        </div>
+      )}
+
+      {currentTab === 'schedule' && <DaySchedule />}
       {currentTab === 'advantages' && <AdvantagesLocker />}
       {currentTab === 'leaderboard' && <Leaderboard />}
     </div>

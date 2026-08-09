@@ -82,22 +82,24 @@ export function buildApp(): FastifyInstance {
 
   // Register Helmet for Secure HTTP Headers
   // Register Helmet for Secure HTTP Headers
+  // Register Helmet for Secure HTTP Headers
   fastify.register(helmet, {
     contentSecurityPolicy:
       env.NODE_ENV === "production"
         ? {
             useDefaults: true,
             directives: {
-              // Override the default img-src to include your external domains
               "img-src": [
                 "'self'",
                 "data:",
                 "https://res.cloudinary.com",
                 "https://images.unsplash.com",
               ],
+              // Add frame-src to allow Google iframes
+              "frame-src": ["'self'", "https://www.google.com"],
             },
           }
-        : false, // Disables CSP completely in development
+        : false,
   });
 
   // Register Fastify JWT plugin

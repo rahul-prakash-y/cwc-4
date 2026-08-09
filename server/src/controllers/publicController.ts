@@ -174,3 +174,36 @@ export async function getPublicTasks(_request: FastifyRequest, reply: FastifyRep
   });
 }
 
+/**
+ * Public 7-Day Event Timeline Endpoint with Days & Categorized Tasks
+ */
+export async function getPublicTimeline(_request: FastifyRequest, reply: FastifyReply) {
+  const { TimelineDay } = await import('../models/Timeline.js');
+  const { Task } = await import('../models/Task.js');
+
+  const days = await TimelineDay.find().sort({ dayNumber: 1 }).lean();
+  const categoryOrder = ['LUCKY BOOTH', 'GRAND CHALLENGE', 'FUN FAIR', 'DANGER ZONE', 'GOLDEN ZONE'];
+
+  const timeline = await Promise.all(
+    days.map(async (day) => {
+      const tasks = await Task.find({ dayNumber: day.dayNumber }).lean();
+      tasks.sort((a, b) => {
+        const indexA = categoryOrder.indexOf(a.category || '');
+        const indexB = categoryOrder.indexOf(b.category || '');
+        return (indexA === -1 ? 99 : indexA) - (indexB === -1 ? 99 : indexB);
+      });
+      return {
+        ...day,
+        tasks,
+      };
+    })
+  );
+
+  return reply.send({
+    success: true,
+    count: timeline.length,
+    timeline,
+  });
+}
+
+

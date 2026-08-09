@@ -26,9 +26,11 @@ import {
   Sliders,
   Zap,
   LogOut,
+  Calendar,
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { SiteConfig } from './SiteConfig';
+import { TimelineCMS } from './TimelineCMS';
 
 interface AuditLog {
   _id: string;
@@ -376,6 +378,18 @@ export const SuperAdminDashboard: React.FC = () => {
           >
             <Sliders className="w-4 h-4" />
             <span>Site Configuration (CMS)</span>
+          </button>
+
+          <button
+            onClick={() => setSearchParams({ tab: 'timeline' })}
+            className={`flex items-center gap-2 px-4 py-2.5 rounded-xl font-mono text-xs font-bold transition-all cursor-pointer ${
+              activeTab === 'timeline'
+                ? 'bg-gradient-to-r from-amber-500 via-rose-500 to-purple-600 text-white shadow-lg font-black'
+                : 'bg-slate-100 dark:bg-white/5 text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white border border-slate-200 dark:border-white/10'
+            }`}
+          >
+            <Calendar className="w-4 h-4" />
+            <span>Timeline CMS</span>
           </button>
         </div>
       </div>
@@ -878,6 +892,11 @@ export const SuperAdminDashboard: React.FC = () => {
       {/* TAB 4: SITE CONFIGURATION (CMS) */}
       {/* ========================================================================= */}
       {activeTab === 'cms' && <SiteConfig />}
+
+      {/* ========================================================================= */}
+      {/* TAB 5: TIMELINE CMS */}
+      {/* ========================================================================= */}
+      {activeTab === 'timeline' && <TimelineCMS />}
 
       {/* ========================================================================= */}
       {/* MODAL 1: CONFIRM DESTRUCTIVE ACTION MODAL */}

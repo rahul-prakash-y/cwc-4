@@ -22,6 +22,9 @@ import {
   deleteBuzzerQuestion,
   downloadTeamsTemplate,
   importTeamsBulk,
+  getAdminTimeline,
+  updateTimelineDay,
+  updateTimelineTask,
 } from '../controllers/adminController.js';
 import {
   getGalleryItems,
@@ -87,6 +90,11 @@ export async function adminRoutes(fastify: FastifyInstance) {
   fastify.get('/tasks', getAllTasksAdmin);
   fastify.put('/tasks/:id', { schema: updateTaskSchema }, updateTask);
   fastify.delete('/tasks/:id', { schema: deleteTaskSchema }, deleteTask);
+
+  // Timeline CMS Management
+  fastify.get('/timeline', getAdminTimeline);
+  fastify.put('/timeline/day/:dayNumber', updateTimelineDay);
+  fastify.put('/timeline/task/:id', updateTimelineTask);
 
   // Global Announcements
   fastify.post('/announcements', { schema: createAnnouncementSchema }, createAnnouncement);

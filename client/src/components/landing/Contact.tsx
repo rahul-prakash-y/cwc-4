@@ -15,49 +15,49 @@ export const Contact: React.FC = () => {
   const [copiedText, setCopiedText] = useState<string | null>(null);
 
   const facultyCoordinators: ContactPerson[] = [
-    {
-      name: 'Dr. Rajesh Sharma',
-      role: 'Faculty Convener & Head of CS',
-      department: 'Dept of Computer Science & Engineering',
-      phone: '+91 98765 43210',
-      email: 'r.sharma@cwc.edu',
-      type: 'faculty',
-    },
-    {
-      name: 'Prof. Ananya Patel',
-      role: 'Co-Convener & Technical Advisor',
-      department: 'Dept of Information Technology',
-      phone: '+91 98765 43211',
-      email: 'a.patel@cwc.edu',
-      type: 'faculty',
-    },
+    // {
+    //   name: 'Dr. Rajesh Sharma',
+    //   role: 'Faculty Convener & Head of CS',
+    //   department: 'Dept of Computer Science & Engineering',
+    //   phone: '+91 98765 43210',
+    //   email: 'r.sharma@cwc.edu',
+    //   type: 'faculty',
+    // },
+    // {
+    //   name: 'Prof. Ananya Patel',
+    //   role: 'Co-Convener & Technical Advisor',
+    //   department: 'Dept of Information Technology',
+    //   phone: '+91 98765 43211',
+    //   email: 'a.patel@cwc.edu',
+    //   type: 'faculty',
+    // },
   ];
 
   const studentCoordinators: ContactPerson[] = [
-    {
-      name: 'Alex Rivers',
-      role: 'Lead Student Convener',
-      department: 'Final Year CSE',
-      phone: '+91 91234 56789',
-      email: 'alex@cwc.dev',
-      type: 'student',
-    },
-    {
-      name: 'Maya Lin',
-      role: 'Event Operations & Logistics Head',
-      department: 'Final Year IT',
-      phone: '+91 91234 56790',
-      email: 'maya@cwc.dev',
-      type: 'student',
-    },
-    {
-      name: 'Rohan Gupta',
-      role: 'Technical Platform Lead',
-      department: 'Pre-Final CSE',
-      phone: '+91 91234 56791',
-      email: 'rohan@cwc.dev',
-      type: 'student',
-    },
+    // {
+    //   name: 'Alex Rivers',
+    //   role: 'Lead Student Convener',
+    //   department: 'Final Year CSE',
+    //   phone: '+91 91234 56789',
+    //   email: 'alex@cwc.dev',
+    //   type: 'student',
+    // },
+    // {
+    //   name: 'Maya Lin',
+    //   role: 'Event Operations & Logistics Head',
+    //   department: 'Final Year IT',
+    //   phone: '+91 91234 56790',
+    //   email: 'maya@cwc.dev',
+    //   type: 'student',
+    // },
+    // {
+    //   name: 'Rohan Gupta',
+    //   role: 'Technical Platform Lead',
+    //   department: 'Pre-Final CSE',
+    //   phone: '+91 91234 56791',
+    //   email: 'rohan@cwc.dev',
+    //   type: 'student',
+    // },
   ];
 
   const allCoordinators =
@@ -236,12 +236,12 @@ export const Contact: React.FC = () => {
                 </div>
                 <div>
                   <h3 className="text-xl font-extrabold text-slate-900 dark:text-white">Event Venue</h3>
-                  <p className="text-xs text-amber-600 dark:text-carnival-gold font-mono font-bold">Main University Auditorium</p>
+                  <p className="text-xs text-amber-600 dark:text-carnival-gold font-mono font-bold">Bannari Amman Institute of Technology</p>
                 </div>
               </div>
 
               <a
-                href="https://maps.google.com"
+                href="https://www.google.com/maps/place/Bannari+Amman+Institute+of+Technology/@11.5002282,77.2725246,17z/data=!3m1!4b1!4m6!3m5!1s0x3ba9215d6d1b28f9:0xf48946a7dfcfeb1a!8m2!3d11.500223!4d77.2750995!16zL20vMGJ6OHB2?entry=ttu&g_ep=EgoyMDI2MDgwNS4xIKXMDSoASAFQAw%3D%3D"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-slate-100 dark:bg-white/10 hover:bg-slate-200 dark:hover:bg-white/20 text-xs font-bold text-slate-800 dark:text-slate-200 border border-slate-200 dark:border-white/15 transition-all"
@@ -253,16 +253,16 @@ export const Contact: React.FC = () => {
 
             {/* Address Box */}
             <div className="p-4 rounded-2xl bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 text-xs space-y-1 text-slate-600 dark:text-slate-300">
-              <p className="font-extrabold text-slate-900 dark:text-white text-sm">Innovation Block, Tech Campus</p>
-              <p>Code With Curious Arena, Grand Auditorium Ground Floor</p>
-              <p className="text-slate-500 dark:text-slate-400 font-mono pt-1">Landmark: Opposite Central Library & Incubation Hub</p>
+              <p className="font-extrabold text-slate-900 dark:text-white text-sm">Bannari Amman Institute of Technology (BIT)</p>
+              <p>Sathyamangalam, Erode District, Tamil Nadu - 638401</p>
+              <p className="text-slate-500 dark:text-slate-400 font-mono pt-1">Landmark: FRC </p>
             </div>
 
             {/* Google Maps Embedded Iframe */}
             <div className="relative w-full h-[360px] rounded-2xl overflow-hidden border-2 border-purple-500/40 dark:border-carnival-purple/40 shadow-2xl group">
               <iframe
-                title="CWC Carnival Venue Map"
-                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3888.001696417758!2d77.5945627!3d12.9715987!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3bae1670c4b440b7%3A0x8a70f3770335e236!2sBengaluru%2C%20Karnataka!5e0!3m2!1sen!2sin!4v1700000000000!5m2!1sen!2sin"
+                title="Bannari Amman Institute of Technology Venue Map"
+                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3910.428581699997!2d77.2725246!3d11.5002282!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3ba9215d6d1b28f9%3A0xf48946a7dfcfeb1a!2sBannari%20Amman%20Institute%20of%20Technology!5e0!3m2!1sen!2sin!4v1700000000000!5m2!1sen!2sin"
                 width="100%"
                 height="100%"
                 style={{ border: 0, filter: 'contrast(1.05) saturate(1.2)' }}

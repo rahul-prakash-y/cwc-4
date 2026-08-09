@@ -212,19 +212,21 @@ export async function eliminateTeam(request, reply) {
 }
 export async function createTask(request, reply) {
     const { title, description, type, points, startTime, endTime, visibility = false } = request.body;
-    if (!title || !type || points === undefined || !startTime || !endTime) {
+    if (!title || !type || points === undefined) {
         return reply.status(400).send({
             error: 'Bad Request',
             message: 'Missing required fields for task creation',
         });
     }
+    const start = startTime ? new Date(startTime) : new Date();
+    const end = endTime ? new Date(endTime) : new Date(Date.now() + 86400000);
     const newTask = await Task.create({
         title,
         description: description || '',
         type,
         points,
-        startTime: new Date(startTime),
-        endTime: new Date(endTime),
+        startTime: start,
+        endTime: end,
         visibility,
     });
     // Asynchronously broadcast Daily Task Live Alert Email to all registered Team Leaders
@@ -263,11 +265,11 @@ export async function createTask(request, reply) {
     });
 }
 export async function getAllTasksAdmin(_request, reply) {
-    const tasks = await Task.find().sort({ startTime: 1 });
+    const tasks = await Task.find().sort({ startTime: 1, createdAt: -1 });
     return reply.send({ tasks });
 }
 export async function updateTask(request, reply) {
-    const { taskId } = request.params;
+    const taskId = request.params.taskId || request.params.id;
     const updateData = request.body;
     if (updateData.startTime)
         updateData.startTime = new Date(updateData.startTime);
@@ -287,7 +289,7 @@ export async function updateTask(request, reply) {
     });
 }
 export async function deleteTask(request, reply) {
-    const { taskId } = request.params;
+    const taskId = request.params.taskId || request.params.id;
     const deletedTask = await Task.findByIdAndDelete(taskId);
     if (!deletedTask) {
         return reply.status(404).send({ error: 'Not Found', message: 'Task not found' });
@@ -825,4 +827,65 @@ export async function importTeamsBulk(request, reply) {
             message: err.message || 'Failed to process bulk team upload.',
         });
     }
+}
+/* ==========================================================================
+   TIMELINE CMS CONTROLLERS
+   ========================================================================== */
+export async function getAdminTimeline(_request, reply) {
+    const { TimelineDay } = await import('../models/Timeline.js');
+    const days = await TimelineDay.find().sort({ dayNumber: 1 }).lean();
+    const categoryOrder = ['LUCKY BOOTH', 'GRAND CHALLENGE', 'FUN FAIR', 'DANGER ZONE', 'GOLDEN ZONE'];
+    const timeline = await Promise.all(days.map(async (day) => {
+        const tasks = await Task.find({ dayNumber: day.dayNumber }).lean();
+        tasks.sort((a, b) => {
+            const indexA = categoryOrder.indexOf(a.category || '');
+            const indexB = categoryOrder.indexOf(b.category || '');
+            return (indexA === -1 ? 99 : indexA) - (indexB === -1 ? 99 : indexB);
+        });
+        return {
+            ...day,
+            tasks,
+        };
+    }));
+    return reply.send({
+        success: true,
+        count: timeline.length,
+        timeline,
+    });
+}
+export async function updateTimelineDay(request, reply) {
+    const { TimelineDay } = await import('../models/Timeline.js');
+    const dayNum = parseInt(request.params.dayNumber, 10);
+    const { theme, daywiseName, eliminationInfo } = request.body || {};
+    const dayDoc = await TimelineDay.findOneAndUpdate({ dayNumber: dayNum }, { $set: { theme, daywiseName, eliminationInfo } }, { new: true, runValidators: true });
+    if (!dayDoc) {
+        return reply.status(404).send({ error: 'Not Found', message: `Day ${dayNum} not found` });
+    }
+    await logAdminAction(request, 'TIMELINE_DAY_UPDATED', dayDoc._id, {
+        dayNumber: dayNum,
+        theme: dayDoc.theme,
+        daywiseName: dayDoc.daywiseName,
+    });
+    return reply.send({
+        message: `Day ${dayNum} timeline metadata updated successfully! 📅`,
+        day: dayDoc,
+    });
+}
+export async function updateTimelineTask(request, reply) {
+    const { id } = request.params;
+    const { taskDescription, timeLimit, category, dayNumber } = request.body || {};
+    const task = await Task.findByIdAndUpdate(id, { $set: { taskDescription, timeLimit, ...(category ? { category } : {}), ...(dayNumber ? { dayNumber } : {}) } }, { new: true, runValidators: true });
+    if (!task) {
+        return reply.status(404).send({ error: 'Not Found', message: 'Timeline task not found' });
+    }
+    await logAdminAction(request, 'TIMELINE_TASK_UPDATED', task._id, {
+        category: task.category,
+        dayNumber: task.dayNumber,
+        taskDescription: task.taskDescription,
+        timeLimit: task.timeLimit,
+    });
+    return reply.send({
+        message: `Task '${task.category}' updated successfully! 🎯`,
+        task,
+    });
 }

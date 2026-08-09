@@ -1,9 +1,23 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { CheckSquare, Plus, Clock, Calendar, Award, Trash2, Edit3, Eye, EyeOff, Sparkles, AlertCircle, Save, X } from 'lucide-react';
+import {
+  CheckSquare,
+  Plus,
+  Clock,
+  Calendar,
+  Award,
+  Trash2,
+  Edit3,
+  Eye,
+  EyeOff,
+  Sparkles,
+  AlertCircle,
+  Save,
+  RefreshCw,
+} from 'lucide-react';
 
 // Zod Validation Schema for Task Form
 const taskSchema = z.object({
@@ -16,12 +30,14 @@ const taskSchema = z.object({
     'Puzzle',
     'Boss Fight',
     'Bonus Quest',
+    'Main',
+    'Special',
   ]),
   points: z
     .number({ invalid_type_error: 'Points must be a valid number' })
     .min(5, 'Points must be at least 5 PTS'),
-  startTime: z.string().min(1, 'Start Time is required'),
-  endTime: z.string().min(1, 'End Time is required'),
+  startTime: z.string().optional(),
+  endTime: z.string().optional(),
   visibility: z.boolean(),
   description: z.string().optional(),
 });
@@ -32,64 +48,87 @@ export interface TaskItem {
   id: string;
   title: string;
   description?: string;
-  type: 'Main Task' | 'Special Task' | 'Rapid Fire' | 'MCQ' | 'Puzzle' | 'Boss Fight' | 'Bonus Quest';
+  type: string;
   points: number;
   startTime: string;
   endTime: string;
-  visibility: boolean; // true = Published, false = Draft
+  visibility: boolean;
   status: 'Live' | 'Upcoming' | 'Completed';
+  category?: string;
+  dayNumber?: number;
 }
 
 export const Tasks: React.FC = () => {
-  const [tasks, setTasks] = useState<TaskItem[]>([
-    {
-      id: 'task-1',
-      title: 'Day 5: Mid-Season Arena Boss Fight',
-      description: 'Build a dynamic real-time multiplayer mini-game within 4 hours using WebSockets.',
-      type: 'Boss Fight',
-      points: 500,
-      startTime: '2026-08-05T10:00',
-      endTime: '2026-08-05T14:00',
-      visibility: true,
-      status: 'Live',
-    },
-    {
-      id: 'task-2',
-      title: 'Day 6: Magic Illusion UI Hackathon',
-      description: 'Create mind-bending glassmorphism web apps with smooth Framer Motion micro-interactions.',
-      type: 'Special Task',
-      points: 350,
-      startTime: '2026-08-06T09:00',
-      endTime: '2026-08-06T18:00',
-      visibility: true,
-      status: 'Upcoming',
-    },
-    {
-      id: 'task-3',
-      title: 'MCQ Challenge: Fastify & JWT Internals',
-      description: 'Solve 15 rapid fire questions regarding Fastify plugin lifecycle and JWT signature algorithms.',
-      type: 'MCQ',
-      points: 150,
-      startTime: '2026-08-06T12:00',
-      endTime: '2026-08-06T13:00',
-      visibility: true,
-      status: 'Upcoming',
-    },
-    {
-      id: 'task-4',
-      title: 'Puzzle Quest: Cryptic Carnival Cipher',
-      description: 'Decrypt the 4-stage stegano riddle hidden inside the carnival venue audio files.',
-      type: 'Puzzle',
-      points: 200,
-      startTime: '2026-08-07T10:00',
-      endTime: '2026-08-07T20:00',
-      visibility: false,
-      status: 'Upcoming',
-    },
-  ]);
-
+  const [tasks, setTasks] = useState<TaskItem[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
   const [showForm, setShowForm] = useState(false);
   const [editingTaskId, setEditingTaskId] = useState<string | null>(null);
+
+  // Fetch tasks from DB via GET /api/admin/tasks (or fallback GET /api/tasks)
+  const fetchTasksFromDB = async () => {
+    setLoading(true);
+    try {
+      const token = localStorage.getItem('token');
+      const res = await fetch('/api/admin/tasks', {
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        const rawList = data.tasks || data;
+        if (Array.isArray(rawList)) {
+          const mapped: TaskItem[] = rawList.map((t: any, idx: number) => {
+            const startIso = t.startTime ? new Date(t.startTime).toISOString().slice(0, 16) : '';
+            const endIso = t.endTime ? new Date(t.endTime).toISOString().slice(0, 16) : '';
+
+            return {
+              id: t._id || t.id || `task-${idx + 1}`,
+              title: t.title || (t.category ? `[${t.category}] Day ${t.dayNumber || 1} Task` : `Task #${idx + 1}`),
+              description: t.description || t.taskDescription || '',
+              type: t.type || (t.category ? 'Special Task' : 'Main Task'),
+              points: typeof t.points === 'number' ? t.points : 100,
+              startTime: startIso || '2026-08-06T10:00',
+              endTime: endIso || '2026-08-06T18:00',
+              visibility: t.visibility ?? true,
+              status: t.visibility ? 'Live' : 'Upcoming',
+              category: t.category,
+              dayNumber: t.dayNumber,
+            };
+          });
+          setTasks(mapped);
+        }
+      } else {
+        // Fallback public endpoint fetch
+        const pubRes = await fetch('/api/tasks');
+        if (pubRes.ok) {
+          const pubData = await pubRes.json();
+          const rawList = pubData.tasks || pubData;
+          if (Array.isArray(rawList)) {
+            const mapped: TaskItem[] = rawList.map((t: any, idx: number) => ({
+              id: t._id || t.id || `task-${idx + 1}`,
+              title: t.title || `Task #${idx + 1}`,
+              description: t.description || t.taskDescription || '',
+              type: t.type || 'Main Task',
+              points: typeof t.points === 'number' ? t.points : 100,
+              startTime: t.startTime ? new Date(t.startTime).toISOString().slice(0, 16) : '2026-08-06T10:00',
+              endTime: t.endTime ? new Date(t.endTime).toISOString().slice(0, 16) : '2026-08-06T18:00',
+              visibility: t.visibility ?? true,
+              status: t.visibility ? 'Live' : 'Upcoming',
+            }));
+            setTasks(mapped);
+          }
+        }
+      }
+    } catch (err) {
+      console.error('Failed to fetch tasks from database:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchTasksFromDB();
+  }, []);
 
   // Initialize react-hook-form with zod validation
   const {
@@ -114,61 +153,57 @@ export const Tasks: React.FC = () => {
 
   const isVisibilityPublished = watch('visibility');
 
-  // Submit Handler for Create or Edit
+  // Submit Handler for Create or Edit against MongoDB APIs
   const onSubmit = async (data: TaskFormData) => {
-    if (editingTaskId) {
-      // Edit mode
-      setTasks((prev) =>
-        prev.map((t) =>
-          t.id === editingTaskId
-            ? {
-                ...t,
-                title: data.title,
-                type: data.type,
-                points: data.points,
-                startTime: data.startTime,
-                endTime: data.endTime,
-                visibility: data.visibility,
-                description: data.description,
-              }
-            : t
-        )
-      );
-      setEditingTaskId(null);
-    } else {
-      // Create mode
-      const newTask: TaskItem = {
-        id: `task-${Date.now()}`,
-        title: data.title,
-        description: data.description,
-        type: data.type,
-        points: data.points,
-        startTime: data.startTime,
-        endTime: data.endTime,
-        visibility: data.visibility,
-        status: 'Upcoming',
-      };
-      setTasks([newTask, ...tasks]);
-    }
+    const token = localStorage.getItem('token');
+    const headers = {
+      'Content-Type': 'application/json',
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    };
+
+    const payload = {
+      ...data,
+      startTime: data.startTime ? new Date(data.startTime).toISOString() : new Date().toISOString(),
+      endTime: data.endTime ? new Date(data.endTime).toISOString() : new Date(Date.now() + 86400000).toISOString(),
+    };
 
     try {
-      await fetch('/api/admin/tasks', {
-        method: editingTaskId ? 'PUT' : 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data),
-      });
-    } catch (err) {
-      console.log('Task saved locally & API notified');
-    }
+      let res;
+      if (editingTaskId) {
+        // Edit mode API call (PUT /api/admin/tasks/:id)
+        res = await fetch(`/api/admin/tasks/${editingTaskId}`, {
+          method: 'PUT',
+          headers,
+          body: JSON.stringify(payload),
+        });
+      } else {
+        // Create mode API call (POST /api/admin/tasks)
+        res = await fetch('/api/admin/tasks', {
+          method: 'POST',
+          headers,
+          body: JSON.stringify(payload),
+        });
+      }
 
-    reset();
-    setShowForm(false);
+      if (res.ok) {
+        await fetchTasksFromDB();
+        reset();
+        setShowForm(false);
+        setEditingTaskId(null);
+      } else {
+        const errData = await res.json();
+        alert(`Failed to save task: ${errData.message || 'Server error'}`);
+      }
+    } catch (err) {
+      console.error('Error saving task to DB:', err);
+      alert('Network error while saving task to database');
+    }
   };
 
   const handleEditClick = (task: TaskItem) => {
     setEditingTaskId(task.id);
     setValue('title', task.title);
-    setValue('type', task.type);
+    setValue('type', (task.type as any) || 'Main Task');
     setValue('points', task.points);
     setValue('startTime', task.startTime);
     setValue('endTime', task.endTime);
@@ -177,23 +212,64 @@ export const Tasks: React.FC = () => {
     setShowForm(true);
   };
 
-  const handleDeleteTask = (id: string) => {
-    if (confirm('Are you sure you want to delete this task?')) {
-      setTasks((prev) => prev.filter((t) => t.id !== id));
+  const handleDeleteTask = async (id: string) => {
+    if (!confirm('Are you sure you want to delete this task from the database?')) return;
+
+    try {
+      const token = localStorage.getItem('token');
+      const res = await fetch(`/api/admin/tasks/${id}`, {
+        method: 'DELETE',
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+      });
+
+      if (res.ok) {
+        setTasks((prev) => prev.filter((t) => t.id !== id));
+      } else {
+        const errData = await res.json();
+        alert(`Failed to delete task: ${errData.message || 'Server error'}`);
+      }
+    } catch (err) {
+      console.error('Error deleting task:', err);
+      alert('Network error while deleting task');
     }
   };
 
-  const toggleVisibility = (id: string) => {
-    setTasks((prev) =>
-      prev.map((t) => (t.id === id ? { ...t, visibility: !t.visibility } : t))
-    );
+  const toggleVisibility = async (task: TaskItem) => {
+    const newVisibility = !task.visibility;
+    try {
+      const token = localStorage.getItem('token');
+      const res = await fetch(`/api/admin/tasks/${task.id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+        body: JSON.stringify({ visibility: newVisibility }),
+      });
+
+      if (res.ok) {
+        setTasks((prev) =>
+          prev.map((t) =>
+            t.id === task.id
+              ? { ...t, visibility: newVisibility, status: newVisibility ? 'Live' : 'Upcoming' }
+              : t
+          )
+        );
+      } else {
+        alert('Failed to update task visibility in database');
+      }
+    } catch (err) {
+      console.error('Failed to toggle task visibility:', err);
+    }
   };
 
-  const getTypeBadge = (type: TaskItem['type']) => {
+  const getTypeBadge = (type: string) => {
     switch (type) {
       case 'Main Task':
+      case 'Main':
         return 'bg-carnival-gold/20 text-carnival-gold border-carnival-gold/40';
       case 'Special Task':
+      case 'Special':
         return 'bg-carnival-purple/20 text-carnival-purple border-carnival-purple/40';
       case 'Boss Fight':
         return 'bg-carnival-crimson/20 text-carnival-crimson border-carnival-crimson/40';
@@ -217,31 +293,44 @@ export const Tasks: React.FC = () => {
         <div>
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-purple-500/10 dark:bg-carnival-purple/20 text-purple-700 dark:text-carnival-purple text-xs font-mono font-bold border border-purple-500/30 dark:border-carnival-purple/30 mb-2">
             <CheckSquare className="w-4 h-4" />
-            <span>TASK SCHEDULER & ARENA CREATOR</span>
+            <span>TASK SCHEDULER & ARENA CREATOR (LIVE MONGODB)</span>
           </div>
-          <h2 className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white">Task Management View</h2>
+          <h2 className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white">
+            Task Management View
+          </h2>
           <p className="text-slate-600 dark:text-slate-300 text-xs sm:text-sm mt-1">
-            Create, Edit, and Delete tasks powered by react-hook-form and Zod validation. Supports Main Tasks, Special Tasks, Rapid Fire, MCQ, Puzzles, and Boss Fights.
+            Real-time MongoDB task scheduling with Zod validation. Create, edit, publish, and sync daily tasks live.
           </p>
         </div>
 
-        <button
-          onClick={() => {
-            if (showForm) {
-              setShowForm(false);
-              setEditingTaskId(null);
-              reset();
-            } else {
-              setEditingTaskId(null);
-              reset();
-              setShowForm(true);
-            }
-          }}
-          className="px-6 py-3 rounded-xl bg-gradient-to-r from-purple-600 to-rose-600 dark:from-carnival-purple dark:to-carnival-crimson text-white font-black text-xs uppercase tracking-wider shadow-md dark:shadow-neon-purple hover:scale-105 transition-all flex items-center gap-2 cursor-pointer"
-        >
-          <Plus className="w-4 h-4" />
-          <span>{showForm ? 'Close Builder' : 'Create New Task'}</span>
-        </button>
+        <div className="flex items-center gap-3">
+          <button
+            onClick={fetchTasksFromDB}
+            disabled={loading}
+            className="p-3 rounded-xl bg-slate-100 dark:bg-white/10 text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white border border-slate-200 dark:border-white/10 transition-all cursor-pointer"
+            title="Refresh database tasks"
+          >
+            <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
+          </button>
+
+          <button
+            onClick={() => {
+              if (showForm) {
+                setShowForm(false);
+                setEditingTaskId(null);
+                reset();
+              } else {
+                setEditingTaskId(null);
+                reset();
+                setShowForm(true);
+              }
+            }}
+            className="px-6 py-3 rounded-xl bg-gradient-to-r from-purple-600 to-rose-600 dark:from-carnival-purple dark:to-carnival-crimson text-white font-black text-xs uppercase tracking-wider shadow-md dark:shadow-neon-purple hover:scale-105 transition-all flex items-center gap-2 cursor-pointer"
+          >
+            <Plus className="w-4 h-4" />
+            <span>{showForm ? 'Close Builder' : 'Create New Task'}</span>
+          </button>
+        </div>
       </div>
 
       {/* Task Creation / Edit Form (Validated via react-hook-form + Zod) */}
@@ -256,9 +345,11 @@ export const Tasks: React.FC = () => {
             <div className="flex items-center justify-between border-b border-slate-200 dark:border-white/10 pb-4">
               <h3 className="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2 font-mono">
                 <Sparkles className="w-5 h-5 text-amber-500 dark:text-carnival-gold" />
-                {editingTaskId ? 'Edit Task Details' : 'Rich Task Creator Form (React Hook Form + Zod)'}
+                {editingTaskId ? 'Edit Task Details' : 'Rich Task Creator Form (Live MongoDB Sync)'}
               </h3>
-              <span className="text-xs font-mono text-amber-600 dark:text-carnival-gold font-bold">Fastify Backend Ready</span>
+              <span className="text-xs font-mono text-amber-600 dark:text-carnival-gold font-bold">
+                Fastify Backend Live
+              </span>
             </div>
 
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
@@ -303,7 +394,7 @@ export const Tasks: React.FC = () => {
                 <label className="block text-xs font-mono text-slate-700 dark:text-slate-300">Task Description & Rules</label>
                 <textarea
                   rows={3}
-                  placeholder="Describe the challenge instructions, evaluation metrics, and submission steps..."
+                  placeholder="Describe challenge instructions, evaluation metrics, and submission steps..."
                   {...register('description')}
                   className="w-full px-4 py-3 rounded-xl bg-slate-50 dark:bg-white/5 border border-slate-300 dark:border-white/10 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-amber-500 dark:focus:border-carnival-gold transition-all font-sans"
                 />
@@ -332,34 +423,22 @@ export const Tasks: React.FC = () => {
 
                 {/* Field 4: Start Time */}
                 <div className="space-y-1">
-                  <label className="block text-xs font-mono text-slate-700 dark:text-slate-300">Start Time *</label>
+                  <label className="block text-xs font-mono text-slate-700 dark:text-slate-300">Start Time</label>
                   <input
                     type="datetime-local"
                     {...register('startTime')}
                     className="w-full px-4 py-3 rounded-xl bg-slate-50 dark:bg-[#1A1228] border border-slate-300 dark:border-white/10 text-xs text-slate-900 dark:text-white font-mono focus:outline-none focus:border-amber-500 dark:focus:border-carnival-gold"
                   />
-                  {errors.startTime && (
-                    <p className="text-xs text-rose-500 font-mono flex items-center gap-1 mt-1">
-                      <AlertCircle className="w-3.5 h-3.5" />
-                      <span>{errors.startTime.message}</span>
-                    </p>
-                  )}
                 </div>
 
                 {/* Field 5: End Time */}
                 <div className="space-y-1">
-                  <label className="block text-xs font-mono text-slate-700 dark:text-slate-300">End Time *</label>
+                  <label className="block text-xs font-mono text-slate-700 dark:text-slate-300">End Time</label>
                   <input
                     type="datetime-local"
                     {...register('endTime')}
                     className="w-full px-4 py-3 rounded-xl bg-slate-50 dark:bg-[#1A1228] border border-slate-300 dark:border-white/10 text-xs text-slate-900 dark:text-white font-mono focus:outline-none focus:border-amber-500 dark:focus:border-carnival-gold"
                   />
-                  {errors.endTime && (
-                    <p className="text-xs text-rose-500 font-mono flex items-center gap-1 mt-1">
-                      <AlertCircle className="w-3.5 h-3.5" />
-                      <span>{errors.endTime.message}</span>
-                    </p>
-                  )}
                 </div>
               </div>
 
@@ -416,7 +495,7 @@ export const Tasks: React.FC = () => {
                   className="px-8 py-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 dark:from-carnival-gold dark:to-carnival-amber text-slate-950 font-black text-xs uppercase tracking-wider shadow-md dark:shadow-neon-gold hover:scale-105 transition-all flex items-center gap-2 cursor-pointer"
                 >
                   <Save className="w-4 h-4 text-slate-950" />
-                  <span>{editingTaskId ? 'Save Task Changes' : 'Publish Task'}</span>
+                  <span>{editingTaskId ? 'Save Task Changes' : 'Publish Task to DB'}</span>
                 </button>
               </div>
             </form>
@@ -428,81 +507,109 @@ export const Tasks: React.FC = () => {
       <div className="space-y-4">
         <h3 className="font-extrabold text-lg text-slate-900 dark:text-white font-mono flex items-center gap-2">
           <Calendar className="w-5 h-5 text-amber-600 dark:text-carnival-gold" />
-          Scheduled Tasks Grid ({tasks.length})
+          Database Scheduled Tasks ({tasks.length})
         </h3>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {tasks.map((task) => (
-            <motion.div
-              key={task.id}
-              whileHover={{ y: -3 }}
-              className="bg-white dark:bg-[#18122B] p-6 rounded-2xl border border-slate-200 dark:border-white/10 shadow-sm dark:shadow-lg space-y-4 relative overflow-hidden"
-            >
-              <div className="flex items-start justify-between gap-3">
-                <div className="space-y-1">
+        {loading ? (
+          <div className="p-12 text-center text-slate-500 font-mono text-xs bg-white dark:bg-[#18122B] rounded-2xl border border-slate-200 dark:border-white/10">
+            <Sparkles className="w-6 h-6 animate-spin mx-auto mb-2 text-amber-500" />
+            <span>Loading tasks from MongoDB...</span>
+          </div>
+        ) : tasks.length === 0 ? (
+          <div className="p-12 text-center text-slate-500 font-mono text-xs bg-white dark:bg-[#18122B] rounded-2xl border border-slate-200 dark:border-white/10 space-y-2">
+            <CheckSquare className="w-8 h-8 text-slate-400 mx-auto" />
+            <p className="text-slate-800 dark:text-slate-200 font-bold text-sm">No Scheduled Tasks Found in Database</p>
+            <p className="text-slate-500 dark:text-slate-400 text-xs">
+              Click &quot;Create New Task&quot; above to add a new task to MongoDB.
+            </p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {tasks.map((task) => (
+              <motion.div
+                key={task.id}
+                whileHover={{ y: -3 }}
+                className="bg-white dark:bg-[#18122B] p-6 rounded-2xl border border-slate-200 dark:border-white/10 shadow-sm dark:shadow-lg space-y-4 relative overflow-hidden"
+              >
+                <div className="flex items-start justify-between gap-3">
+                  <div className="space-y-1">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <span className={`px-2.5 py-0.5 rounded-md border text-[10px] font-mono font-bold ${getTypeBadge(task.type)}`}>
+                        {task.type}
+                      </span>
+
+                      {task.category && (
+                        <span className="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-purple-500/20 text-purple-700 dark:text-purple-300 border border-purple-500/30">
+                          {task.category}
+                        </span>
+                      )}
+
+                      <span
+                        className={`px-2 py-0.5 rounded text-[10px] font-mono font-bold ${
+                          task.visibility
+                            ? 'bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30'
+                            : 'bg-slate-500/20 text-slate-600 dark:text-slate-400 border border-slate-500/30'
+                        }`}
+                      >
+                        {task.visibility ? 'PUBLISHED' : 'DRAFT'}
+                      </span>
+                    </div>
+                    <h4 className="font-extrabold text-slate-900 dark:text-white text-base leading-snug">{task.title}</h4>
+                  </div>
+
+                  <div className="text-right">
+                    <div className="text-xl font-black text-amber-600 dark:text-carnival-gold font-mono">+{task.points}</div>
+                    <div className="text-[10px] text-slate-500 dark:text-slate-400 font-mono">PTS</div>
+                  </div>
+                </div>
+
+                {task.description && (
+                  <p className="text-xs text-slate-600 dark:text-slate-300 font-sans line-clamp-2">{task.description}</p>
+                )}
+
+                <div className="pt-3 border-t border-slate-200 dark:border-white/10 flex items-center justify-between text-[11px] font-mono text-slate-500 dark:text-slate-400">
                   <div className="flex items-center gap-2">
-                    <span className={`px-2.5 py-0.5 rounded-md border text-[10px] font-mono font-bold ${getTypeBadge(task.type)}`}>
-                      {task.type}
-                    </span>
-                    <span
-                      className={`px-2 py-0.5 rounded text-[10px] font-mono font-bold ${
-                        task.visibility
-                          ? 'bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30'
-                          : 'bg-slate-500/20 text-slate-600 dark:text-slate-400 border border-slate-500/30'
-                      }`}
-                    >
-                      {task.visibility ? 'PUBLISHED' : 'DRAFT'}
+                    <Clock className="w-3.5 h-3.5 text-cyan-600 dark:text-carnival-cyan" />
+                    <span>
+                      {task.startTime.replace('T', ' ')} - {task.endTime.replace('T', ' ')}
                     </span>
                   </div>
-                  <h4 className="font-extrabold text-slate-900 dark:text-white text-base leading-snug">{task.title}</h4>
-                </div>
 
-                <div className="text-right">
-                  <div className="text-xl font-black text-amber-600 dark:text-carnival-gold font-mono">+{task.points}</div>
-                  <div className="text-[10px] text-slate-500 dark:text-slate-400 font-mono">PTS</div>
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={() => handleEditClick(task)}
+                      className="p-1.5 rounded-lg bg-amber-100 dark:bg-carnival-gold/10 hover:bg-amber-200 dark:hover:bg-carnival-gold/20 text-amber-800 dark:text-carnival-gold transition-all cursor-pointer"
+                      title="Edit task"
+                    >
+                      <Edit3 className="w-4 h-4" />
+                    </button>
+                    <button
+                      onClick={() => toggleVisibility(task)}
+                      className="p-1.5 rounded-lg bg-slate-100 dark:bg-white/5 hover:bg-slate-200 dark:hover:bg-white/10 text-slate-700 dark:text-slate-300 transition-all cursor-pointer"
+                      title={task.visibility ? 'Switch to Draft' : 'Publish Task'}
+                    >
+                      {task.visibility ? (
+                        <Eye className="w-4 h-4 text-emerald-500 dark:text-emerald-400" />
+                      ) : (
+                        <EyeOff className="w-4 h-4 text-slate-400" />
+                      )}
+                    </button>
+                    <button
+                      onClick={() => handleDeleteTask(task.id)}
+                      className="p-1.5 rounded-lg bg-rose-100 dark:bg-rose-500/10 hover:bg-rose-500 hover:text-white text-rose-600 dark:text-rose-400 transition-all cursor-pointer"
+                      title="Delete task from database"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  </div>
                 </div>
-              </div>
-
-              {task.description && (
-                <p className="text-xs text-slate-600 dark:text-slate-300 font-sans line-clamp-2">{task.description}</p>
-              )}
-
-              <div className="pt-3 border-t border-slate-200 dark:border-white/10 flex items-center justify-between text-[11px] font-mono text-slate-500 dark:text-slate-400">
-                <div className="flex items-center gap-2">
-                  <Clock className="w-3.5 h-3.5 text-cyan-600 dark:text-carnival-cyan" />
-                  <span>
-                    {task.startTime.replace('T', ' ')} - {task.endTime.replace('T', ' ')}
-                  </span>
-                </div>
-
-                <div className="flex items-center gap-2">
-                  <button
-                    onClick={() => handleEditClick(task)}
-                    className="p-1.5 rounded-lg bg-amber-100 dark:bg-carnival-gold/10 hover:bg-amber-200 dark:hover:bg-carnival-gold/20 text-amber-800 dark:text-carnival-gold transition-all cursor-pointer"
-                    title="Edit task"
-                  >
-                    <Edit3 className="w-4 h-4" />
-                  </button>
-                  <button
-                    onClick={() => toggleVisibility(task.id)}
-                    className="p-1.5 rounded-lg bg-slate-100 dark:bg-white/5 hover:bg-slate-200 dark:hover:bg-white/10 text-slate-700 dark:text-slate-300 transition-all cursor-pointer"
-                    title={task.visibility ? 'Switch to Draft' : 'Publish Task'}
-                  >
-                    {task.visibility ? <Eye className="w-4 h-4 text-emerald-500 dark:text-emerald-400" /> : <EyeOff className="w-4 h-4 text-slate-400" />}
-                  </button>
-                  <button
-                    onClick={() => handleDeleteTask(task.id)}
-                    className="p-1.5 rounded-lg bg-rose-100 dark:bg-rose-500/10 hover:bg-rose-500 hover:text-white text-rose-600 dark:text-rose-400 transition-all cursor-pointer"
-                    title="Delete task"
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </button>
-                </div>
-              </div>
-            </motion.div>
-          ))}
-        </div>
+              </motion.div>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );
 };
+
+export default Tasks;

@@ -28,7 +28,7 @@ export interface GalleryItem {
 
 export const Gallery: React.FC = () => {
   // Season tabs (Season 1, Season 2, Season 3, Season 4)
-  const [activeSeason, setActiveSeason] = useState<number | "all">(4);
+  const [activeSeason, setActiveSeason] = useState<number | "all">("all");
   const [activeType, setActiveType] = useState<"all" | "Photo" | "Video">(
     "all",
   );

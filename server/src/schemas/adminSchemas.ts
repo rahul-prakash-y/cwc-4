@@ -100,13 +100,17 @@ const taskTypeEnum = [
   'Output Prediction',
   'Treasure Hunt',
   'Puzzle',
+  'Boss Fight',
+  'Bonus Quest',
+  'Main Task',
+  'Special Task',
 ];
 
 export const createTaskSchema: FastifySchema = {
   body: {
     type: 'object',
-    required: ['title', 'type', 'points', 'startTime', 'endTime'],
-    additionalProperties: false,
+    required: ['title', 'type', 'points'],
+    additionalProperties: true,
     properties: {
       title: { type: 'string', minLength: 1, maxLength: 200 },
       description: { type: 'string' },
@@ -119,18 +123,6 @@ export const createTaskSchema: FastifySchema = {
       correctAnswer: { type: 'string' },
       timeLimitSeconds: { type: 'number', minimum: 0 },
       interactiveTimeLimit: { type: 'number', minimum: 0 },
-      testCases: {
-        type: 'array',
-        items: {
-          type: 'object',
-          required: ['expectedOutput'],
-          properties: {
-            input: { type: 'string' },
-            expectedOutput: { type: 'string' },
-            isHidden: { type: 'boolean' },
-          },
-        },
-      },
     },
   },
 };
@@ -138,47 +130,23 @@ export const createTaskSchema: FastifySchema = {
 export const updateTaskSchema: FastifySchema = {
   params: {
     type: 'object',
-    required: ['taskId'],
     properties: {
-      taskId: { type: 'string', pattern: objectIdPattern },
+      taskId: { type: 'string' },
+      id: { type: 'string' },
     },
   },
   body: {
     type: 'object',
-    additionalProperties: false,
-    properties: {
-      title: { type: 'string', minLength: 1, maxLength: 200 },
-      description: { type: 'string' },
-      type: { type: 'string', enum: taskTypeEnum },
-      points: { type: 'number', minimum: 0 },
-      startTime: { type: 'string' },
-      endTime: { type: 'string' },
-      visibility: { type: 'boolean' },
-      mcqOptions: { type: 'array', items: { type: 'string' } },
-      correctAnswer: { type: 'string' },
-      timeLimitSeconds: { type: 'number', minimum: 0 },
-      interactiveTimeLimit: { type: 'number', minimum: 0 },
-      testCases: {
-        type: 'array',
-        items: {
-          type: 'object',
-          properties: {
-            input: { type: 'string' },
-            expectedOutput: { type: 'string' },
-            isHidden: { type: 'boolean' },
-          },
-        },
-      },
-    },
+    additionalProperties: true,
   },
 };
 
 export const deleteTaskSchema: FastifySchema = {
   params: {
     type: 'object',
-    required: ['taskId'],
     properties: {
-      taskId: { type: 'string', pattern: objectIdPattern },
+      taskId: { type: 'string' },
+      id: { type: 'string' },
     },
   },
 };

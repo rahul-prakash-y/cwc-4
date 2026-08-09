@@ -1,4 +1,4 @@
-import { getAllTeams, updateTeamStatus, eliminateTeam, streamTeamStatusEvents, createTask, getAllTasksAdmin, updateTask, deleteTask, createAnnouncement, getAllAnnouncementsAdmin, deleteAnnouncement, grantAdvantage, setTeamImmunity, updateScoresBatch, getGrandFinale, toggleGrandFinale, getBuzzerQuestions, createBuzzerQuestion, updateBuzzerQuestion, deleteBuzzerQuestion, downloadTeamsTemplate, importTeamsBulk, } from '../controllers/adminController.js';
+import { getAllTeams, updateTeamStatus, eliminateTeam, streamTeamStatusEvents, createTask, getAllTasksAdmin, updateTask, deleteTask, createAnnouncement, getAllAnnouncementsAdmin, deleteAnnouncement, grantAdvantage, setTeamImmunity, updateScoresBatch, getGrandFinale, toggleGrandFinale, getBuzzerQuestions, createBuzzerQuestion, updateBuzzerQuestion, deleteBuzzerQuestion, downloadTeamsTemplate, importTeamsBulk, getAdminTimeline, updateTimelineDay, updateTimelineTask, } from '../controllers/adminController.js';
 import { getGalleryItems, createGalleryItem, deleteGalleryItem, } from '../controllers/galleryController.js';
 import { getAttendance, saveAttendance, runAttendanceAutoChecker, } from '../controllers/attendanceController.js';
 import { verifyJWT, isAdmin } from '../middleware/auth.js';
@@ -36,6 +36,10 @@ export async function adminRoutes(fastify) {
     fastify.get('/tasks', getAllTasksAdmin);
     fastify.put('/tasks/:id', { schema: updateTaskSchema }, updateTask);
     fastify.delete('/tasks/:id', { schema: deleteTaskSchema }, deleteTask);
+    // Timeline CMS Management
+    fastify.get('/timeline', getAdminTimeline);
+    fastify.put('/timeline/day/:dayNumber', updateTimelineDay);
+    fastify.put('/timeline/task/:id', updateTimelineTask);
     // Global Announcements
     fastify.post('/announcements', { schema: createAnnouncementSchema }, createAnnouncement);
     fastify.get('/announcements', getAllAnnouncementsAdmin);
