@@ -22,6 +22,7 @@ import { studentRoutes } from "./routes/studentRoutes.js";
 import { publicRoutes } from "./routes/publicRoutes.js";
 import { superadminRoutes } from "./routes/superadminRoutes.js";
 import { settingsRoutes } from "./routes/settings.js";
+import { advantagesRoutes } from "./routes/advantages.js";
 import { getActiveSocketsCount } from "./socket.js";
 
 const __filename = fileURLToPath(import.meta.url);
@@ -264,6 +265,12 @@ export function buildApp(): FastifyInstance {
   fastify.register(studentRoutes, { prefix: "/api/student" });
   fastify.register(settingsRoutes, { prefix: "/api/v1/settings" });
   fastify.register(settingsRoutes, { prefix: "/api/settings" });
+  fastify.register(advantagesRoutes, { prefix: "/api/v1/student" });
+  fastify.register(advantagesRoutes, { prefix: "/api/student" });
+  fastify.register(advantagesRoutes, { prefix: "/api/v1/admin" });
+  fastify.register(advantagesRoutes, { prefix: "/api/admin" });
+  fastify.register(advantagesRoutes, { prefix: "/api/v1" });
+  fastify.register(advantagesRoutes, { prefix: "/api" });
 
   // Serve Frontend Static Files in Production (Render)
   const clientDistPath = path.resolve(__dirname, "../../client/dist");

@@ -72,6 +72,15 @@ export function broadcastAdvantageGranted(payload: any): void {
   }
 }
 
+export function broadcastSpinWheelResult(payload: any): void {
+  if (ioInstance) {
+    ioInstance.to(GLOBAL_ROOM).to(STUDENT_ROOM).to(ADMIN_ROOM).emit('SPIN_WHEEL_RESULT', {
+      timestamp: new Date().toISOString(),
+      ...payload,
+    });
+  }
+}
+
 export function broadcastFinaleTriggered(payload: { isGrandFinale: boolean }): void {
   if (ioInstance) {
     ioInstance.emit('FINALE_TRIGGERED', {

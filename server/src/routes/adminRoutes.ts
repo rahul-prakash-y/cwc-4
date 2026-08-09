@@ -14,6 +14,8 @@ import {
   grantAdvantage,
   setTeamImmunity,
   updateScoresBatch,
+  upsertScore,
+  getAdminScores,
   getGrandFinale,
   toggleGrandFinale,
   getBuzzerQuestions,
@@ -84,6 +86,8 @@ export async function adminRoutes(fastify: FastifyInstance) {
   fastify.post('/teams/:id/advantages', { schema: grantAdvantageSchema }, grantAdvantage);
   fastify.post('/teams/:id/immunity', { schema: setTeamImmunitySchema }, setTeamImmunity);
   fastify.post('/scores/batch', { schema: updateScoresBatchSchema }, updateScoresBatch);
+  fastify.post('/scores', upsertScore);
+  fastify.get('/scores', getAdminScores);
 
   // Daily Tasks Management
   fastify.post('/tasks', { schema: createTaskSchema }, createTask);

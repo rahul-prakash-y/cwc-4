@@ -41,6 +41,8 @@ export interface ITeam {
   advantages: IAdvantageItem[];
   immunity: boolean;
   isBlocked?: boolean;
+  spinTokens?: number;
+  spunDays?: number[];
   totalPublicVotes?: number;
   createdAt?: Date;
   updatedAt?: Date;
@@ -148,6 +150,15 @@ const teamSchema = new Schema<ITeamDocument>(
     isBlocked: {
       type: Boolean,
       default: false,
+    },
+    spinTokens: {
+      type: Number,
+      default: 1,
+      min: 0,
+    },
+    spunDays: {
+      type: [Number],
+      default: [],
     },
     totalPublicVotes: {
       type: Number,

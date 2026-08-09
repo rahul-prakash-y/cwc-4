@@ -836,6 +836,161 @@ export async function updateScoresBatch(
   });
 }
 
+export async function upsertScore(
+  request: FastifyRequest<{
+    Body: {
+      teamId: string;
+      dayNumber?: number;
+      day?: number;
+      date?: string | Date;
+      adv?: number;
+      main?: number;
+      special?: number;
+    };
+  }>,
+  reply: FastifyReply
+) {
+  const { teamId, date, adv = 0, main = 0, special = 0 } = request.body || {};
+  const dayNum = Number(request.body?.dayNumber || request.body?.day || 1);
+
+  if (!teamId) {
+    return reply.status(400).send({
+      error: 'Bad Request',
+      message: 'teamId is required for score updates',
+    });
+  }
+
+  const isRealObjectId = mongoose.Types.ObjectId.isValid(teamId);
+  let team: any = null;
+  if (isRealObjectId) {
+    team = await Team.findById(teamId);
+  }
+  if (!team) {
+    team = await Team.findOne({ teamName: teamId });
+  }
+
+  const teamName = team ? team.teamName : (teamId.includes('team-') ? teamId.replace('team-', 'Team ') : teamId);
+
+  const numAdv = Number(adv) || 0;
+  const numMain = Number(main) || 0;
+  const numSpecial = Number(special) || 0;
+  const computedTotal = numAdv + numMain + numSpecial;
+  const scoreDate = date ? new Date(date) : new Date();
+
+  let scoreDoc: any = null;
+  if (isRealObjectId) {
+    const prevScore = await Score.findOne({ team: teamId, dayNumber: dayNum });
+    const beforeValues = prevScore
+      ? {
+          scores: prevScore.scores || { adv: prevScore.adv, main: prevScore.main, special: prevScore.special, total: prevScore.total },
+          dayNumber: prevScore.dayNumber,
+          date: prevScore.date,
+        }
+      : null;
+
+    scoreDoc = await Score.findOneAndUpdate(
+      { team: teamId, dayNumber: dayNum },
+      {
+        team: teamId,
+        dayNumber: dayNum,
+        day: dayNum,
+        date: scoreDate,
+        scores: {
+          adv: numAdv,
+          main: numMain,
+          special: numSpecial,
+          total: computedTotal,
+        },
+        adv: numAdv,
+        main: numMain,
+        special: numSpecial,
+        total: computedTotal,
+        pointsEarned: computedTotal,
+        recordedBy: (request.user as any)?.id && mongoose.Types.ObjectId.isValid((request.user as any)?.id) ? (request.user as any)?.id : null,
+      },
+      { upsert: true, new: true, setDefaultsOnInsert: true }
+    );
+
+    await delCache('cwc:leaderboard');
+
+    await logAdminAction(request, 'SCORE_UPDATED', teamId, {
+      teamName,
+      dayNumber: dayNum,
+      before: beforeValues,
+      after: { scores: scoreDoc.scores, dayNumber: scoreDoc.dayNumber, date: scoreDoc.date },
+    });
+  } else {
+    scoreDoc = {
+      team: teamId,
+      dayNumber: dayNum,
+      day: dayNum,
+      date: scoreDate,
+      scores: { adv: numAdv, main: numMain, special: numSpecial, total: computedTotal },
+      total: computedTotal,
+    };
+  }
+
+  broadcastScoreUpdated({
+    teamId,
+    teamName,
+    dayNumber: dayNum,
+    scores: scoreDoc.scores,
+  });
+
+  return reply.send({
+    message: `Score updated for team '${teamName}' on Day ${dayNum} successfully! 📊`,
+    score: scoreDoc,
+  });
+}
+
+export async function getAdminScores(
+  request: FastifyRequest,
+  reply: FastifyReply
+) {
+  const query = (request.query || {}) as { dayNumber?: string; day?: string };
+  const dayNumber = Number(query.dayNumber || query.day || 1);
+  const teams = await Team.find().lean();
+  const scores = await Score.find({ dayNumber }).lean();
+
+  const scoresMap = new Map();
+  scores.forEach((s) => scoresMap.set(s.team.toString(), s));
+
+  const result = teams.map((team, idx) => {
+    const scoreDoc = scoresMap.get(team._id.toString());
+    const adv = scoreDoc?.scores?.adv ?? scoreDoc?.adv ?? 0;
+    const main = scoreDoc?.scores?.main ?? scoreDoc?.main ?? 0;
+    const special = scoreDoc?.scores?.special ?? scoreDoc?.special ?? 0;
+    const total = scoreDoc?.scores?.total ?? scoreDoc?.total ?? (adv + main + special);
+
+    return {
+      teamId: team._id.toString(),
+      teamName: team.teamName,
+      teamAvatar: (team as any).teamAvatar || '🎪',
+      leaderName: (team.leader as any)?.name || 'Team Leader',
+      advantage: team.advantages && team.advantages.length > 0 ? team.advantages[team.advantages.length - 1].advantage : 'None',
+      advScore: adv,
+      mainTaskScore: main,
+      specialTaskScore: special,
+      totalScore: total,
+      elimination: team.status === 'Eliminated',
+      immunity: Boolean(team.immunity),
+      status: team.status || 'Safe',
+      rank: idx + 1,
+    };
+  });
+
+  // Sort by totalScore descending and re-assign rank
+  result.sort((a, b) => b.totalScore - a.totalScore);
+  result.forEach((item, index) => {
+    item.rank = index + 1;
+  });
+
+  return reply.send({
+    dayNumber,
+    scores: result,
+  });
+}
+
 /* ==========================================================================
    BUZZER QUESTION MANAGEMENT CONTROLLERS
    ========================================================================== */
