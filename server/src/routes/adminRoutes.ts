@@ -3,6 +3,7 @@ import {
   getAllTeams,
   updateTeamStatus,
   eliminateTeam,
+  deleteTeam,
   updateTeamDetails,
   streamTeamStatusEvents,
   createTask,
@@ -88,6 +89,7 @@ export async function adminRoutes(fastify: FastifyInstance) {
   fastify.put('/teams/:id', updateTeamDetails);
   fastify.patch('/teams/:id/status', { schema: updateTeamStatusSchema }, updateTeamStatus);
   fastify.patch('/teams/:id/eliminate', { schema: eliminateTeamSchema }, eliminateTeam);
+  fastify.delete('/teams/:id', deleteTeam);
 
   // Attendance Management & Auto-Checker
   fastify.get('/attendance', getAttendance);

@@ -82,7 +82,7 @@ export const updateScoresBatchSchema: FastifySchema = {
             advantage: { type: 'string' },
             immunity: { type: 'boolean' },
             elimination: { type: 'boolean' },
-            status: { type: 'string', enum: ['Pending', 'Approved', 'Eliminated', 'Safe', 'Danger'] },
+            status: { type: 'string', enum: ['Pending', 'Approved', 'Rejected', 'Eliminated', 'Safe', 'Danger', 'Qualified'] },
             totalPoints: { type: 'number' },
           },
         },

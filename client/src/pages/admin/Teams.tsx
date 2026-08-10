@@ -316,10 +316,21 @@ export const Teams: React.FC = () => {
     });
   };
 
-  const handleDeleteTeam = (id: string) => {
-    if (confirm('Are you sure you want to reject and remove this team from the portal?')) {
-      handleUpdateStatus(id, 'Rejected');
+  const handleDeleteTeam = async (id: string) => {
+    if (confirm('Are you sure you want to permanently delete this team from the database? This action cannot be undone.')) {
       setTeams((prev) => prev.filter((t) => t.id !== id));
+      try {
+        const res = await apiFetch(`/admin/teams/${id}`, {
+          method: 'DELETE',
+        });
+        if (!res.ok) {
+          console.error('Failed to delete team on backend');
+          await fetchAdminTeams();
+        }
+      } catch (err) {
+        console.error('Failed to delete team:', err);
+        await fetchAdminTeams();
+      }
     }
   };
 

@@ -403,6 +403,57 @@ export async function eliminateTeam(
   });
 }
 
+export async function deleteTeam(
+  request: FastifyRequest<{ Params: { teamId?: string; id?: string } }>,
+  reply: FastifyReply
+) {
+  const teamId = request.params.teamId || request.params.id;
+
+  if (!teamId) {
+    return reply.status(400).send({ error: 'Bad Request', message: 'Team ID parameter is required' });
+  }
+
+  let team = null;
+  if (mongoose.Types.ObjectId.isValid(teamId)) {
+    team = await Team.findByIdAndDelete(teamId);
+  }
+  if (!team) {
+    team = await Team.findOneAndDelete({ teamName: teamId });
+  }
+
+  if (!team) {
+    return reply.status(404).send({ error: 'Not Found', message: 'Team not found' });
+  }
+
+  // Delete all score documents associated with this team
+  await Score.deleteMany({ team: team._id });
+
+  // Broadcast status change / removal to frontend clients
+  teamBroadcaster.emit('status-changed', {
+    teamId: team._id.toString(),
+    teamName: team.teamName,
+    status: 'Deleted',
+    timestamp: new Date().toISOString(),
+  });
+  broadcastStatusChanged({
+    teamId: team._id.toString(),
+    teamName: team.teamName,
+    status: 'Deleted',
+    timestamp: new Date().toISOString(),
+  });
+
+  await delCache('cwc:leaderboard');
+
+  await logAdminAction(request, 'TEAM_DELETED', team._id, {
+    teamName: team.teamName,
+  });
+
+  return reply.send({
+    message: `Team '${team.teamName}' deleted permanently! 🗑️`,
+    teamId: team._id.toString(),
+  });
+}
+
 export async function updateTeamDetails(
   request: FastifyRequest<{
     Params: { id?: string; teamId?: string };
