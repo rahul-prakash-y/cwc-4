@@ -1,10 +1,11 @@
 import React from 'react';
 import { useLocation, Link } from 'react-router-dom';
-import { Crown, Users, CheckSquare, Grid, Download, Image as ImageIcon, UserCheck, Zap, ShieldAlert, Vote } from 'lucide-react';
+import { Crown, Users, CheckSquare, Grid, Download, Image as ImageIcon, UserCheck, Zap, ShieldAlert, Vote, Trophy } from 'lucide-react';
 import { Dashboard } from './admin/Dashboard';
 import { Teams } from './admin/Teams';
 import { Tasks } from './admin/Tasks';
 import { ScoreSheet } from '../components/admin/ScoreSheet';
+import { Leaderboard } from '../components/student/Leaderboard';
 import { Export } from './admin/Export';
 import { Media } from './admin/Media';
 import { Attendance } from './admin/Attendance';
@@ -28,6 +29,7 @@ export const AdminDashboard: React.FC = () => {
     if (location.pathname.includes('/admin/media')) return 'media';
     if (location.pathname.includes('/admin/teams')) return 'teams';
     if (location.pathname.includes('/admin/tasks')) return 'tasks';
+    if (location.pathname.includes('/admin/leaderboard')) return 'leaderboard';
     if (location.pathname.includes('/admin/scores') || location.pathname.includes('/admin/advantages')) return 'scores';
     if (location.pathname.includes('/admin/voting') || location.pathname.includes('/admin/votes')) return 'voting';
     if (location.pathname.includes('/admin/export')) return 'export';
@@ -144,6 +146,18 @@ export const AdminDashboard: React.FC = () => {
         </Link>
 
         <Link
+          to="/admin/leaderboard"
+          className={`flex items-center gap-2 px-4 py-2.5 rounded-xl font-mono text-xs font-bold transition-all ${
+            activeTab === 'leaderboard'
+              ? 'bg-gradient-to-r from-emerald-500 via-teal-500 to-amber-500 text-slate-950 shadow-neon-emerald font-black'
+              : 'glass-card text-emerald-300 hover:text-white border-emerald-500/30'
+          }`}
+        >
+          <Trophy className="w-4 h-4 text-emerald-400" />
+          <span>Leaderboard</span>
+        </Link>
+
+        <Link
           to="/admin/scores"
           className={`flex items-center gap-2 px-4 py-2.5 rounded-xl font-mono text-xs font-bold transition-all ${
             activeTab === 'scores'
@@ -189,6 +203,7 @@ export const AdminDashboard: React.FC = () => {
       {activeTab === 'media' && <Media />}
       {activeTab === 'teams' && <Teams />}
       {activeTab === 'tasks' && <Tasks />}
+      {activeTab === 'leaderboard' && <Leaderboard showScores={true} />}
       {activeTab === 'scores' && <ScoreSheet />}
       {activeTab === 'voting' && <VotingManagement />}
       {activeTab === 'export' && <Export />}

@@ -19,6 +19,7 @@ export const AdminLayout: React.FC = () => {
 
   const adminNavItems = [
     { label: 'Overview Dashboard', path: '/admin', icon: Crown },
+    { label: 'Live Leaderboard', path: '/admin/leaderboard', icon: Trophy },
     { label: 'Team Management', path: '/admin/teams', icon: Users },
     { label: 'Task Scheduler', path: '/admin/tasks', icon: CheckSquare },
     { label: 'Score Sheet Grid', path: '/admin/scores', icon: Grid },

@@ -215,7 +215,7 @@ export const StudentDashboard: React.FC = () => {
 
       {currentTab === 'schedule' && <DaySchedule />}
       {currentTab === 'advantages' && <AdvantagesLocker />}
-      {currentTab === 'leaderboard' && <Leaderboard />}
+      {currentTab === 'leaderboard' && <Leaderboard currentTeamId={studentTeam?.id || studentTeam?._id} />}
     </div>
   );
 };

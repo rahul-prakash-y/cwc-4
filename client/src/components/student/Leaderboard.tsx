@@ -55,25 +55,25 @@ export const Leaderboard: React.FC<StudentLeaderboardProps> = ({
 
     const fetchLeaderboardData = async () => {
       try {
-        const token = localStorage.getItem('token');
+        const token = localStorage.getItem('cwc_token') || localStorage.getItem('token');
         const res = await fetch('/api/public/leaderboard', {
           headers: token ? { Authorization: `Bearer ${token}` } : {},
         });
         if (res.ok) {
           const data = await res.json();
-          const rawTeams = data.teams || data;
+          const rawTeams = data.leaderboard || data.teams || (Array.isArray(data) ? data : []);
           if (Array.isArray(rawTeams)) {
             const mapped: LeaderboardItem[] = rawTeams.map((t: any, idx: number) => ({
-              id: t._id || t.id || `team-${idx + 1}`,
-              name: t.name || t.teamName,
+              id: t.id || t._id || `team-${idx + 1}`,
+              name: t.teamName || t.name || 'Unnamed Team',
               avatar: t.avatar || '🎪',
               logoUrl: t.logoUrl,
               tagline: t.tagline || t.description || '',
-              rank: t.rank || idx + 1,
+              rank: t.rank !== undefined ? t.rank : idx + 1,
               trend: t.trend || 'same',
               trendValue: t.trendValue || 0,
               status: t.status || 'Safe',
-              points: t.points || t.totalPoints || 0,
+              points: t.totalPoints !== undefined ? t.totalPoints : (t.points !== undefined ? t.points : 0),
             }));
             setTeams(mapped);
           }
@@ -227,15 +227,23 @@ export const Leaderboard: React.FC<StudentLeaderboardProps> = ({
               <Trophy className="w-3.5 h-3.5" />
               <span>POSITION LEADERBOARD</span>
             </span>
-            <span className="px-2.5 py-0.5 rounded-full bg-rose-500/10 dark:bg-rose-500/20 text-rose-700 dark:text-rose-300 border border-rose-500/30 dark:border-rose-500/40 text-[10px] font-mono font-bold flex items-center gap-1">
-              <EyeOff className="w-3 h-3" /> HIDE EXACT SCORES
-            </span>
+            {showScores ? (
+              <span className="px-2.5 py-0.5 rounded-full bg-emerald-500/10 dark:bg-emerald-500/20 text-emerald-700 dark:text-emerald-300 border border-emerald-500/30 dark:border-emerald-500/40 text-[10px] font-mono font-bold flex items-center gap-1">
+                <Shield className="w-3 h-3" /> ADMIN SCORE VIEW
+              </span>
+            ) : (
+              <span className="px-2.5 py-0.5 rounded-full bg-rose-500/10 dark:bg-rose-500/20 text-rose-700 dark:text-rose-300 border border-rose-500/30 dark:border-rose-500/40 text-[10px] font-mono font-bold flex items-center gap-1">
+                <EyeOff className="w-3 h-3" /> HIDE EXACT SCORES
+              </span>
+            )}
           </div>
           <h2 className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white">
             Live Arena Standings 🏆
           </h2>
           <p className="text-xs text-slate-600 dark:text-slate-300 mt-0.5">
-            Privacy Protected Leaderboard • Displays relative rankings, trends, and status badges only
+            {showScores
+              ? 'Admin Panel Leaderboard • Full breakdown of squad rankings, trends, status badges, and total points'
+              : 'Privacy Protected Leaderboard • Displays relative rankings, trends, and status badges only'}
           </p>
         </div>
 
