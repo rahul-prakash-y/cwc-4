@@ -147,9 +147,10 @@ export const Leaderboard: React.FC<StudentLeaderboardProps> = ({
         } else {
           updated = updated.map((team) => {
             if (data.teamId === team.id || data.teamName === team.name) {
+              const newTotal = data.newTotalScore ?? data.totalPoints ?? data.points;
               return {
                 ...team,
-                points: (team.points || 0) + (data.bonusPoints || 100),
+                points: newTotal !== undefined ? newTotal : (team.points || 0) + (data.pointsEarned ?? data.bonusPoints ?? 0),
               };
             }
             return team;

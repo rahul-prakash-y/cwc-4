@@ -229,7 +229,10 @@ export async function getAllTeams(
   const teamsWithScores = await Promise.all(
     teams.map(async (team) => {
       const scores = await Score.find({ team: team._id });
-      const totalPoints = scores.reduce((acc, curr) => acc + (curr.pointsEarned || 0), 0);
+      const totalPoints = scores.reduce((acc, curr: any) => {
+        const pts = curr.pointsEarned ?? curr.total ?? curr.scores?.total ?? ((curr.main || 0) + (curr.special || 0) + (curr.adv || 0));
+        return acc + (pts || 0);
+      }, 0);
       return {
         ...team,
         points: totalPoints,
@@ -602,7 +605,10 @@ export async function updateTeamDetails(
   });
 
   const teamScores = await Score.find({ team: team._id });
-  const updatedTotalPoints = teamScores.reduce((acc, curr) => acc + (curr.pointsEarned || 0), 0);
+  const updatedTotalPoints = teamScores.reduce((acc, curr: any) => {
+    const pts = curr.pointsEarned ?? curr.total ?? curr.scores?.total ?? ((curr.main || 0) + (curr.special || 0) + (curr.adv || 0));
+    return acc + (pts || 0);
+  }, 0);
 
   return reply.send({
     message: `Team '${team.teamName}' and member details updated successfully! 🎪`,
@@ -1149,11 +1155,17 @@ export async function updateScoresBatch(
       }
 
       if (taskDoc && item.teamId) {
-        const totalPoints = (item.mainTaskScore || 0) + (item.specialTaskScore || 0);
+        const totalPoints = item.totalPoints !== undefined ? item.totalPoints : ((item.mainTaskScore || 0) + (item.specialTaskScore || 0));
         await Score.findOneAndUpdate(
           { team: item.teamId, task: taskDoc._id },
           {
+            team: item.teamId,
+            task: taskDoc._id,
             pointsEarned: totalPoints,
+            main: item.mainTaskScore || 0,
+            special: item.specialTaskScore || 0,
+            total: totalPoints,
+            scores: { adv: 0, main: item.mainTaskScore || 0, special: item.specialTaskScore || 0, total: totalPoints },
             advantagesUsed: item.advantage ? [item.advantage] : [],
             immunityStatus: item.immunity || false,
           },

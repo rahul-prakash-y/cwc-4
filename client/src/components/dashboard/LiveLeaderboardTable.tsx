@@ -63,9 +63,10 @@ export const LiveLeaderboardTable: React.FC<LiveLeaderboardTableProps> = ({
         } else {
           updated = updated.map((team) => {
             if (data.teamId === team.id || data.teamName === team.name) {
+              const newTotal = data.newTotalScore ?? data.totalPoints ?? data.points;
               return {
                 ...team,
-                points: team.points + (data.bonusPoints || 100),
+                points: newTotal !== undefined ? newTotal : team.points + (data.pointsEarned ?? data.bonusPoints ?? 0),
               };
             }
             return team;

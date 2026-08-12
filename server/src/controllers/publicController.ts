@@ -24,10 +24,14 @@ export async function getPublicLeaderboard(_request: FastifyRequest, reply: Fast
 
   const leaderboard = await Promise.all(
     teams.map(async (team) => {
-      const scores = await Score.find({ team: team._id }).select('pointsEarned');
-      const totalPoints = scores.reduce((sum, s) => sum + (s.pointsEarned || 0), 0);
+      const scores = await Score.find({ team: team._id }).select('pointsEarned total scores main adv special');
+      const totalPoints = scores.reduce((sum, s: any) => {
+        const pts = s.pointsEarned ?? s.total ?? s.scores?.total ?? ((s.main || 0) + (s.special || 0) + (s.adv || 0));
+        return sum + (pts || 0);
+      }, 0);
       return {
-        id: team._id,
+        id: team._id.toString(),
+        _id: team._id.toString(),
         teamName: team.teamName,
         logoUrl: team.logoUrl,
         themeColor: team.themeColor,
@@ -35,6 +39,7 @@ export async function getPublicLeaderboard(_request: FastifyRequest, reply: Fast
         immunity: team.immunity || false,
         advantagesCount: team.advantages ? team.advantages.reduce((sum, a) => sum + (a.quantity || 1), 0) : 0,
         totalPoints,
+        points: totalPoints,
       };
     })
   );
@@ -94,8 +99,11 @@ export async function getPublicTeams(_request: FastifyRequest, reply: FastifyRep
 
   const formattedTeams = await Promise.all(
     teams.map(async (t) => {
-      const scores = await Score.find({ team: t._id }).select('pointsEarned');
-      const totalPoints = scores.reduce((sum, s) => sum + (s.pointsEarned || 0), 0);
+      const scores = await Score.find({ team: t._id }).select('pointsEarned total scores main adv special');
+      const totalPoints = scores.reduce((sum, s: any) => {
+        const pts = s.pointsEarned ?? s.total ?? s.scores?.total ?? ((s.main || 0) + (s.special || 0) + (s.adv || 0));
+        return sum + (pts || 0);
+      }, 0);
       return {
         id: t._id.toString(),
         _id: t._id.toString(),

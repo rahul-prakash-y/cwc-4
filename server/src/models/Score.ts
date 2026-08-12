@@ -124,9 +124,15 @@ const scoreSchema = new Schema<IScoreDocument>(
 // Pre-save hook to calculate total automatically as adv + main + special and keep scores object synced
 scoreSchema.pre('save', function (next) {
   const advVal = this.scores?.adv ?? this.adv ?? 0;
-  const mainVal = this.scores?.main ?? this.main ?? 0;
   const specialVal = this.scores?.special ?? this.special ?? 0;
-  const computedTotal = advVal + mainVal + specialVal;
+  const rawTotal = this.scores?.total ?? this.total ?? this.pointsEarned ?? 0;
+  let mainVal = this.scores?.main ?? this.main ?? 0;
+  
+  if (mainVal === 0 && rawTotal > (advVal + specialVal)) {
+    mainVal = rawTotal - advVal - specialVal;
+  }
+  
+  const computedTotal = Math.max(advVal + mainVal + specialVal, rawTotal);
 
   this.scores = {
     adv: advVal,
