@@ -176,7 +176,10 @@ export async function getAllTeams(request, reply) {
     // Aggregate scores for each team
     const teamsWithScores = await Promise.all(teams.map(async (team) => {
         const scores = await Score.find({ team: team._id });
-        const totalPoints = scores.reduce((acc, curr) => acc + (curr.pointsEarned || 0), 0);
+        const totalPoints = scores.reduce((acc, curr) => {
+            const pts = curr.pointsEarned ?? curr.total ?? curr.scores?.total ?? ((curr.main || 0) + (curr.special || 0) + (curr.adv || 0));
+            return acc + (pts || 0);
+        }, 0);
         return {
             ...team,
             points: totalPoints,
@@ -312,6 +315,45 @@ export async function eliminateTeam(request, reply) {
         team,
     });
 }
+export async function deleteTeam(request, reply) {
+    const teamId = request.params.teamId || request.params.id;
+    if (!teamId) {
+        return reply.status(400).send({ error: 'Bad Request', message: 'Team ID parameter is required' });
+    }
+    let team = null;
+    if (mongoose.Types.ObjectId.isValid(teamId)) {
+        team = await Team.findByIdAndDelete(teamId);
+    }
+    if (!team) {
+        team = await Team.findOneAndDelete({ teamName: teamId });
+    }
+    if (!team) {
+        return reply.status(404).send({ error: 'Not Found', message: 'Team not found' });
+    }
+    // Delete all score documents associated with this team
+    await Score.deleteMany({ team: team._id });
+    // Broadcast status change / removal to frontend clients
+    teamBroadcaster.emit('status-changed', {
+        teamId: team._id.toString(),
+        teamName: team.teamName,
+        status: 'Deleted',
+        timestamp: new Date().toISOString(),
+    });
+    broadcastStatusChanged({
+        teamId: team._id.toString(),
+        teamName: team.teamName,
+        status: 'Deleted',
+        timestamp: new Date().toISOString(),
+    });
+    await delCache('cwc:leaderboard');
+    await logAdminAction(request, 'TEAM_DELETED', team._id, {
+        teamName: team.teamName,
+    });
+    return reply.send({
+        message: `Team '${team.teamName}' deleted permanently! 🗑️`,
+        teamId: team._id.toString(),
+    });
+}
 export async function updateTeamDetails(request, reply) {
     const teamId = request.params.id || request.params.teamId;
     const { teamName, status, themeColor, residenceType, leader, members } = request.body || {};
@@ -419,7 +461,10 @@ export async function updateTeamDetails(request, reply) {
         membersCount: team.members.length,
     });
     const teamScores = await Score.find({ team: team._id });
-    const updatedTotalPoints = teamScores.reduce((acc, curr) => acc + (curr.pointsEarned || 0), 0);
+    const updatedTotalPoints = teamScores.reduce((acc, curr) => {
+        const pts = curr.pointsEarned ?? curr.total ?? curr.scores?.total ?? ((curr.main || 0) + (curr.special || 0) + (curr.adv || 0));
+        return acc + (pts || 0);
+    }, 0);
     return reply.send({
         message: `Team '${team.teamName}' and member details updated successfully! 🎪`,
         team: {
@@ -809,9 +854,15 @@ export async function updateScoresBatch(request, reply) {
             taskDoc = await Task.findOne();
         }
         if (taskDoc && item.teamId) {
-            const totalPoints = (item.mainTaskScore || 0) + (item.specialTaskScore || 0);
+            const totalPoints = item.totalPoints !== undefined ? item.totalPoints : ((item.mainTaskScore || 0) + (item.specialTaskScore || 0));
             await Score.findOneAndUpdate({ team: item.teamId, task: taskDoc._id }, {
+                team: item.teamId,
+                task: taskDoc._id,
                 pointsEarned: totalPoints,
+                main: item.mainTaskScore || 0,
+                special: item.specialTaskScore || 0,
+                total: totalPoints,
+                scores: { adv: 0, main: item.mainTaskScore || 0, special: item.specialTaskScore || 0, total: totalPoints },
                 advantagesUsed: item.advantage ? [item.advantage] : [],
                 immunityStatus: item.immunity || false,
             }, { upsert: true, new: true });

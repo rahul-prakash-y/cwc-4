@@ -17,10 +17,14 @@ export async function getPublicLeaderboard(_request, reply) {
         .lean();
     const teams = allTeams.filter((t) => t.status !== 'Rejected');
     const leaderboard = await Promise.all(teams.map(async (team) => {
-        const scores = await Score.find({ team: team._id }).select('pointsEarned');
-        const totalPoints = scores.reduce((sum, s) => sum + (s.pointsEarned || 0), 0);
+        const scores = await Score.find({ team: team._id }).select('pointsEarned total scores main adv special');
+        const totalPoints = scores.reduce((sum, s) => {
+            const pts = s.pointsEarned ?? s.total ?? s.scores?.total ?? ((s.main || 0) + (s.special || 0) + (s.adv || 0));
+            return sum + (pts || 0);
+        }, 0);
         return {
-            id: team._id,
+            id: team._id.toString(),
+            _id: team._id.toString(),
             teamName: team.teamName,
             logoUrl: team.logoUrl,
             themeColor: team.themeColor,
@@ -28,9 +32,24 @@ export async function getPublicLeaderboard(_request, reply) {
             immunity: team.immunity || false,
             advantagesCount: team.advantages ? team.advantages.reduce((sum, a) => sum + (a.quantity || 1), 0) : 0,
             totalPoints,
+            points: totalPoints,
         };
     }));
-    leaderboard.sort((a, b) => b.totalPoints - a.totalPoints);
+    const getStatusPriority = (status = '') => {
+        const s = status ? status.toString().trim().toLowerCase() : '';
+        if (s === 'qualified')
+            return 1;
+        if (s === 'eliminated')
+            return 3;
+        return 2;
+    };
+    leaderboard.sort((a, b) => {
+        const pA = getStatusPriority(a.status);
+        const pB = getStatusPriority(b.status);
+        if (pA !== pB)
+            return pA - pB;
+        return b.totalPoints - a.totalPoints;
+    });
     const rankedLeaderboard = leaderboard.map((item, index) => ({
         rank: index + 1,
         ...item,
@@ -73,8 +92,11 @@ export async function getPublicTeams(_request, reply) {
         .select('teamName logoUrl themeColor status leader members totalPublicVotes advantages immunity')
         .lean();
     const formattedTeams = await Promise.all(teams.map(async (t) => {
-        const scores = await Score.find({ team: t._id }).select('pointsEarned');
-        const totalPoints = scores.reduce((sum, s) => sum + (s.pointsEarned || 0), 0);
+        const scores = await Score.find({ team: t._id }).select('pointsEarned total scores main adv special');
+        const totalPoints = scores.reduce((sum, s) => {
+            const pts = s.pointsEarned ?? s.total ?? s.scores?.total ?? ((s.main || 0) + (s.special || 0) + (s.adv || 0));
+            return sum + (pts || 0);
+        }, 0);
         return {
             id: t._id.toString(),
             _id: t._id.toString(),

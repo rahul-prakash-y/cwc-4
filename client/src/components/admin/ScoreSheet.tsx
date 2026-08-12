@@ -108,7 +108,20 @@ export const ScoreSheet: React.FC = () => {
   };
 
   const recalculateRanks = (list: ScoreRowItem[]): ScoreRowItem[] => {
-    const sorted = [...list].sort((a, b) => b.totalScore - a.totalScore);
+    const getStatusPriority = (status: string = ''): number => {
+      const s = status ? status.toString().trim().toLowerCase() : '';
+      if (s === 'qualified') return 1;
+      if (s === 'eliminated') return 3;
+      return 2;
+    };
+
+    const sorted = [...list].sort((a, b) => {
+      const pA = getStatusPriority(a.status);
+      const pB = getStatusPriority(b.status);
+      if (pA !== pB) return pA - pB;
+      return b.totalScore - a.totalScore;
+    });
+
     return list.map((item) => {
       const rIndex = sorted.findIndex((s) => s.teamId === item.teamId);
       return { ...item, rank: rIndex + 1 };

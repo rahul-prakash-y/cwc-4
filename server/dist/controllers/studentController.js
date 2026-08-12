@@ -44,12 +44,18 @@ export async function getStudentDashboard(request, reply) {
     }
     // Calculate current team score
     const teamScores = await Score.find({ team: team._id });
-    const currentScore = teamScores.reduce((sum, item) => sum + (item.pointsEarned || 0), 0);
-    // Calculate team rank across all approved teams
-    const allTeams = await Team.find({ status: 'Approved' }).select('_id');
+    const currentScore = teamScores.reduce((sum, item) => {
+        const pts = item.pointsEarned ?? item.total ?? item.scores?.total ?? ((item.main || 0) + (item.special || 0) + (item.adv || 0));
+        return sum + (pts || 0);
+    }, 0);
+    // Calculate team rank across all active teams
+    const allTeams = await Team.find({ status: { $ne: 'Rejected' } }).select('_id');
     const teamScoresList = await Promise.all(allTeams.map(async (t) => {
         const scores = await Score.find({ team: t._id });
-        const total = scores.reduce((acc, curr) => acc + (curr.pointsEarned || 0), 0);
+        const total = scores.reduce((acc, curr) => {
+            const pts = curr.pointsEarned ?? curr.total ?? curr.scores?.total ?? ((curr.main || 0) + (curr.special || 0) + (curr.adv || 0));
+            return acc + (pts || 0);
+        }, 0);
         return { teamId: t._id.toString(), total };
     }));
     // Sort descending by total points
@@ -620,7 +626,10 @@ export async function submitInteractiveTask(request, reply) {
         await delCache('cwc:leaderboard');
         // Calculate new total team score
         const allTeamScores = await Score.find({ team: team._id });
-        const currentTeamTotal = allTeamScores.reduce((sum, item) => sum + (item.pointsEarned || 0), 0);
+        const currentTeamTotal = allTeamScores.reduce((sum, item) => {
+            const pts = item.pointsEarned ?? item.total ?? item.scores?.total ?? ((item.main || 0) + (item.special || 0) + (item.adv || 0));
+            return sum + (pts || 0);
+        }, 0);
         // Emit SCORE_UPDATED WebSocket broadcast
         broadcastScoreUpdated({
             teamId: team._id.toString(),

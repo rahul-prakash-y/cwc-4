@@ -35,12 +35,32 @@ interface StudentLeaderboardProps {
   showScores?: boolean; // Set to true ONLY in Admin Panel
 }
 
+export const getStatusPriority = (status: string = ''): number => {
+  const s = status ? status.toString().trim().toLowerCase() : '';
+  if (s === 'qualified') return 1;
+  if (s === 'eliminated') return 3;
+  return 2;
+};
+
+export const sortLeaderboardTeams = <T extends { status?: string; points?: number; totalPoints?: number }>(items: T[]): T[] => {
+  return [...items].sort((a, b) => {
+    const pA = getStatusPriority(a.status);
+    const pB = getStatusPriority(b.status);
+    if (pA !== pB) return pA - pB;
+    const ptsA = a.points !== undefined ? a.points : (a.totalPoints || 0);
+    const ptsB = b.points !== undefined ? b.points : (b.totalPoints || 0);
+    return ptsB - ptsA;
+  });
+};
+
 export const Leaderboard: React.FC<StudentLeaderboardProps> = ({
   teams: initialTeams,
   currentTeamId,
   showScores = false, // CRITICAL PRIVACY RULE: Defaults to false (scores hidden)
 }) => {
-  const [teams, setTeams] = useState<LeaderboardItem[]>(initialTeams || []);
+  const [teams, setTeams] = useState<LeaderboardItem[]>(
+    initialTeams ? sortLeaderboardTeams(initialTeams).map((t, idx) => ({ ...t, rank: idx + 1 })) : []
+  );
   const [searchQuery, setSearchQuery] = useState('');
   const [isLeaderboardVisible, setIsLeaderboardVisible] = useState<boolean>(true);
   const [isLoading, setIsLoading] = useState<boolean>(!initialTeams || initialTeams.length === 0);
@@ -48,7 +68,8 @@ export const Leaderboard: React.FC<StudentLeaderboardProps> = ({
 
   useEffect(() => {
     if (initialTeams && initialTeams.length > 0) {
-      setTeams(initialTeams);
+      const sorted = sortLeaderboardTeams(initialTeams).map((t, idx) => ({ ...t, rank: idx + 1 }));
+      setTeams(sorted);
       setIsLoading(false);
       return;
     }
@@ -75,7 +96,8 @@ export const Leaderboard: React.FC<StudentLeaderboardProps> = ({
               status: t.status || 'Safe',
               points: t.totalPoints !== undefined ? t.totalPoints : (t.points !== undefined ? t.points : 0),
             }));
-            setTeams(mapped);
+            const sorted = sortLeaderboardTeams(mapped).map((t, idx) => ({ ...t, rank: idx + 1 }));
+            setTeams(sorted);
           }
         }
       } catch (err) {
@@ -157,7 +179,7 @@ export const Leaderboard: React.FC<StudentLeaderboardProps> = ({
           });
         }
 
-        const sorted = [...updated].sort((a, b) => (b.points || 0) - (a.points || 0));
+        const sorted = sortLeaderboardTeams(updated);
 
         return sorted.map((team, idx) => {
           const newRank = idx + 1;
@@ -180,9 +202,13 @@ export const Leaderboard: React.FC<StudentLeaderboardProps> = ({
 
     const handleStatusChanged = (data: any) => {
       if (data.teamId || data.teamName) {
-        setTeams((prev) =>
-          prev.map((t) => (t.id === data.teamId || t.name === data.teamName ? { ...t, status: data.status || t.status } : t))
-        );
+        setTeams((prev) => {
+          const updated = prev.map((t) =>
+            t.id === data.teamId || t.name === data.teamName ? { ...t, status: data.status || t.status } : t
+          );
+          const sorted = sortLeaderboardTeams(updated);
+          return sorted.map((t, idx) => ({ ...t, rank: idx + 1 }));
+        });
       }
     };
 

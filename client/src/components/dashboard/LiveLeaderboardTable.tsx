@@ -15,6 +15,7 @@ import {
 } from 'lucide-react';
 import { Team } from '../../types';
 import { useSocket } from '../../context/SocketContext';
+import { sortLeaderboardTeams } from '../student/Leaderboard';
 
 export interface LeaderboardTeam extends Team {
   trend: 'up' | 'down' | 'same' | 'new';
@@ -35,10 +36,18 @@ export const LiveLeaderboardTable: React.FC<LiveLeaderboardTableProps> = ({
   currentTeamId = 'team-1',
   showScores = false, // Default to false to obey Task 4 privacy rules
 }) => {
-  const [teams, setTeams] = useState<LeaderboardTeam[]>(initialTeams);
+  const [teams, setTeams] = useState<LeaderboardTeam[]>(() =>
+    initialTeams ? sortLeaderboardTeams(initialTeams).map((t, idx) => ({ ...t, rank: idx + 1 })) : []
+  );
   const [searchQuery, setSearchQuery] = useState('');
   const [filterMode, setFilterMode] = useState<'all' | 'top3'>('all');
   const { socket } = useSocket();
+
+  React.useEffect(() => {
+    if (initialTeams && initialTeams.length > 0) {
+      setTeams(sortLeaderboardTeams(initialTeams).map((t, idx) => ({ ...t, rank: idx + 1 })));
+    }
+  }, [initialTeams]);
 
   // Task 4: Real-time Socket.io listener for SCORE_UPDATED & STATUS_CHANGED events
   React.useEffect(() => {
@@ -73,7 +82,7 @@ export const LiveLeaderboardTable: React.FC<LiveLeaderboardTableProps> = ({
           });
         }
 
-        const sorted = [...updated].sort((a, b) => b.points - a.points);
+        const sorted = sortLeaderboardTeams(updated);
 
         return sorted.map((team, idx) => {
           const newRank = idx + 1;
@@ -97,9 +106,13 @@ export const LiveLeaderboardTable: React.FC<LiveLeaderboardTableProps> = ({
     const handleStatusChanged = (data: any) => {
       console.log('⚡ [Socket.io] STATUS_CHANGED Event received:', data);
       if (data.teamId || data.teamName) {
-        setTeams((prev) =>
-          prev.map((t) => (t.id === data.teamId || t.name === data.teamName ? { ...t, status: data.status || t.status } : t))
-        );
+        setTeams((prev) => {
+          const updated = prev.map((t) =>
+            t.id === data.teamId || t.name === data.teamName ? { ...t, status: data.status || t.status } : t
+          );
+          const sorted = sortLeaderboardTeams(updated);
+          return sorted.map((t, idx) => ({ ...t, rank: idx + 1 }));
+        });
       }
     };
 
@@ -124,8 +137,8 @@ export const LiveLeaderboardTable: React.FC<LiveLeaderboardTableProps> = ({
         };
       });
 
-      // Re-sort teams by points descending
-      const sorted = [...updated].sort((a, b) => b.points - a.points);
+      // Re-sort teams by status priority & points
+      const sorted = sortLeaderboardTeams(updated);
 
       // Recalculate rank & trends
       return sorted.map((team, idx) => {

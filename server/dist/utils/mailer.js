@@ -66,35 +66,45 @@ export async function sendCarnivalEmail(to, subject, htmlBody) {
     });
 }
 /**
- * Sends a transactional email asynchronously
+ * Sends a transactional email asynchronously with automatic retries
  */
-export async function sendEmail(options) {
-    try {
-        const transport = getTransporter();
-        const recipients = Array.isArray(options.to) ? options.to.join(', ') : options.to;
-        if (!recipients || recipients.trim().length === 0) {
-            return false;
-        }
-        const mailOptions = {
-            from: env.SMTP_FROM || env.SMTP_USER || 'CWC Season 4 <noreply@cwcseason4.com>',
-            to: recipients,
-            subject: options.subject,
-            html: options.html,
-            text: options.text || options.subject,
-        };
-        const info = await transport.sendMail(mailOptions);
-        if (!env.SMTP_USER || !env.SMTP_PASS) {
-            console.log(`\x1b[36m[EMAIL SERVICE SIMULATION]\x1b[0m 📧 To: ${recipients} | Subject: "${options.subject}"`);
-        }
-        else {
-            console.log(`\x1b[32m[EMAIL SENT]\x1b[0m 📧 MessageId: ${info.messageId} | Recipients: ${recipients}`);
-        }
-        return true;
-    }
-    catch (error) {
-        console.error(`❌ [EMAIL SERVICE ERROR] Failed to send email to ${options.to}:`, error?.message || error);
+export async function sendEmail(options, maxRetries = 2) {
+    const transport = getTransporter();
+    const recipients = Array.isArray(options.to) ? options.to.join(', ') : options.to;
+    if (!recipients || recipients.trim().length === 0) {
         return false;
     }
+    const mailOptions = {
+        from: env.SMTP_FROM || env.SMTP_USER || 'CWC Season 4 <noreply@cwcseason4.com>',
+        to: recipients,
+        subject: options.subject,
+        html: options.html,
+        text: options.text || options.subject,
+    };
+    let attempt = 0;
+    while (attempt <= maxRetries) {
+        try {
+            const info = await transport.sendMail(mailOptions);
+            if (!env.SMTP_USER || !env.SMTP_PASS) {
+                console.log(`\x1b[36m[EMAIL SERVICE SIMULATION]\x1b[0m 📧 To: ${recipients} | Subject: "${options.subject}"`);
+            }
+            else {
+                console.log(`\x1b[32m[EMAIL SENT]\x1b[0m 📧 MessageId: ${info.messageId} | Recipients: ${recipients}`);
+            }
+            return true; // Success! Exit the loop.
+        }
+        catch (error) {
+            attempt++;
+            if (attempt > maxRetries) {
+                console.error(`❌ [EMAIL SERVICE ERROR] Failed to send email to ${options.to} after ${maxRetries + 1} attempts:`, error?.message || error);
+                return false;
+            }
+            console.warn(`⚠️ [RETRYING] Connection failed for ${options.to}. Retrying... (Attempt ${attempt}/${maxRetries})`);
+            // Wait before retrying (e.g., 1 second, then 2 seconds)
+            await new Promise(resolve => setTimeout(resolve, attempt * 1000));
+        }
+    }
+    return false;
 }
 /**
  * Broadcasts emails to a list of recipients asynchronously in chunked background batches

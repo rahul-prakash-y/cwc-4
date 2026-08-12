@@ -44,7 +44,20 @@ export async function getPublicLeaderboard(_request: FastifyRequest, reply: Fast
     })
   );
 
-  leaderboard.sort((a, b) => b.totalPoints - a.totalPoints);
+  const getStatusPriority = (status: string = ''): number => {
+    const s = status ? status.toString().trim().toLowerCase() : '';
+    if (s === 'qualified') return 1;
+    if (s === 'eliminated') return 3;
+    return 2;
+  };
+
+  leaderboard.sort((a, b) => {
+    const pA = getStatusPriority(a.status);
+    const pB = getStatusPriority(b.status);
+    if (pA !== pB) return pA - pB;
+    return b.totalPoints - a.totalPoints;
+  });
+
   const rankedLeaderboard = leaderboard.map((item, index) => ({
     rank: index + 1,
     ...item,
