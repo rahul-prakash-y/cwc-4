@@ -47,7 +47,9 @@ export async function getPublicLeaderboard(_request: FastifyRequest, reply: Fast
   const getStatusPriority = (status: string = ''): number => {
     const s = status ? status.toString().trim().toLowerCase() : '';
     if (s === 'qualified') return 1;
-    if (s === 'eliminated') return 3;
+    if (s === 'safe' || s === 'approved' || s === 'pending') return 2;
+    if (s === 'danger') return 3;
+    if (s === 'eliminated' || s === 'rejected') return 4;
     return 2;
   };
 
@@ -55,7 +57,8 @@ export async function getPublicLeaderboard(_request: FastifyRequest, reply: Fast
     const pA = getStatusPriority(a.status);
     const pB = getStatusPriority(b.status);
     if (pA !== pB) return pA - pB;
-    return b.totalPoints - a.totalPoints;
+    if (b.totalPoints !== a.totalPoints) return b.totalPoints - a.totalPoints;
+    return (a.teamName || '').localeCompare(b.teamName || '');
   });
 
   const rankedLeaderboard = leaderboard.map((item, index) => ({

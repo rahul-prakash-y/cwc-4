@@ -111,7 +111,9 @@ export const ScoreSheet: React.FC = () => {
     const getStatusPriority = (status: string = ''): number => {
       const s = status ? status.toString().trim().toLowerCase() : '';
       if (s === 'qualified') return 1;
-      if (s === 'eliminated') return 3;
+      if (s === 'safe' || s === 'approved' || s === 'pending') return 2;
+      if (s === 'danger') return 3;
+      if (s === 'eliminated' || s === 'rejected') return 4;
       return 2;
     };
 
@@ -119,7 +121,8 @@ export const ScoreSheet: React.FC = () => {
       const pA = getStatusPriority(a.status);
       const pB = getStatusPriority(b.status);
       if (pA !== pB) return pA - pB;
-      return b.totalScore - a.totalScore;
+      if (b.totalScore !== a.totalScore) return b.totalScore - a.totalScore;
+      return (a.teamName || '').localeCompare(b.teamName || '');
     });
 
     return list.map((item) => {

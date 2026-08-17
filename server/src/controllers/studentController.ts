@@ -58,8 +58,8 @@ export async function getStudentDashboard(request: FastifyRequest, reply: Fastif
     return sum + (pts || 0);
   }, 0);
 
-  // Calculate team rank across all active teams
-  const allTeams = await Team.find({ status: { $ne: 'Rejected' } }).select('_id');
+  // Calculate team rank across all active teams using standard status priority & points
+  const allTeams = await Team.find({ status: { $ne: 'Rejected' } }).select('_id status teamName');
   const teamScoresList = await Promise.all(
     allTeams.map(async (t) => {
       const scores = await Score.find({ team: t._id });
@@ -67,12 +67,26 @@ export async function getStudentDashboard(request: FastifyRequest, reply: Fastif
         const pts = curr.pointsEarned ?? curr.total ?? curr.scores?.total ?? ((curr.main || 0) + (curr.special || 0) + (curr.adv || 0));
         return acc + (pts || 0);
       }, 0);
-      return { teamId: t._id.toString(), total };
+      return { teamId: t._id.toString(), status: t.status, teamName: t.teamName, total };
     })
   );
 
-  // Sort descending by total points
-  teamScoresList.sort((a, b) => b.total - a.total);
+  const getStatusPriority = (status: string = ''): number => {
+    const s = status ? status.toString().trim().toLowerCase() : '';
+    if (s === 'qualified') return 1;
+    if (s === 'safe' || s === 'approved' || s === 'pending') return 2;
+    if (s === 'danger') return 3;
+    if (s === 'eliminated' || s === 'rejected') return 4;
+    return 2;
+  };
+
+  teamScoresList.sort((a, b) => {
+    const pA = getStatusPriority(a.status);
+    const pB = getStatusPriority(b.status);
+    if (pA !== pB) return pA - pB;
+    if (b.total !== a.total) return b.total - a.total;
+    return (a.teamName || '').localeCompare(b.teamName || '');
+  });
   const rankIndex = teamScoresList.findIndex((t) => t.teamId === team._id.toString());
   const rank = rankIndex !== -1 ? rankIndex + 1 : teamScoresList.length + 1;
 

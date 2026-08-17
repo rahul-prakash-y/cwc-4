@@ -186,6 +186,31 @@ export async function getAllTeams(request, reply) {
             totalPoints,
         };
     }));
+    // Sort teams using standard status priority & point sorting logic
+    const getStatusPriority = (status = '') => {
+        const s = status ? status.toString().trim().toLowerCase() : '';
+        if (s === 'qualified')
+            return 1;
+        if (s === 'safe' || s === 'approved' || s === 'pending')
+            return 2;
+        if (s === 'danger')
+            return 3;
+        if (s === 'eliminated' || s === 'rejected')
+            return 4;
+        return 2;
+    };
+    teamsWithScores.sort((a, b) => {
+        const pA = getStatusPriority(a.status);
+        const pB = getStatusPriority(b.status);
+        if (pA !== pB)
+            return pA - pB;
+        if (b.totalPoints !== a.totalPoints)
+            return b.totalPoints - a.totalPoints;
+        return (a.teamName || '').localeCompare(b.teamName || '');
+    });
+    teamsWithScores.forEach((t, idx) => {
+        t.rank = idx + 1;
+    });
     return reply.send({
         teams: teamsWithScores,
         count: teamsWithScores.length,
@@ -994,8 +1019,28 @@ export async function getAdminScores(request, reply) {
             rank: idx + 1,
         };
     });
-    // Sort by totalScore descending and re-assign rank
-    result.sort((a, b) => b.totalScore - a.totalScore);
+    const getStatusPriority = (status = '') => {
+        const s = status ? status.toString().trim().toLowerCase() : '';
+        if (s === 'qualified')
+            return 1;
+        if (s === 'safe' || s === 'approved' || s === 'pending')
+            return 2;
+        if (s === 'danger')
+            return 3;
+        if (s === 'eliminated' || s === 'rejected')
+            return 4;
+        return 2;
+    };
+    // Sort by status priority first, then totalScore descending, then teamName
+    result.sort((a, b) => {
+        const pA = getStatusPriority(a.status);
+        const pB = getStatusPriority(b.status);
+        if (pA !== pB)
+            return pA - pB;
+        if (b.totalScore !== a.totalScore)
+            return b.totalScore - a.totalScore;
+        return (a.teamName || '').localeCompare(b.teamName || '');
+    });
     result.forEach((item, index) => {
         item.rank = index + 1;
     });

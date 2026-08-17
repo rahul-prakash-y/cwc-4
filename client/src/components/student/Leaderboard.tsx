@@ -38,18 +38,25 @@ interface StudentLeaderboardProps {
 export const getStatusPriority = (status: string = ''): number => {
   const s = status ? status.toString().trim().toLowerCase() : '';
   if (s === 'qualified') return 1;
-  if (s === 'eliminated') return 3;
+  if (s === 'safe' || s === 'approved' || s === 'pending') return 2;
+  if (s === 'danger') return 3;
+  if (s === 'eliminated' || s === 'rejected') return 4;
   return 2;
 };
 
-export const sortLeaderboardTeams = <T extends { status?: string; points?: number; totalPoints?: number }>(items: T[]): T[] => {
+export const sortLeaderboardTeams = <
+  T extends { status?: string; points?: number; totalPoints?: number; totalScore?: number; name?: string; teamName?: string }
+>(items: T[]): T[] => {
   return [...items].sort((a, b) => {
     const pA = getStatusPriority(a.status);
     const pB = getStatusPriority(b.status);
     if (pA !== pB) return pA - pB;
-    const ptsA = a.points !== undefined ? a.points : (a.totalPoints || 0);
-    const ptsB = b.points !== undefined ? b.points : (b.totalPoints || 0);
-    return ptsB - ptsA;
+    const ptsA = a.totalPoints !== undefined ? a.totalPoints : (a.points !== undefined ? a.points : (a.totalScore || 0));
+    const ptsB = b.totalPoints !== undefined ? b.totalPoints : (b.points !== undefined ? b.points : (b.totalScore || 0));
+    if (ptsB !== ptsA) return ptsB - ptsA;
+    const nameA = a.teamName || a.name || '';
+    const nameB = b.teamName || b.name || '';
+    return nameA.localeCompare(nameB);
   });
 };
 
